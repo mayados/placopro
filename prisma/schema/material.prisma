@@ -1,0 +1,12 @@
+model Material{
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+    label String @unique
+    quantity Float
+    // One Unit is Linked to 1 Material
+    unitId String @db.ObjectId
+    unit Unit @relation(fields: [unitId], references: [id], onUpdate: Cascade)
+
+    reports MaterialReport[]
+    @@index([unitId])
+
+}

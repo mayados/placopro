@@ -1,0 +1,14 @@
+model BillService{
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+
+	// BillService is linked to a Bill
+    billId String @db.ObjectId
+    bill Bill @relation(fields: [billId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+	// One BilleService is linked to a Service
+    serviceId String @db.ObjectId
+    service Service @relation(fields: [serviceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+    @@index([billId])
+    @@index([serviceId])
+
+}

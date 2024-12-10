@@ -1,0 +1,20 @@
+model Company{
+    id String @id @default(auto()) @map("_id") @db.ObjectId 
+    name String
+    type String
+    phone String
+    mail String
+    capital Float
+    rcs String
+    siret String
+    ape String
+    intraCommunityVat String
+    road String
+    addressNumber String
+    postalCode String
+    city String
+    additionnalAddress String?
+    decennialInsuranceName String
+    insuranceContractNumber String @unique
+    aeraCoveredByInsurance String
+}

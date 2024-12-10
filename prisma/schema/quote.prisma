@@ -1,0 +1,65 @@
+model Quote{
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+    // Numéro unique et chronologique du devis
+    number Int @unique
+    // Date d’émission
+    issueDate DateTime
+    // Date limite de validité du devis
+    validityEndDate DateTime 
+    // Nature des travaux
+    natureOfWork String
+    // Description des travaux
+    description String 
+    // Date prévue de début des travaux
+    workStartDate DateTime? 
+    // Date prévue de fin des travaux
+    estimatedWorkEndDate DateTime? 
+    // Durée estimée des travaux en jours
+    estimatedWorkDuration Int? 
+    // Gratuité ou non du devis
+    isQuoteFree Boolean 
+    // Brouillon, envoyé, signé, etc.
+    status String 
+    // Montant TVA
+    vatAmount Float 
+    // Prix TTC
+    priceTTC Float 
+    // prix HT
+    priceHT Float
+    // Frais de déplacement
+    travelCosts Float? 
+    // Taux horaire de la main-d'œuvre
+    hourlyLaborRate Float? 
+    // Conditions de paiement
+    paymentTerms String 
+    // Délais de paiement (ex. : 30 jours)
+    paymentDelay Int 
+    // Pénalités de retard 
+    latePaymentPenalties Float? 
+    // Frais forfaitaires de recouvrement
+    recoveryFee Float? 
+    // Le devis est-il signé par le client ?
+    isSignedByClient Boolean 
+    // Date de signature
+    signatureDate DateTime? 
+    // Mention du droit de rétractation
+    hasRightOfWithdrawal Boolean 
+    // Délai de rétractation (en jours)
+    withdrawalPeriod Int? 
+
+
+	// Quote is created by a User
+    userId String @db.ObjectId
+    user User @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+	// One Quote is linked to 1 Client
+    clientId String @db.ObjectId
+    client Client @relation(fields: [clientId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+	// One Quote is linked to 1 WorkSite
+    workSiteId String @db.ObjectId
+    workSite WorkSite @relation(fields: [workSiteId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+	services QuoteService[]
+    @@index([userId])
+    @@index([clientId])
+    @@index([workSiteId])
+}

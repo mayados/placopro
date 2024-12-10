@@ -1,0 +1,14 @@
+model Service{
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+	label String @unique
+	unitPriceHT Float
+	type String
+
+    // one Service can correspond to Many of these models
+    estimations EstimationService[]
+    quotes QuoteService[]
+    bills BillService[]
+	units ServiceUnit[]
+	vatRates ServiceVatRate[]
+	
+}

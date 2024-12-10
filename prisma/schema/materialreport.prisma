@@ -1,0 +1,12 @@
+model MaterialReport{
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+	// One MaterialReport is linked to 1 material
+    materialId String @db.ObjectId
+    material Material @relation(fields: [materialId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+	// One MaterialReport is linked to 1 report
+    reportId String @db.ObjectId
+    report Report @relation(fields: [reportId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+    @@index([materialId])
+    @@index([reportId])
+} 

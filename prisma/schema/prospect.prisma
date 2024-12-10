@@ -1,0 +1,15 @@
+model Prospect{
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+    name String
+    firstName String
+    mail String
+    phone String ?
+    slug String @unique
+    prospectNumber String
+    // Savoir si le prospect est devenu Client
+    isConverted Boolean
+    estimations Estimation[]
+    // One Prospect can become a Client
+    clientId String? @db.ObjectId 
+    client Client? @relation
+}

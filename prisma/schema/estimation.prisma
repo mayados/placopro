@@ -1,0 +1,26 @@
+model Estimation{
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+    city String
+    postalCode  String
+    createdAt DateTime
+    status String
+    natureOfWork String
+    priceHT  Float
+    priceTTC Float
+    vatAmount Float ?
+    estimatedWorkDuration Int
+    travelCosts  Float
+    hourlyLaborRate Float
+    services EstimationService[]
+
+	// One Estimation was created by 1 User
+    authorId String @db.ObjectId
+    author User @relation(fields: [authorId], references: [id])
+
+	// One Estimation is linked to 1 Prospect
+    prospectId String @db.ObjectId
+    prospect Prospect @relation(fields: [prospectId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+    @@index([prospectId])
+    @@index([authorId])
+}

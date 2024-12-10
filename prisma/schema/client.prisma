@@ -1,0 +1,26 @@
+model Client{
+    id String @id @default(auto()) @map("_id") @db.ObjectId 
+    clientNumber String @unique
+    name String
+    firstName String
+    slug String @unique
+    mail String
+    phone String
+    // Comme cela faisait des relation OneToOne, on met directement dans l’entité concernée les différents champs pour l’adresse
+    road String
+    // L’adresse number n’est pas forcément un numéro : 4b…
+    addressNumber String
+    postalCode String
+    city String
+    additionalAddress String
+    isAnonymized Boolean
+    // One Client can be a former Prospect. We have to add @unique here beacause it's a OneToOne relation
+    prospectId String? @unique @db.ObjectId 
+    prospect Prospect? @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+
+    workSites WorkSite[]
+    bills Bill[]
+    quotes Quote[]
+    
+
+}

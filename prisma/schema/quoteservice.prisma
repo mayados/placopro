@@ -1,0 +1,17 @@
+model QuoteService{
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+    quantity Float
+    totalHT Float
+    vatAmount Float
+    totalTTC Float
+    detailsService Float
+	// QuoteService is linked to 1 Quote
+    quoteId String @db.ObjectId
+    quote Quote @relation(fields: [quoteId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+	// One QuoteService is linked to 1 Service
+    serviceId String @db.ObjectId
+    service Service @relation(fields: [serviceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+    @@index([quoteId])
+    @@index([serviceId])
+}

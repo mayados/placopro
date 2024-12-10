@@ -1,0 +1,17 @@
+model Planning{
+   	id String @id @default(auto()) @map("_id") @db.ObjectId
+	task String
+	startDate DateTime
+	endDate DateTime
+	startTime DateTime
+	endTime DateTime
+
+	// One user created the planning
+    userId String @db.ObjectId
+    user User @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+    workSiteId String @db.ObjectId
+    workSite WorkSite @relation(fields: [workSiteId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+    @@index([userId])
+    @@index([workSiteId])
+} 
