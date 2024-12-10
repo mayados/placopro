@@ -1,0 +1,16 @@
+model User{
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+    clerkUserId  String? @unique
+    mail String @unique
+    name String
+    firstName String
+    password  String
+    role String
+    toDos ToDo[]
+    plannings Planning[]
+    reportsDone Report[]
+    billsEstablished Bill[]
+    quotesEstablished Quote[]
+    // The user can create Estimation files
+    estimationsEstablished Estimation[]
+}

@@ -1,0 +1,27 @@
+model WorkSite{
+    id String @id @default(auto()) @map("_id") @db.ObjectId 
+    title String @unique
+    slug String @unique
+    description String
+    beginsThe DateTime
+    status String
+    completionDate DateTime?
+    // Comme cela faisait des relation OneToOne, on met directement dans l’entité concernée les différents champs pour l’adresse
+    road String
+    // L’adresse number n’est pas forcément un numéro : 4b…
+    addressNumber String
+    postalCode String
+    city String
+    additionalAddress String
+
+
+    // One worksite is linked to 1 Client
+    clientId String @db.ObjectId
+    client Client @relation(fields: [clientId], references: [id])
+
+    quotes Quote[]
+    plannings Planning[]
+
+
+        @@index([clientId])	
+} 

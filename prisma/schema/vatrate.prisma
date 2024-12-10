@@ -1,0 +1,5 @@
+model VatRate{
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+	rate Float @unique
+	services ServiceVatRate[]
+}

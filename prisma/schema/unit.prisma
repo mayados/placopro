@@ -1,0 +1,7 @@
+model Unit{
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+	label String @unique
+
+	materials Material[]
+	services ServiceUnit[]
+}

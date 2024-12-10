@@ -1,0 +1,15 @@
+model ToDo{
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+    task String 
+    createdAt DateTime
+    description String ?
+    isChecked Boolean
+    // permet d’avoir un historique lors des audits
+    isArchived Boolean
+    addedToSecretary Boolean
+    // One user created the toDo
+    authorId String @db.ObjectId
+    user User @relation(fields: [authorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+    @@index([authorId])
+
+}

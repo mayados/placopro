@@ -1,0 +1,13 @@
+model ServiceUnit{
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+    // ServiceUnit is linked to 1 Unit
+    unitId String @db.ObjectId
+    unit Unit @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+	// One ServiceUnit is linked to 1 Service
+    serviceId String @db.ObjectId
+    service Service @relation(fields: [serviceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+    @@index([unitId])
+    @@index([serviceId])
+
+}
