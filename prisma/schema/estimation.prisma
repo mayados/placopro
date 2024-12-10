@@ -2,7 +2,7 @@ model Estimation{
     id String @id @default(auto()) @map("_id") @db.ObjectId
     city String
     postalCode  String
-    createdAt DateTime
+    createdAt DateTime @default(now())
     status String
     natureOfWork String
     priceHT  Float
