@@ -40,14 +40,14 @@ const Employees = () =>  {
             <tbody>
             {
                 employees.map((employee: UserType) => {
-                
+                console.log("Le slug employé est : "+employee.slug)
                 return (
                     <tr key={employee.id}>
                         <td>{employee?.lastName}</td>
                         <td>{employee?.firstName}</td>
                         <td>{employee?.role}</td>
                         <td>
-                        <Link href={`/admin/articles/${employee?.slug}`}>
+                        <Link href={`/director/employees/${employee?.slug}`}>
                             Consulter les détails
                         </Link>
                         </td>
