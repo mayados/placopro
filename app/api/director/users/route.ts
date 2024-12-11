@@ -26,7 +26,8 @@ export async function GET(req: NextRequest) {
         })
 
     } catch (error) {
-
+        console.log("Unable to retrieve employees datas",error)
+        return new NextResponse("Internal error, {status: 500}")
     }
 
 }
