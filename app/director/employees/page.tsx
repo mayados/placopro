@@ -35,6 +35,8 @@ const Employees = () =>  {
                     <th>Prénom</th>
                     <th>Rôle</th>
                     <th>Details</th>
+                    <th>Modifier</th>
+                    <th>Supprimer</th>
                 </tr>  
             </thead>
             <tbody>
@@ -47,9 +49,19 @@ const Employees = () =>  {
                         <td>{employee?.firstName}</td>
                         <td>{employee?.role}</td>
                         <td>
-                        <Link href={`/director/employees/${employee?.slug}`}>
-                            Consulter les détails
-                        </Link>
+                          <Link href={`/director/employees/${employee?.slug}`}>
+                              Consulter les détails
+                          </Link>
+                        </td>
+                        <td>
+                          <Link href={`/director/employees/${employee?.slug}/update`}>
+                              Modifier
+                          </Link>
+                        </td>
+                        <td>
+                          <Link href={`/director/employees/${employee?.id}/delete`}>
+                              Supprimer
+                          </Link>
                         </td>
                     </tr>
                 );
