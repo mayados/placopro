@@ -2,10 +2,11 @@
 interface GetUserType{
     id: string;
     emailAddresses: { emailAddress: string }[];
+    // We have to add nnull here, in option, because in User object of clerk, these properties can be null. So we have to adapt the type here
+    firstName?: string | null,
+    lastName?: string | null,
     publicMetadata?: 
         { 
-            firstName?: string; 
-            lastName?: string;
             role?: string;
             slug?: string;
         };
