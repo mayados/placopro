@@ -4,7 +4,8 @@ import { NextResponse, NextRequest } from "next/server";
 
 export async function GET(req: NextRequest, {params}: {params: {employeeSlug: string}}){
 
-    const employeeSlug = params.employeeSlug;
+    const resolvedParams = await params;
+    const employeeSlug = resolvedParams.employeeSlug;
     console.log("Slug de l'employé : "+employeeSlug)
 
     try{
@@ -12,19 +13,22 @@ export async function GET(req: NextRequest, {params}: {params: {employeeSlug: st
         const clerkUsersResponse = await clerkClient.users.getUserList()
         const clerkUsers = clerkUsersResponse.data;
         // to access the plain user's array, we have to access "data"
-        let employee : GetUserType | UserType |undefined= clerkUsers.find((user) => user.publicMetadata?.slug === employeeSlug )
+        let employeeRetrieved: GetUserType | undefined = clerkUsers.find(
+            (user) => user.publicMetadata?.slug === employeeSlug
+          );
         
-        if(!employee){
+        if(!employeeRetrieved){
             throw new Error(`Pas d'utilisateur trouvé avec le slug: ${employeeSlug}`);
         }
 
-        employee = {
-            id: employee.id,
-            email: employee.emailAddresses[0]?.emailAddress || "No email",
-            firstName: employee.publicMetadata?.firstName || "",
-            lastName: employee.publicMetadata?.lastName || "",
-            role: employee.publicMetadata?.role || "",
-            slug: employee.publicMetadata?.slug || "",            
+        const employee: UserType= {
+            id: employeeRetrieved.id,
+            email: employeeRetrieved.emailAddresses[0]?.emailAddress || "No email",
+            // first name and lasName are not to put in metadata beacause these properties already exist
+            firstName: employeeRetrieved.firstName || "",
+            lastName: employeeRetrieved.lastName || "",
+            role: employeeRetrieved.publicMetadata?.role || "",
+            slug: employeeRetrieved.publicMetadata?.slug || "",            
         }
 
 
