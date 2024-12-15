@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { clerkClient, User} from "@clerk/express";
+import { clerkClient, EmailAddress, User} from "@clerk/express";
 
 export async function PUT(req: NextRequest) {
   // Retrieve datas from request's body
@@ -19,25 +19,33 @@ export async function PUT(req: NextRequest) {
 
     console.log("Les datas reçues sont :"+JSON.stringify(data))
     console.log("Infos concernant l'employé :  +"+firstName+" nom : "+lastName+" email : "+email+" role : "+role+" id: "+id)
-    const parametersSimpleUpdate = { firstName: firstName, lastName: lastName, emailAddresses: [{ emailAddress: email }], role: role }
+    const parametersSimpleUpdate = { firstName: firstName, lastName: lastName, role: role, primaryEmailAddress: email }
+
+
 
     const updatedEmployeeSimple = await clerkClient.users.updateUser(id, parametersSimpleUpdate)
 
     const updatedEmployeeMetadata = await clerkClient.users.updateUserMetadata(id, {
         publicMetadata: { role: role, slug: slug},
       });
-
+      const updatedEmployeeEmail = await clerkClient.emailAddresses.createEmailAddress({
+        userId: updatedEmployeeSimple.id,
+        emailAddress: email,
+        primary: true,
+        verified: true,
+      })
 
       console.log("Le nouveau rôle après l'udpate est : "+updatedEmployeeMetadata.publicMetadata?.role)
       console.log("le type de données de role : "+typeof(updatedEmployeeMetadata.publicMetadata?.role))
       const employee: UserType= {
         id: updatedEmployeeSimple.id,
-        email: updatedEmployeeSimple.emailAddresses[0]?.emailAddress,
+        email: updatedEmployeeEmail.emailAddress,
         // first name and lasName are not to put in metadata beacause these properties already exist
         firstName: updatedEmployeeSimple.firstName || "",
         lastName: updatedEmployeeSimple.lastName || "",
-        role: updatedEmployeeMetadata.publicMetadata?.role || "",
-        slug: updatedEmployeeMetadata.publicMetadata?.slug || "",            
+        // We use an assertion type here "as" to guide TypeScript because other way publicMetadata is probably large and TypeScript can't type well. Its types {} 
+        role: updatedEmployeeMetadata.publicMetadata?.role as string || "",
+        slug: updatedEmployeeMetadata.publicMetadata?.slug as string || "",            
     }
 
 
