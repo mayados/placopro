@@ -66,10 +66,11 @@ const ModifyEmployee = ({ params }: { params: Promise<{ employeeSlug: string }>}
                 console.log("data renvoyés : "+data)
                 const updatedEmployee = data.updatedEmployee;
                 setEmployee(updatedEmployee);
+                console.log("updated employé :"+updatedEmployee.slug)
                 // toast.success("Recipe updated successfully !");
                 try {
                     // We redirect because it's possible the slug has changed. So we have to point to the right URL.
-                    await router.push(`/director/employees/${updatedEmployee.slug}/update`);
+                    router.push(`/director/employees/${updatedEmployee.slug}/update`);
                 } catch (err) {
                     console.error("Redirection failed :", err);
                 }
