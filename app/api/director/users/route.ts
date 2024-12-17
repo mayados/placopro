@@ -13,8 +13,8 @@ export async function GET(req: NextRequest) {
         const userList = clerkUsers.map((user: GetUserType) => ({
             id: user.id,
             email: user.emailAddresses[0]?.emailAddress || "No email",
-            firstName: user.publicMetadata?.firstName || "",
-            lastName: user.publicMetadata?.lastName || "",
+            firstName: user.firstName || "",
+            lastName: user.lastName || "",
             role: user.publicMetadata?.role || "",
             slug: user.publicMetadata?.slug || "",
           }));
