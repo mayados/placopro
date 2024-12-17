@@ -14,37 +14,58 @@ export async function PUT(req: NextRequest) {
 
   try {
 
+    if (!email) {
+      throw new Error("L'adresse email est requise.");
+    }
+
+    const user = await clerkClient.users.getUser(id)
+
     const slug = lastName.toLowerCase()+"-"+firstName.toLowerCase();
+
     // Clerk doesn't allow us to update all the elements of the user with only one function. We have to use another function for the metadata
+    const parametersSimpleUpdate = { firstName: user.firstName as string, lastName: user.lastName as string}
 
-    console.log("Les datas reçues sont :"+JSON.stringify(data))
-    console.log("Infos concernant l'employé :  +"+firstName+" nom : "+lastName+" email : "+email+" role : "+role+" id: "+id)
-    const parametersSimpleUpdate = { firstName: firstName, lastName: lastName, role: role, primaryEmailAddress: email }
-
-
+    // We verify if the values have changed or not. And if it's the case,
+    if (user.firstName !== firstName) parametersSimpleUpdate.firstName = firstName;
+    if (user.lastName !== lastName) parametersSimpleUpdate.lastName = lastName;
 
     const updatedEmployeeSimple = await clerkClient.users.updateUser(id, parametersSimpleUpdate)
 
-    const updatedEmployeeMetadata = await clerkClient.users.updateUserMetadata(id, {
-        publicMetadata: { role: role, slug: slug},
-      });
-      const updatedEmployeeEmail = await clerkClient.emailAddresses.createEmailAddress({
-        userId: updatedEmployeeSimple.id,
+    const parametersMetaData = {publicMetadata: { role: user.publicMetadata.role, slug: slug}}
+    if(user.publicMetadata.role !== role){
+      parametersMetaData.publicMetadata.role = role;
+      
+    }
+    const updatedEmployeeMetadata = await clerkClient.users.updateUserMetadata(id,parametersMetaData);
+    let updatedEmployeeEmail ;
+
+    // if the mail has changed, we create a new email address
+    if(user.primaryEmailAddress?.emailAddress !== email){
+      updatedEmployeeEmail = await clerkClient.emailAddresses.createEmailAddress({
+        userId: id,
         emailAddress: email,
         primary: true,
-        verified: true,
+        verified: true
       })
 
-      console.log("Le nouveau rôle après l'udpate est : "+updatedEmployeeMetadata.publicMetadata?.role)
-      console.log("le type de données de role : "+typeof(updatedEmployeeMetadata.publicMetadata?.role))
+      const formerEmailAddressId = user.primaryEmailAddressId;
+      await clerkClient.emailAddresses.deleteEmailAddress(formerEmailAddressId as string)      
+    }else{
+      // If it has'nt changed, we just put the same mail address
+      updatedEmployeeEmail = {emailAddress: email}
+
+    }
+
+
+
       const employee: UserType= {
-        id: updatedEmployeeSimple.id,
-        email: updatedEmployeeEmail.emailAddress,
+        id: updatedEmployeeSimple.id || user.id,
+        email: updatedEmployeeEmail?.emailAddress,
         // first name and lasName are not to put in metadata beacause these properties already exist
         firstName: updatedEmployeeSimple.firstName || "",
         lastName: updatedEmployeeSimple.lastName || "",
         // We use an assertion type here "as" to guide TypeScript because other way publicMetadata is probably large and TypeScript can't type well. Its types {} 
-        role: updatedEmployeeMetadata.publicMetadata?.role as string || "",
+         role: updatedEmployeeMetadata.publicMetadata?.role as string || "",
         slug: updatedEmployeeMetadata.publicMetadata?.slug as string || "",            
     }
 
