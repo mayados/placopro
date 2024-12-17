@@ -28,6 +28,7 @@ const Employees = () =>  {
         {/* <DirectorNav /> */}
         <section className="border-2 border-green-800 flex-[8]">
             <h1 className="text-3xl text-white text-center">Employés</h1>
+            <Link href={`/director/employees/create`}>Créer un employé</Link>
             <table className="table-auto">
             <thead>
                 <tr>
