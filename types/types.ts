@@ -51,6 +51,10 @@ interface CompanyType{
     aeraCoveredByInsurance: string;
 }
 
+interface CompanyTypeSingle{
+    company: CompanyType;
+}
+
 // When we fecth the API, we get a list of CompanyType
 interface CompanyListType{
     companies: CompanyType[]
