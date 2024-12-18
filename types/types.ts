@@ -28,3 +28,30 @@ interface UserType{
 interface ClerkUserListType{
     userList: UserType[]
 }
+
+interface CompanyType{
+    id: string;
+    name: string;
+    slug: string;
+    type: string;
+    phone: string;
+    mail: string;
+    capital: number;
+    rcs: string;
+    siret: string;
+    ape: string;
+    intraCommunityVat: string;
+    road: string;
+    addressNumber: string;
+    postalCode: string;
+    city: string;
+    additionnalAddress?: string | null | undefined;
+    decennialInsuranceName: string;
+    insuranceContractNumber: string;
+    aeraCoveredByInsurance: string;
+}
+
+// When we fecth the API, we get a list of CompanyType
+interface CompanyListType{
+    companies: CompanyType[]
+}
