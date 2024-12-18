@@ -1,6 +1,7 @@
 model Company{
     id String @id @default(auto()) @map("_id") @db.ObjectId 
     name String
+    slug String @unique
     type String
     phone String
     mail String
