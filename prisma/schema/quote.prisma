@@ -18,6 +18,8 @@ model Quote{
     estimatedWorkDuration Int? 
     // Gratuité ou non du devis
     isQuoteFree Boolean 
+    // Le coût du devis si la réalisation de ce dernier est payante
+    quoteCost Float?
     // Brouillon, envoyé, signé, etc.
     status String 
     // Montant TVA
