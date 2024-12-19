@@ -51,6 +51,10 @@ interface CompanyType{
     aeraCoveredByInsurance: string;
 }
 
+interface ClientTypeSingle{
+    client: ClientType;
+}
+
 interface CompanyTypeSingle{
     company: CompanyType;
 }
@@ -58,4 +62,124 @@ interface CompanyTypeSingle{
 // When we fecth the API, we get a list of CompanyType
 interface CompanyListType{
     companies: CompanyType[]
+}
+
+interface WorkSiteType{
+    id: string;
+    title: string;
+    slug: string;
+    description: string;
+    beginsThe: Date;
+    status: string;
+    completionDate: string;
+    road: string;
+    addressNumber: string;
+    postalCode: string;
+    city: string;
+    additionnalAddress: string;
+    client: ClientType;
+    quotes: QuoteType[];
+    plannings: PlanningType[];
+}
+
+interface EstimationType{
+    id: string;
+}
+
+interface PlanningType{
+    id: string;
+}
+
+interface BillType{
+    id: string;
+    number: number;
+    natureOfWork: string;
+    description: string;
+    totalHt: number;
+    totalTtc: number;
+    vatAmount: number;
+    issueDate: Date;
+    dueDate: Date;
+    isPaid: boolean;
+    paymentDate?: Date;
+    author: UserType;
+    client: ClientType;
+    services: BillServiceType[];
+}
+
+interface QuoteType{
+    id:string;
+    number: number;
+    issueDate: Date;
+    validityEndDate: Date;
+    natureOfWork: string;
+    descriptions: string;
+    workStartDate?: Date;
+    estimateWorkEndDate?: Date;
+    estimatedWorkDuration: number;
+    isQuoteFree: boolean;
+    status: string;
+    vatAmount: number;
+    priceTtc: number;
+    priceHt: number;
+    travelCosts?: number;
+    hourlyLaborRate?: number;
+    paymentTerms: string;
+    paymentDelay: number;
+    latePaymentPenalities?: number;
+    recoveryFee?: number;
+    isSignedByClient: boolean;
+    signatureDate: Date;
+    hasRightOfWithdrawal: boolean;
+    withdrawalPeriod: number;
+    quoteCost?: number;
+    author: UserType;
+    client: ClientType;
+    workSite: WorkSiteType;
+    services : QuoteServiceType[];
+}
+
+interface BillServiceType{
+    id: string;
+}
+
+interface QuoteServiceType{
+    id: string;
+}
+
+interface ProspectType{
+    id: string;
+    prospectNumber: string;
+    name: string;
+    firstName: string;
+    slug: string;
+    mail: string;
+    phone: string | null;
+    isConverted: boolean;
+    estimations?: EstimationType[]
+    client? : ClientType | null;
+}
+
+interface ClientType{
+    id: string;
+    clientNumber: string;
+    name: string;
+    firstName: string;
+    slug: string;
+    mail: string;
+    phone: string;
+    road: string
+    addressNumber: string;
+    postalCode: string;
+    city: string;
+    additionalAddress: string;
+    isAnonymized: boolean;
+    prospect?: ProspectType | null;
+    workSites?: WorkSiteType[];
+    bills?: BillType[];
+    quotes?: QuoteType[];
+}
+
+interface ClientTypeList{
+    clients: ClientType[];
 }
