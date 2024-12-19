@@ -5,7 +5,7 @@ model Prospect{
     mail String
     phone String ?
     slug String @unique
-    prospectNumber String
+    prospectNumber String @unique
     // Savoir si le prospect est devenu Client
     isConverted Boolean
     estimations Estimation[]
