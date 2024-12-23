@@ -15,12 +15,13 @@ model Client{
     additionalAddress String
     isAnonymized Boolean
     // One Client can be a former Prospect. We have to add @unique here beacause it's a OneToOne relation
-    prospectId String? @unique @db.ObjectId 
+    prospectId String?  @db.ObjectId
     prospect Prospect? @relation(fields: [prospectId], references: [id], onDelete: Cascade)
 
     workSites WorkSite[]
     bills Bill[]
     quotes Quote[]
-    
+
+  @@unique([prospectId]) // Application de la contrainte unique pour prospectId
 
 }
