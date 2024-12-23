@@ -17,7 +17,7 @@ const createClient = () => {
         postalCode: "",
         city: "",
         additionalAddress: "",
-        prospectNumber: null,
+        prospectNumber: "",
     })
     const router = useRouter();
       
@@ -44,6 +44,7 @@ const createClient = () => {
             console.log("Code postal du client : "+client.postalCode)
             console.log("Ville du client : "+client.city)
             console.log("Complément d'adresse du client : "+client.additionalAddress)
+            console.log("Numéro de prospect : "+client.prospectNumber)
 
 
             const response = await fetch(`/api/director/clients/create`, {
@@ -143,9 +144,9 @@ const createClient = () => {
                 </div>
                 {/* additionnalAddress */}
                 <div>
-                    <label htmlFor="additionnalAddress">Complément d'adresse</label>
+                    <label htmlFor="additionalAddress">Complément d'adresse</label>
                     <Field className="w-full">
-                        <Input type="text" name="additionnalAddress" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="text" name="additionalAddress" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
                             >
                         </Input>
