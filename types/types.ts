@@ -71,7 +71,7 @@ interface WorkSiteType{
     description: string;
     beginsThe: Date;
     status: string;
-    completionDate: string;
+    completionDate: Date | null;
     road: string;
     addressNumber: string;
     postalCode: string;
@@ -80,6 +80,19 @@ interface WorkSiteType{
     client: ClientType;
     quotes: QuoteType[];
     plannings: PlanningType[];
+}
+
+interface WorkSiteForListType{
+    id: string;
+    title: string;
+    slug: string;
+    status: string;
+    city: string;
+    beginsThe: Date;
+}
+
+interface WorkSitesListType{
+    workSites: WorkSiteForListType[]
 }
 
 interface EstimationType{
@@ -178,6 +191,13 @@ interface ClientType{
     workSites?: WorkSiteType[];
     bills?: BillType[];
     quotes?: QuoteType[];
+}
+
+interface ClientSuggestionType{
+    id: string;
+    clientNumber: string;
+    name: string;
+    firstName: string;
 }
 
 interface ClientTypeList{
