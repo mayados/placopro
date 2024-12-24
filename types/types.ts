@@ -82,6 +82,19 @@ interface WorkSiteType{
     plannings: PlanningType[];
 }
 
+interface WorkSiteWithTotalsAndStatus{
+    success: boolean,
+    workSites: WorkSiteForListType[],
+    commingWorkSites: WorkSiteForListType[],
+    inProgressWorkSites: WorkSiteForListType[],
+    completedWorkSites: WorkSiteForListType[],
+    totalWorkSites : number,
+    totalCommingWorkSites : number,
+    totalInProgressWorkSites : number,
+    totalCompletedWorkSites : number,
+}
+
+
 interface WorkSiteForListType{
     id: string;
     title: string;
@@ -89,6 +102,10 @@ interface WorkSiteForListType{
     status: string;
     city: string;
     beginsThe: Date;
+}
+
+interface WorkSiteTypeSingle{
+    workSite: WorkSiteType;
 }
 
 interface WorkSitesListType{
