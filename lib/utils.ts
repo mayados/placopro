@@ -2,7 +2,12 @@ import { format } from "date-fns";
 
 // Display date on french format, without hours
 export function formatDate(date: Date): string{
-    return format(new Date(date), "d/MM/yyyy") ?? "Date non disponible";
+    return format(new Date(date), "dd/MM/yyyy") ?? "Date non disponible";
+}
+
+// Format date for <input type="date">
+export function formatDateToInput(date: Date): string {
+  return format(new Date(date), "yyyy-MM-dd");
 }
 
 // Allows to create a slug thanks to a string
