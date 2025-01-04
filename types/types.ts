@@ -77,9 +77,27 @@ interface WorkSiteType{
     postalCode: string;
     city: string;
     additionnalAddress: string;
-    client: ClientType;
+    client: ClientTypeSuggestion;
     quotes: QuoteType[];
     plannings: PlanningType[];
+}
+
+
+
+interface WorkSiteTypeWithoutQuotesAndPlannings{
+    id: string;
+    title: string;
+    slug: string;
+    description: string;
+    beginsThe: Date;
+    status: string;
+    completionDate: Date | null;
+    road: string;
+    addressNumber: string;
+    postalCode: string;
+    city: string;
+    additionnalAddress: string;
+    client: ClientType;
 }
 
 interface WorkSiteWithTotalsAndStatus{
@@ -192,6 +210,26 @@ interface ProspectType{
 
 interface ClientType{
     id: string;
+    clientNumber: string;
+    name: string;
+    firstName: string;
+    slug: string;
+    mail: string;
+    phone: string;
+    road: string
+    addressNumber: string;
+    postalCode: string;
+    city: string;
+    additionalAddress: string;
+    isAnonymized: boolean;
+    prospect?: ProspectType | null;
+    workSites?: WorkSiteType[];
+    bills?: BillType[];
+    quotes?: QuoteType[];
+}
+
+interface ClientTypeSuggestion{
+    id: string | null;
     clientNumber: string;
     name: string;
     firstName: string;
