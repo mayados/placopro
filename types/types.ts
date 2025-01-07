@@ -187,6 +187,32 @@ interface QuoteType{
     services : QuoteServiceType[];
 }
 
+interface QuoteForListType{
+    id: string;
+    number: string;
+    client: ClientType;
+    workSite: WorkSiteType;
+    workStartDate: Date;
+    validityEndDate: Date;
+    status: string;
+}
+
+interface QuotesWithTotalsAndStatus{
+    success: boolean,
+    quotes: QuoteForListType[],
+    draftQuotes: QuoteForListType[],
+    readyToBeSentQuotes: QuoteForListType[],
+    sentQuotes: QuoteForListType[],
+    acceptedQuotes: QuoteForListType[],
+    refusedQuotes: QuoteForListType[],
+    totalQuotes : number,
+    totalDraftQuotes : number,
+    totalReadyToBeSentQuotes : number,
+    totalSentQuotes : number,
+    totalAcceptedQuotes : number,
+    totalRefusedQuotes : number,
+}
+
 interface BillServiceType{
     id: string;
 }
@@ -258,3 +284,4 @@ interface ClientSuggestionType{
 interface ClientTypeList{
     clients: ClientType[];
 }
+
