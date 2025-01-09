@@ -5,7 +5,7 @@ import { Field,Input, Select, Textarea } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 // import toast, { Toaster } from 'react-hot-toast';
 
-const createWorkSite = () => {
+const CreateWorkSite = () => {
 
     const [workSite, setWorkSite] = useState({
         title: "",
@@ -258,4 +258,4 @@ const createWorkSite = () => {
     );
 };
 
-export default createWorkSite;
+export default CreateWorkSite;
