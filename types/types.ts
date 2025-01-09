@@ -82,7 +82,18 @@ interface WorkSiteType{
     plannings: PlanningType[];
 }
 
-
+interface WorkSiteSuggestionType{
+    id: string;
+    title: string;
+    slug: string;
+    road: string;
+    addressNumber: string;
+    postalCode: string;
+    city: string;
+    additionnalAddress: string;
+    client: ClientTypeSuggestion;
+    quotes: QuoteType[];
+}
 
 interface WorkSiteTypeWithoutQuotesAndPlannings{
     id: string;
@@ -161,7 +172,7 @@ interface QuoteType{
     issueDate: Date;
     validityEndDate: Date;
     natureOfWork: string;
-    descriptions: string;
+    description: string;
     workStartDate?: Date;
     estimateWorkEndDate?: Date;
     estimatedWorkDuration: number;
@@ -185,6 +196,32 @@ interface QuoteType{
     client: ClientType;
     workSite: WorkSiteType;
     services : QuoteServiceType[];
+}
+
+interface QuoteFormValueType{
+    validityEndDate: string,
+    natureOfWork: string,
+    description: string,
+    workStartDate: string,
+    estimatedWorkEndDate: string,
+    estimatedWorkDuration: string,
+    vatAmount: number,
+    isQuoteFree: string,
+    hasRightOfWithdrawal: string,
+    priceTTC: number,
+    priceHT: number,
+    travelCosts: number,
+    hourlyLaborRate: number,
+    paymentTerms: string,
+    paymentDelay: number,
+    latePaymentPenalities: number,
+    recoveryFees: number,
+    withdrawalPeriod: number,
+    quoteCost: number,
+    clientId: string | null,
+    workSiteId: string | null,
+    services: ServiceType[],
+    serviceType: string,
 }
 
 interface QuoteForListType{
@@ -215,6 +252,16 @@ interface QuotesWithTotalsAndStatus{
 
 interface BillServiceType{
     id: string;
+}
+
+interface ServiceType{
+    id?: string,
+    label: string
+}
+
+interface ServiceSuggestionType{
+    id: string,
+    label: string,
 }
 
 interface QuoteServiceType{
