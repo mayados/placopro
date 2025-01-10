@@ -40,4 +40,10 @@ export function slugify(str: string): string {
     usedClientNumbers.add(clientNumber); // Ajoute le numéro à l'ensemble des numéros utilisés
     return clientNumber;
   }
-  
+
+// Capitalize first letter of a string
+export function capitalizeFirstLetter(word: string){
+  // retrieve the first letter of the word, put it to upperCase and add the remaining letters of the word
+  const capitalizedFirstLetterWord = word.charAt(0).toUpperCase()+ word.slice(1)
+  return capitalizedFirstLetterWord;
+}
