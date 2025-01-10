@@ -256,12 +256,19 @@ interface BillServiceType{
 
 interface ServiceType{
     id?: string,
-    label: string
+    label: string,
+    unitPriceHT?: string,
+    type?: string;
+    tvaRate?: string;
+    unit?: string,
+    selectedFromSuggestions?: boolean,
 }
 
 interface ServiceSuggestionType{
     id: string,
     label: string,
+    unitPriceHT: string,
+    type: string,
 }
 
 interface QuoteServiceType{
