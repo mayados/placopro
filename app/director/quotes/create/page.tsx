@@ -5,6 +5,7 @@ import { Field,Input, Label, Legend, Radio, RadioGroup, Select, Textarea } from 
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import { CirclePlus, CircleX } from "lucide-react";
+import { capitalizeFirstLetter } from "@/lib/utils";
 // import toast, { Toaster } from 'react-hot-toast';
 
 const CreateQuote = () => {
@@ -52,16 +53,35 @@ const CreateQuote = () => {
 
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        console.log("évènement reçu : "+e)
         const { name, value } = e.target;
         console.log("select :"+name+" valeur : "+value)
         setQuote({
             ...quote,
             [name]: value,
         });
+
+        if(name === "client"){
+            setClientInput(value)
+            console.log("input client : "+clientInput)
+        }else if(name === "workSite"){
+            setWorkSiteInput(value)
+        }
+
+        if(name === "client" || name === "workSite"){
+            handleDisplaySuggestions(e)
+        }
           
     };
 
-    
+    //   Retrieve datas from the radio buttons. Because they are in a RadioGroup, we can't retrieve the value just thanks to an event, we have to get the name (of the group) + the value selected
+    const handleRadioChange = (name: string, value: string) => {
+        setQuote((quote) => ({
+          ...quote,
+          [name]: value,
+        }));
+      };
+
     const handleDisplaySuggestions = async (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
       ) => {
@@ -100,58 +120,55 @@ const CreateQuote = () => {
         }
       };
       
+    const handleClickSuggestion = (inputName: string, id: string, fieldValue: string) => {
+        if(inputName === "client"){
+            setClientInput(fieldValue)
+            setQuote((prev) => ({
+                ...prev,
+                // Put id from selected client
+                clientId: id, 
+            }));
+            // Close suggestions list
+            setClientSuggestions(null); 
+        }else if(inputName === "workSite"){
+            setWorkSiteInput(fieldValue)
+            setQuote((prev) => ({
+                ...prev,
+                // Put id from selected client
+                workSiteId: id, 
+            }));
+            // Close suggestions list
+            setWorkSiteSuggestions(null); 
+        }
+    }
 
-    const handleClickClientSuggestion = (id: string, fieldValue: string) => {
-        console.log("j'ai cliqué sur le client qui a l'id :"+id)
-        console.log("valeur visible du champ client : "+fieldValue)
-        setClientInput(fieldValue)
-        setQuote((prev) => ({
-            ...prev,
-            // Put id from selected client
-            clientId: id, 
-        }));
-        // Close suggestions list
-        setClientSuggestions(null); 
-    };
 
-    const handleClickWorkSiteSuggestion = (id: string, fieldValue: string) => {
-        console.log("j'ai cliqué sur le chantier qui a l'id :"+id)
-        console.log("valeur visible du champ workSite : "+fieldValue)
-        setWorkSiteInput(fieldValue)
-        setQuote((prev) => ({
-            ...prev,
-            // Put id from selected client
-            workSiteId: id, 
-        }));
-        // Close suggestions list
-        setWorkSiteSuggestions(null); 
-    };
-
-    const handleClickServiceSuggestion = (index: number, suggestion: ServiceSuggestionType) => {
-        // Vérifier l'objet ingredient avant et après modification
-        console.log('Avant mise à jour:', quote.services[index]);
-    
-        // Créer une copie des services pour éviter la mutation directe
+    const handleClickServiceSuggestion = (
+        index: number,
+        suggestion: ServiceSuggestionType
+      ) => {
         const newServices = [...quote.services];
-    
-        // Mise à jour de l'ingrédient à l'index spécifique
         newServices[index] = {
-            ...newServices[index],
-            label: suggestion.label, 
+          ...newServices[index],
+          label: suggestion.label,
+          // Fil unitPriceHT and type fields with the values of the suggestion
+          unitPriceHT: suggestion.unitPriceHT, 
+          type: capitalizeFirstLetter(suggestion.type),
+          // Allows to know if a service comes from a suggestion to manage automatic fill fields
+          selectedFromSuggestions: true, 
         };
-    
-        // Vérifier l'objet après modification
-        console.log('Après mise à jour:', newServices[index]);
-    
-        // Mettre à jour l'état global avec la copie modifiée
+      
+        console.log("le type de la suggestion est "+suggestion.type)
+
         setQuote({
-            ...quote,
-            services: newServices,
+          ...quote,
+          services: newServices,
         });
-    
-        // Fermer les suggestions après la sélection
+
+
+        // Delete suggestions after the clic
         setServiceSuggestions([]);
-    };
+      };
 
     const handleSubmit = async () => {
         try{
@@ -188,13 +205,23 @@ const CreateQuote = () => {
 
     };
 
-    // add a service 
+
     const addService = () => {
         setQuote({
-            ...quote,
-            services: [...quote.services, { label: ""}],
+          ...quote,
+          services: [
+            ...quote.services,
+            {
+              label: "",
+              unitPriceHT: "",
+              type: "",
+              unit: "",
+              tvaRate: "",
+              selectedFromSuggestions: false,
+            },
+          ],
         });
-    };
+      };
 
     const removeService = (index: number) => {
         const newServices = quote.services.filter((_, i) => i !== index);
@@ -226,24 +253,36 @@ const CreateQuote = () => {
         }
     };
 
-    const handleServiceLabelChange = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
-        const { value } = event.target;
+
+// Fonction pour gérer les changements sur les champs autres que le label
+    const handleServiceFieldChange = (
+        index: number,
+        fieldName: string,
+        value: string 
+    ) => {
+        console.log("Avant mise à jour : ", quote.services[index]);
+        console.log("Champ modifié : ", fieldName, " Nouvelle valeur : ", value);
+        // console.log("la valeur saisie dans le champ est : "+value+" qui provient du champ "+fieldName)
+        
         const newServices = [...quote.services];
         newServices[index] = {
-            ...newServices[index],
-            label: value,
+        ...newServices[index],
+        // Update only targeted field
+        [fieldName]: value, 
         };
 
+        console.log("Après mise à jour : ", newServices[index]);
+
+    
         setQuote({
-            ...quote,
-            services: newServices,
+        ...quote,
+        services: newServices,
         });
 
-        // Call the function to get suggestions
-        fetchServiceSuggestions(value);
+        if(fieldName === "label"){
+            fetchServiceSuggestions(value);
+        }
     };
-
-
 
     return (
         <>
@@ -261,7 +300,7 @@ const CreateQuote = () => {
                     <label htmlFor="client">Client</label>
                     <Field className="w-full">
                         <Input type="text" name="client" value={clientInput} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            onChange={handleDisplaySuggestions}
+                            onChange={handleInputChange}
                         >
                         </Input>
                     </Field>    
@@ -271,7 +310,7 @@ const CreateQuote = () => {
                                 <li
                                     key={suggestion.id}
                                     className="cursor-pointer p-2 hover:bg-gray-600"
-                                    onClick={() => handleClickClientSuggestion(suggestion.id, suggestion.name+" "+suggestion.firstName)}
+                                    onClick={() => handleClickSuggestion("client",suggestion.id, suggestion.name+" "+suggestion.firstName)}
                                 >
                                     {suggestion.name} {suggestion.firstName} - {suggestion.clientNumber}
                                 </li>
@@ -285,7 +324,7 @@ const CreateQuote = () => {
                     <label htmlFor="workSite">Chantier</label>
                     <Field className="w-full">
                         <Input type="text" name="workSite" value={workSiteInput} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            onChange={handleDisplaySuggestions}
+                            onChange={handleInputChange}
                         >
                         </Input>
                     </Field>    
@@ -295,7 +334,7 @@ const CreateQuote = () => {
                                 <li
                                     key={suggestion.id}
                                     className="cursor-pointer p-2 hover:bg-gray-600"
-                                    onClick={() => handleClickWorkSiteSuggestion(suggestion.id, suggestion.title)}
+                                    onClick={() => handleClickSuggestion("workSite",suggestion.id, suggestion.title)}
                                 >
                                     {suggestion.title} - {suggestion.addressNumber} {suggestion.road} {suggestion.additionnalAddress} {suggestion.postalCode} {suggestion.city}
                                 </li>
@@ -358,10 +397,10 @@ const CreateQuote = () => {
             <div key={index}>
                 <Input
                     type="text"
-                    name="serviceLabel"
+                    name="label"
                     placeholder="Label du service"
                     value={service.label}
-                    onChange={(event) => handleServiceLabelChange(index, event)}
+                    onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
                     className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
                 />
                 {/* Services suggestions */}
@@ -381,25 +420,47 @@ const CreateQuote = () => {
                         <p>Aucune suggestion disponible</p>
                     )}
 
-                {/* <Input
+                 <Input
                     type="number"
-                    name="unitPrice"
+                    name="unitPriceHT"
                     placeholder="Prix unitaire"
-                    value={service.unitPrice}
-                    onChange={(event) => handleServiceChange(index, event)}
+                    value={service.unitPriceHT || ""}
+                    // onChange={(event) => handleServiceChange(index, event)}
+                    onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
                     className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
+                    disabled={!!service.selectedFromSuggestions}
+
                 />
-               <label htmlFor="serviceType">Type de service</label>
                     <Select
-                        name="serviceType"
-                        onChange={handleInputChange}
+                        name="type"
+                        onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
+                        value={service.type || ""}
                         className="w-full rounded-md bg-gray-700 text-white pl-3"
+                        disabled={!!service.selectedFromSuggestions}
                     >
-                    <option value="">Sélectionnez un type</option>
+                    <option value="">Type de service</option>
                         {serviceTypeChoices.map((type) => (
                             <option key={type} value={type}>{type}</option>
                         ))}
-                    </Select> */}
+                    </Select> 
+                    <Input
+                    type="text"
+                    name="unit"
+                    placeholder="Unité (ex: m2, m3, piece...)"
+                    value={service.unit || ""}
+                    onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
+                    // onChange={(event) => handleServiceChange(index, event)}
+                    className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
+                />
+                    <Input
+                    type="number"
+                    name="tvaRate"
+                    placeholder="Taux de tva en % (ex: 5.5, 20...)"
+                    value={service.tvaRate || ""}
+                    onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
+                    // onChange={(event) => handleServiceChange(index, event)}
+                    className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
+                />
                 <Button label="Enlever le service" icon={CircleX} type="button" action={() => removeService(index)} specifyBackground="text-red-500" />
             </div>
             ))}
@@ -420,7 +481,8 @@ const CreateQuote = () => {
                 <Field>
                     <Legend>Le devis est-il gratuit ?</Legend>
                     <RadioGroup 
-                        onChange={handleInputChange}
+                        name="isQuoteFree"
+                        onChange={(value)=> handleRadioChange("isQuoteFree",value)}
 
                     >
                         {isQuoteFreeChoices.map((choice) => (
@@ -446,7 +508,8 @@ const CreateQuote = () => {
                 <div>
                     <label htmlFor="paymentTerms">Conditions de paiement</label>
                     <Field className="w-full">
-                        <Textarea name="paymentTerms" value={"Le paiement doit être effectué dans les 30 jours suivant la réception de la facture."} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Textarea name="paymentTerms" 
+                            defaultValue={"Le paiement doit être effectué dans les 30 jours suivant la réception de la facture."} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
                         >
                         </Textarea>
@@ -464,7 +527,7 @@ const CreateQuote = () => {
                 </div>
                 {/* late payment penalities */}
                  <div>
-                    <label htmlFor="paymentPenalities">Frais de déplacement (HT), en €</label>
+                    <label htmlFor="paymentPenalities">Frais de retard de paiement (HT), en €</label>
                     <Field className="w-full">
                         <Input type="number" name="paymentPenalities" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
@@ -506,7 +569,8 @@ const CreateQuote = () => {
                 <Field>
                     <Legend>Y a t'il un droit de rétractation ?</Legend>
                     <RadioGroup 
-                        onChange={handleInputChange}
+                        name="hasRightOfWithdrawal"
+                        onChange={(value)=> handleRadioChange("hasRightOfWithdrawal",value)}
 
                     >
                         {hasRightOfWithdrawalChoices.map((choice) => (
@@ -527,7 +591,6 @@ const CreateQuote = () => {
                         </Input>
                     </Field>
                 </div>
-                {/* form fields the user can't change directly. Automatic calculation => work cost : priceHT, priceTTC AND quoteCostHT, quoteCostTTC */}
 
                 <button type="submit">Créer</button>
             </form>
