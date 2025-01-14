@@ -259,7 +259,7 @@ interface ServiceType{
     label: string,
     unitPriceHT?: string,
     type?: string;
-    tvaRate?: string;
+    vatRate?: string;
     unit?: string,
     selectedFromSuggestions?: boolean,
 }
@@ -339,3 +339,20 @@ interface ClientTypeList{
     clients: ClientType[];
 }
 
+interface VatRateChoiceType{
+    id: string,
+    rate: number,
+}
+
+interface VatRateListType{
+    vatRates: VatRateChoiceType[]
+}
+
+interface UnitChoiceType{
+    id: string,
+    label: string,
+}
+
+interface UnitListType{
+    units: UnitChoiceType[]
+}
