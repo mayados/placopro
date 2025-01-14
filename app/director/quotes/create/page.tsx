@@ -37,6 +37,9 @@ const CreateQuote = () => {
     })
     // Define options for select for services
     const serviceTypeChoices = ["plâtrerie","Peinture"];
+    const [vatRateChoices, setVatRateChoices] = useState<VatRateChoiceType[]>([])
+    const [unitChoices, setUnitChoices] = useState<UnitChoiceType[]>([])
+
     // cont which allows redirection
     const router = useRouter();
     // Display suggestions for : service, unit, tvaRate, client, worksite 
@@ -46,11 +49,32 @@ const CreateQuote = () => {
     // text visible in the client field
     const [clientInput, setClientInput] = useState(""); 
     const [workSiteInput, setWorkSiteInput] = useState(""); 
+    const [unitInput, setUnitInput] = useState(""); 
     const [serviceInput, setServiceInput] = useState(""); 
     // Choices for boolean properties
     const isQuoteFreeChoices = ["Oui","Non"];
     const hasRightOfWithdrawalChoices = ["Oui","Non"];
 
+
+
+        useEffect(() => {
+            const fetchVatRates = async () => {
+              const response = await fetch(`/api/director/vatRates`)
+              const data: VatRateListType =  await response.json()
+                console.log("données reçues après le fetch : "+data)
+                setVatRateChoices(data.vatRates)
+        }
+        const fetchUnits = async () => {
+            const response = await fetch(`/api/director/units`)
+            const data: UnitListType =  await response.json()
+              console.log("données reçues après le fetch : "+data)
+              setUnitChoices(data.units)
+      }
+        
+        fetchVatRates()
+        fetchUnits();
+    },[]);
+    
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         console.log("évènement reçu : "+e)
@@ -66,9 +90,11 @@ const CreateQuote = () => {
             console.log("input client : "+clientInput)
         }else if(name === "workSite"){
             setWorkSiteInput(value)
+        }else if(name === "unit"){
+            setUnitInput(value)
         }
 
-        if(name === "client" || name === "workSite"){
+        if(name === "client" || name === "workSite" || name === "unit"){
             handleDisplaySuggestions(e)
         }
           
@@ -216,7 +242,7 @@ const CreateQuote = () => {
               unitPriceHT: "",
               type: "",
               unit: "",
-              tvaRate: "",
+              vatRate: "",
               selectedFromSuggestions: false,
             },
           ],
@@ -290,6 +316,7 @@ const CreateQuote = () => {
             <h1 className="text-3xl text-white ml-3 text-center">Création de devis</h1>
             {/* <div><Toaster /></div> */}
             <form 
+                autoComplete="off"
                 onSubmit={(e) => {
                     e.preventDefault();
                     handleSubmit();
@@ -425,42 +452,46 @@ const CreateQuote = () => {
                     name="unitPriceHT"
                     placeholder="Prix unitaire"
                     value={service.unitPriceHT || ""}
-                    // onChange={(event) => handleServiceChange(index, event)}
                     onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
                     className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
                     disabled={!!service.selectedFromSuggestions}
 
                 />
-                    <Select
-                        name="type"
+
+                <Select
+                    name="type"
+                    onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
+                    value={service.type || ""}
+                    className="w-full rounded-md bg-gray-700 text-white pl-3"
+                    disabled={!!service.selectedFromSuggestions}
+                >
+                <option value="">Type de service</option>
+                    {serviceTypeChoices.map((type) => (
+                        <option key={type} value={type}>{type}</option>
+                    ))}
+                </Select>
+                <Select
+                        name="unit"
+                        onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
+                        value={service.unit || ""}
+                        className="w-full rounded-md bg-gray-700 text-white pl-3"
+                    >
+                    <option value="">Unité</option>
+                        {unitChoices.map((unit) => (
+                            <option key={unit.id} value={unit.label}>{unit.label}</option>
+                        ))}
+                </Select> 
+                <Select
+                        name="vatRate"
                         onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
                         value={service.type || ""}
                         className="w-full rounded-md bg-gray-700 text-white pl-3"
-                        disabled={!!service.selectedFromSuggestions}
                     >
-                    <option value="">Type de service</option>
-                        {serviceTypeChoices.map((type) => (
-                            <option key={type} value={type}>{type}</option>
+                    <option value="">Taux de tva</option>
+                        {vatRateChoices.map((vatRate) => (
+                            <option key={vatRate.id} value={vatRate.rate}>{vatRate.rate}</option>
                         ))}
-                    </Select> 
-                    <Input
-                    type="text"
-                    name="unit"
-                    placeholder="Unité (ex: m2, m3, piece...)"
-                    value={service.unit || ""}
-                    onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
-                    // onChange={(event) => handleServiceChange(index, event)}
-                    className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
-                />
-                    <Input
-                    type="number"
-                    name="tvaRate"
-                    placeholder="Taux de tva en % (ex: 5.5, 20...)"
-                    value={service.tvaRate || ""}
-                    onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
-                    // onChange={(event) => handleServiceChange(index, event)}
-                    className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
-                />
+                </Select> 
                 <Button label="Enlever le service" icon={CircleX} type="button" action={() => removeService(index)} specifyBackground="text-red-500" />
             </div>
             ))}
