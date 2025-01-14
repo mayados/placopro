@@ -1,0 +1,8 @@
+model DocumentCounter {
+    id             String @id @default(auto()) @map("_id") @db.ObjectId
+    year           Int    @db.Int
+    type           String @db.String 
+    current_number Int    @default(0)
+
+    @@unique([year, type]) 
+}
