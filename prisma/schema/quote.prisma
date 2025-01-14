@@ -1,7 +1,7 @@
 model Quote{
     id String @id @default(auto()) @map("_id") @db.ObjectId
     // Numéro unique et chronologique du devis
-    number Int @unique
+    number String @unique
     // Date d’émission
     issueDate DateTime
     // Date limite de validité du devis
