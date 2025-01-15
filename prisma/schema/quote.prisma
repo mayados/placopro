@@ -48,11 +48,12 @@ model Quote{
     hasRightOfWithdrawal Boolean 
     // Délai de rétractation (en jours)
     withdrawalPeriod Int? 
-
+    userId String
 
 	// Quote is created by a User
-    userId String @db.ObjectId
-    user User @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+    // userId String @db.ObjectId
+    // user User @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 	// One Quote is linked to 1 Client
     clientId String @db.ObjectId
     client Client @relation(fields: [clientId], references: [id], onUpdate: Cascade, onDelete: Cascade)
@@ -61,7 +62,7 @@ model Quote{
     workSite WorkSite @relation(fields: [workSiteId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
 	services QuoteService[]
-    @@index([userId])
+    // @@index([userId])
     @@index([clientId])
     @@index([workSiteId])
 }
