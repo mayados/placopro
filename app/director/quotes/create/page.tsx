@@ -24,7 +24,7 @@ const CreateQuote = () => {
         hasRightOfWithdrawal: "",
         travelCosts: 0,
         hourlyLaborRate: 0,
-        paymentTerms: "",
+        paymentTerms: "Le paiement doit être effectué dans les 30 jours suivant la réception de la facture.",
         paymentDelay: 0,
         latePaymentPenalities: 0,
         recoveryFees: 0,
@@ -50,6 +50,7 @@ const CreateQuote = () => {
     const [clientInput, setClientInput] = useState(""); 
     const [workSiteInput, setWorkSiteInput] = useState(""); 
     const [unitInput, setUnitInput] = useState(""); 
+    const [vatRateInput, setVatRateInput] = useState(""); 
     const [serviceInput, setServiceInput] = useState(""); 
     // Choices for boolean properties
     const isQuoteFreeChoices = ["Oui","Non"];
@@ -92,9 +93,11 @@ const CreateQuote = () => {
             setWorkSiteInput(value)
         }else if(name === "unit"){
             setUnitInput(value)
+        }else if(name === "vatRate"){
+            setVatRateInput(value)
         }
 
-        if(name === "client" || name === "workSite" || name === "unit"){
+        if(name === "client" || name === "workSite"){
             handleDisplaySuggestions(e)
         }
           
@@ -198,16 +201,6 @@ const CreateQuote = () => {
 
     const handleSubmit = async () => {
         try{
-            // console.log("Titre du chantier : "+workSite.title)
-            // console.log("Description : "+workSite.description)
-            // console.log("Commence le : "+workSite.beginsThe)
-            // console.log("Statut : "+workSite.status)
-            // console.log("Route : "+workSite.road)
-            // console.log("Numéro d'adresse : "+workSite.addressNumber)
-            // console.log("Code postal : "+workSite.postalCode)
-            // console.log("Ville : "+workSite.city)
-            // console.log("complément d'adresse : "+workSite.additionnalAddress)
-            // console.log("ClientId : "+workSite.clientId)
 
             const response = await fetch(`/api/director/quotes/create`, {
               method: "POST",
@@ -244,6 +237,8 @@ const CreateQuote = () => {
               unit: "",
               vatRate: "",
               selectedFromSuggestions: false,
+              quantity: 0,
+              detailsService: "",
             },
           ],
         });
@@ -419,8 +414,8 @@ const CreateQuote = () => {
                         </Input>
                     </Field>
                 </div>
-                <h2>Services</h2>
-                {quote.services.map((service, index) => (
+            <h2>Services</h2>
+            {quote.services.map((service, index) => (
             <div key={index}>
                 <Input
                     type="text"
@@ -432,21 +427,28 @@ const CreateQuote = () => {
                 />
                 {/* Services suggestions */}
                 {servicesSuggestions ? (
-                <ul>
-                    {servicesSuggestions.map((suggestion) => (
-                        <li 
-                            key={suggestion.id}
-                            onClick={() => handleClickServiceSuggestion(index, suggestion)} 
-                            className="cursor-pointer text-blue-500 hover:text-blue-700"
-                        >
-                            {suggestion.label}
-                        </li>
-                    ))}
-                </ul>
+                    <ul>
+                        {servicesSuggestions.map((suggestion) => (
+                            <li 
+                                key={suggestion.id}
+                                onClick={() => handleClickServiceSuggestion(index, suggestion)} 
+                                className="cursor-pointer text-blue-500 hover:text-blue-700"
+                            >
+                                {suggestion.label}
+                            </li>
+                        ))}
+                    </ul>
                     ) : (
                         <p>Aucune suggestion disponible</p>
-                    )}
-
+                )}
+                <Input
+                    type="text"
+                    name="detailsService"
+                    placeholder="Détails du service"
+                    value={service.detailsService}
+                    onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
+                    className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
+                />
                  <Input
                     type="number"
                     name="unitPriceHT"
@@ -455,7 +457,6 @@ const CreateQuote = () => {
                     onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
                     className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
                     disabled={!!service.selectedFromSuggestions}
-
                 />
 
                 <Select
@@ -470,6 +471,15 @@ const CreateQuote = () => {
                         <option key={type} value={type}>{type}</option>
                     ))}
                 </Select>
+                <Input
+                    type="number"
+                    name="quantity"
+                    placeholder="Quantité"
+                    value={service.quantity || ""}
+                    onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
+                    className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
+
+                />
                 <Select
                         name="unit"
                         onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
@@ -484,7 +494,7 @@ const CreateQuote = () => {
                 <Select
                         name="vatRate"
                         onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
-                        value={service.type || ""}
+                        value={service.vatRate || ""}
                         className="w-full rounded-md bg-gray-700 text-white pl-3"
                     >
                     <option value="">Taux de tva</option>
@@ -558,9 +568,9 @@ const CreateQuote = () => {
                 </div>
                 {/* late payment penalities */}
                  <div>
-                    <label htmlFor="paymentPenalities">Frais de retard de paiement (HT), en €</label>
+                    <label htmlFor="latePaymentPenalities">Frais de retard de paiement (HT), en €</label>
                     <Field className="w-full">
-                        <Input type="number" name="paymentPenalities" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="number" name="latePaymentPenalities" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
                         >
                         </Input>
