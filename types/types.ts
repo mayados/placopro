@@ -220,7 +220,7 @@ interface QuoteFormValueType{
     quoteCost: number,
     clientId: string | null,
     workSiteId: string | null,
-    services: ServiceType[],
+    services: ServiceFormQuoteType[],
     serviceType: string,
 }
 
@@ -263,6 +263,19 @@ interface ServiceType{
     unit?: string,
     selectedFromSuggestions?: boolean,
 }
+
+interface ServiceFormQuoteType{
+    id?: string,
+    label: string,
+    unitPriceHT?: string,
+    type?: string;
+    vatRate?: string;
+    unit?: string,
+    selectedFromSuggestions?: boolean,
+    quantity?: number,
+    detailsService?: string,
+}
+
 
 interface ServiceSuggestionType{
     id: string,
