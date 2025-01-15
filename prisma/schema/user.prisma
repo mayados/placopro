@@ -10,7 +10,7 @@ model User{
     plannings Planning[]
     reportsDone Report[]
     billsEstablished Bill[]
-    quotesEstablished Quote[]
+    // quotesEstablished Quote[]
     // The user can create Estimation files
     estimationsEstablished Estimation[]
 }
