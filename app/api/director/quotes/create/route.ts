@@ -6,6 +6,8 @@ import { currentUser } from '@clerk/nextjs/server'
 // Asynchrone : waits for a promise
 export async function POST(req: NextRequest) {
     const data = await req.json();
+    console.log("Données reçues dans la requête :", data);
+
     const { 
             validityEndDate, 
             natureOfWork, 
@@ -15,16 +17,14 @@ export async function POST(req: NextRequest) {
             estimatedWorkDuration, 
             isQuoteFree, 
             quoteCost, 
-            vatAmount,  
             priceTTC, 
             priceHT, 
             travelCosts, 
             hourlyLaborRate, 
-            paymentTerms ,
-            latePaymentPenalties,
-            recoveryFee,
-            isSignedByClient,
-            signatureDate,
+            paymentDelay,
+            paymentTerms,
+            latePaymentPenalities,
+            recoveryFees,
             hasRightOfWithdrawal,
             withdrawalPeriod,
             clientId,
@@ -32,43 +32,67 @@ export async function POST(req: NextRequest) {
         } = data;
             // currentUser() is a founction from Clerk which allows to retrieve the current User
             const user = await currentUser()
+    if (!data) {
+        return NextResponse.json({ success: false, message: "Aucune donnée reçue." }, { status: 400 });
+    }
 
+    if (!user) {
+      return NextResponse.json({ 
+          success: false, 
+          message: "Utilisateur non authentifié." 
+      }, { status: 401 });
+  }
 
     try {
 
-        
-        if (!user) {
-            return NextResponse.json({ 
-                success: false, 
-                message: "Utilisateur non authentifié." 
-            }, { status: 401 });
-        }
+      const sanitizedData = {
+        ...data,
+        workStartDate: data.workStartDate ? new Date(data.workStartDate).toISOString() : null,
+        validityEndDate: data.validityEndDate ? new Date(data.validityEndDate).toISOString() : null,
+        estimatedWorkEndDate: data.estimatedWorkEndDate ? new Date(data.estimatedWorkEndDate).toISOString() : null,
+        isQuoteFree: isQuoteFree === "Oui" ? true : false,
+        hasRightOfWithdrawal: hasRightOfWithdrawal=== "Oui" ? true : false,
+        vatAmount: parseFloat(data.vatAmount) || 0,
+        estimatedWorkDuration: parseInt(data.estimatedWorkDuration, 10) || 0,
+        priceTTC: parseFloat(data.priceTTC) || 0,
+        priceHT: parseFloat(data.priceHT) || 0,
+        travelCosts: parseFloat(data.travelCosts) || 0,
+        hourlyLaborRate: parseFloat(data.hourlyLaborRate) || 0,
+        paymentDelay: parseInt(data.paymentDelay, 10) || 0,
+        latePaymentPenalities: parseFloat(data.latePaymentPenalities) || 0,
+        recoveryFees: parseFloat(data.recoveryFees) || 0,
+        withdrawalPeriod: parseInt(data.withdrawalPeriod, 10) || 0,
+        quoteCost: parseFloat(data.quoteCost) || 0,
+    };
+
 
         // Generate an unique and chronological quote's number
         const generateQuoteNumber = async (type = "quote") => {
             const currentYear = new Date().getFullYear();
           
-            // Chercher le compteur pour l'année en cours et le type de document
+            // Get the counter for current year for quote
             let counter = await db.documentCounter.findFirst({
               where: {
                 year: currentYear,
-                type: type, // "quote" pour devis ou "bill" pour facture
+                type: type, 
               },
             });
           
-            let nextNumber = 1; // Valeur par défaut si aucun compteur n'existe
+            // Default value if there is no existing counter
+            let nextNumber = 1; 
           
             if (!counter) {
-              // Si le compteur n'existe pas, définir un compteur basé sur des valeurs fixes
-              // Par exemple, si vous savez qu'il y a déjà 2 factures en 2025
+              // If the counter doesn't exist, define a counter base on fixed values
+              // It's the case if quotes were created this year, before the release of the application. Because they won't be put in the application
               if (type === "quote" && currentYear === 2025) {
-                nextNumber = 3; // On commence à 3 si 2 factures ont déjà été créées
+                // Begin at 3 if 2 quotes were already created
+                nextNumber = 3; 
               }
               else {
-                nextNumber = 1; // Pour les autres cas, commencer à 1
+                // For the other cases, begin at 1
+                nextNumber = 1; 
               }
-          
-              // Créer un nouveau compteur
+                        // Create a new counter
               await db.documentCounter.create({
                 data: {
                   year: currentYear,
@@ -77,65 +101,81 @@ export async function POST(req: NextRequest) {
                 },
               });
             } else {
-              // Si un compteur existe, incrémenter le numéro
+              // If a coounter exists, increment the number
               nextNumber = counter.current_number + 1;
           
-              // Mettre à jour le compteur dans la base de données
+              // update the counter in the database
               await db.documentCounter.update({
                 where: { id: counter.id },
                 data: { current_number: nextNumber },
               });
             }
           
-            // Générer le numéro du document (par exemple, BILL-2025-3 pour la 3ème facture en 2025)
+            // Generate quote's number (for example : DEV-2025-3 for the third quote of 2025)
             const formattedNumber = `${"DEV"}-${currentYear}-${nextNumber}`;
           
             return formattedNumber;
           };
+
+        const quoteNumber =  await generateQuoteNumber();
+
+        // count totalHt for each QuoteService
+
+        // count vatAmount for each QuoteService
+
+        // count totalTTC for each QuoteService
+
+        // count HT price
           
+        // Count vat value
+
+        //count TTC price
 
 
-        // We create the company thanks to te datas retrieved
+        // We create the quote thanks to te datas retrieved
         const quote = await db.quote.create({
             data: {
-                number: 0,
-                issueDate : "", 
-                validityEndDate: validityEndDate, 
-                natureOfWork: natureOfWork, 
-                description: description, 
-                workStartDate: workStartDate, 
-                estimatedWorkEndDate: estimatedWorkEndDate, 
-                estimatedWorkDuration: estimatedWorkDuration, 
-                isQuoteFree: isQuoteFree, 
-                quoteCost: quoteCost, 
-                status: "", 
-                vatAmount: vatAmount,  
-                priceTTC: priceTTC, 
-                priceHT: priceHT, 
-                travelCosts: travelCosts, 
-                hourlyLaborRate: hourlyLaborRate, 
-                paymentDelay: 0,
-                paymentTerms: paymentTerms,
-                latePaymentPenalties: latePaymentPenalties,
-                recoveryFee: recoveryFee,
-                isSignedByClient: isSignedByClient,
-                signatureDate: signatureDate,
-                hasRightOfWithdrawal: hasRightOfWithdrawal,
-                withdrawalPeriod: withdrawalPeriod,
+                number: quoteNumber,
+                issueDate : new Date().toISOString(), 
+                validityEndDate: sanitizedData.validityEndDate, 
+                natureOfWork: sanitizedData.natureOfWork, 
+                description: sanitizedData.description, 
+                workStartDate: sanitizedData.workStartDate, 
+                estimatedWorkEndDate: sanitizedData.estimatedWorkEndDate, 
+                estimatedWorkDuration: sanitizedData.estimatedWorkDuration, 
+                isQuoteFree: sanitizedData.isQuoteFree, 
+                quoteCost: sanitizedData.quoteCost, 
+                status: "Ready to be send", 
+                vatAmount: 200,  
+                priceTTC: 1500, 
+                priceHT: 800, 
+                travelCosts: sanitizedData.travelCosts, 
+                hourlyLaborRate: sanitizedData.hourlyLaborRate, 
+                paymentDelay: sanitizedData.paymentDelay,
+                paymentTerms: sanitizedData.paymentTerms,
+                latePaymentPenalties: sanitizedData.latePaymentPenalities,
+                recoveryFee: sanitizedData.recoveryFees,
+                isSignedByClient: false,
+                signatureDate: null,
+                hasRightOfWithdrawal: sanitizedData.hasRightOfWithdrawal,
+                withdrawalPeriod: sanitizedData.withdrawalPeriod,
                 clientId: clientId,
                 workSiteId: workSiteId,
                 userId: user.id,
+
             },
         });
 
 
         console.log("Devis créé avec succès.");
-        // Toujours retourner la réponse après la création
+        
         return NextResponse.json({ success: true, data: quote });
 
 
     } catch (error) {
-        return NextResponse.json({
+      console.error("Erreur détaillée :", error instanceof Error ? error.message : error);
+
+      return NextResponse.json({
             success: false,
             error: error
         }, { status: 500 });
