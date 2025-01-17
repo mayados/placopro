@@ -28,7 +28,8 @@ export async function POST(req: NextRequest) {
             hasRightOfWithdrawal,
             withdrawalPeriod,
             clientId,
-            workSiteId
+            workSiteId,
+            services,
         } = data;
             // currentUser() is a founction from Clerk which allows to retrieve the current User
             const user = await currentUser()
@@ -66,8 +67,8 @@ export async function POST(req: NextRequest) {
     };
 
 
-        // Generate an unique and chronological quote's number
-        const generateQuoteNumber = async (type = "quote") => {
+      // Generate an unique and chronological quote's number
+      const generateQuoteNumber = async (type = "quote") => {
             const currentYear = new Date().getFullYear();
           
             // Get the counter for current year for quote
@@ -115,23 +116,110 @@ export async function POST(req: NextRequest) {
             const formattedNumber = `${"DEV"}-${currentYear}-${nextNumber}`;
           
             return formattedNumber;
-          };
+      };
 
-        const quoteNumber =  await generateQuoteNumber();
+      const quoteNumber =  await generateQuoteNumber();
 
-        // count totalHt for each QuoteService
+      // for each data.services : see if it already exists. If it's the case, it has an id. In the other case, the Id is null.
+      // we wait for all the promises to be resolved before to continue
+      const servicesManaged = await Promise.all(
+        data.services.map(async (service: ServiceType) => {
 
-        // count vatAmount for each QuoteService
+          // First, we find the unit and tvaRate in the database because we need it after
+          const serviceUnit = await db.unit.findUnique({
+            where: {
+              label: service.unit
+            },
+          })
 
-        // count totalTTC for each QuoteService
+          const serviceVatRate = await db.vatRate.findUnique({
+            where: {
+              rate: parseFloat(service.vatRate)
+            },
+          })
 
-        // count HT price
-          
-        // Count vat value
-
-        //count TTC price
-
-
+          if (service.id === null && serviceUnit != undefined && serviceVatRate != undefined) {
+            //if the id is null, we create a new service, ServiceUnit and ServiceVatRate
+ 
+            await db.$transaction(async (tx) => {
+              // 1 : Service's creation
+              const createdService = await tx.service.create({
+                data: {
+                  label: service.label,
+                  unitPriceHT: parseFloat(service.unitPriceHT),
+                  type: service.type,
+                },
+              });
+            
+              // Get id of createdService
+              const serviceId = createdService.id; 
+            
+              // 2 : ServiceUnit's creation
+              const createdServiceUnit = await tx.serviceUnit.create({
+                data: {
+                  unitId: serviceUnit.id,
+                  serviceId, 
+                },
+              });
+            
+              // 3 : ServiceVatRate's creation
+              const createdServiceVatRate = await tx.serviceVatRate.create({
+                data: {
+                  vatRateId: serviceVatRate.id,
+                  serviceId, 
+                },
+              });
+            
+              console.log("Toutes les entités ont été créées avec succès.");
+            });
+            
+          } else {
+          // If the id is not null, we update
+            const existingService = await db.service.findUnique({
+              where: { id: service.id },
+              // get the Client object
+              include: {
+                units: true, 
+                vatRates: true,
+              },
+            });
+      
+            if (!existingService) {
+              console.error("Le service avec cet ID n'existe pas :", service.id);
+              return null; 
+            }
+      
+            // Verify if the unit or the vatRate is in the service or if we need to update
+            // existingService.units is an object Array, so we need to 
+            if (serviceUnit && !existingService.units.some(unit => unit.id === serviceUnit.id)) {
+              // We create a ServiceUnit
+              const newServiceUnit = await db.serviceUnit.create({
+                data: {
+                  unitId: serviceUnit.id, 
+                  serviceId: existingService.id,
+                },
+              });
+              // We create a ServiceVatRate
+              if (serviceVatRate && !existingService.vatRates.some(vatRate => vatRate.id === serviceVatRate.id)) {
+                // We create a ServiceUnit
+                const newServiceVatRate = await db.serviceVatRate.create({
+                  data: {
+                    vatRateId: serviceVatRate.id, 
+                    serviceId: existingService.id,
+                  },
+                });
+      
+              console.log("ServiceVatRate / serviceUnit créé(s) :", newServiceUnit);
+            }
+      
+            // Aucun changement nécessaire
+            console.log("Aucune mise à jour requise pour le service :", service.id);
+            return existingService; // Retournez le service existant
+          }
+        }})
+      
+      );
+    
         // We create the quote thanks to te datas retrieved
         const quote = await db.quote.create({
             data: {
@@ -146,9 +234,9 @@ export async function POST(req: NextRequest) {
                 isQuoteFree: sanitizedData.isQuoteFree, 
                 quoteCost: sanitizedData.quoteCost, 
                 status: "Ready to be send", 
-                vatAmount: 200,  
-                priceTTC: 1500, 
-                priceHT: 800, 
+                vatAmount: 0,  
+                priceTTC: 0, 
+                priceHT: 0, 
                 travelCosts: sanitizedData.travelCosts, 
                 hourlyLaborRate: sanitizedData.hourlyLaborRate, 
                 paymentDelay: sanitizedData.paymentDelay,
@@ -166,6 +254,48 @@ export async function POST(req: NextRequest) {
             },
         });
 
+      // global variables to use later in the code for Quote update
+      let totalHtQuote = 0;
+      let vatAmountQuote = 0;
+      let totalTTCQuote = 0;
+
+
+      // now we know each service is in the database, and the quote is created we can make operations on it
+      const qoteServices = await Promise.all(
+        servicesManaged.map(async (service: ServiceType) => {
+
+          // Calculs for each service to put datas in quoteService
+          let totalHTService = sanitizedData.service.unitPriceHT * sanitizedData.service.quantity;
+          console.log("total HT pour le service "+service.label+" : "+totalHTService+" €")
+          let vatRateService = parseFloat(service.vatRate);
+          let vatAmountService = totalHTService * (vatRateService / 100);
+          console.log("total montant de la TVA pour le service "+service.label+" : "+vatAmountService+" €")
+          let totalTTCService = totalHTService+vatAmountService; 
+          console.log("total TTC pour le service "+service.label+" : "+totalTTCService+" €")
+
+          // Each service count for the total of the Quote
+          totalHtQuote += totalHTService;
+          vatAmountQuote += vatAmountService;
+          totalTTCQuote += totalTTCService
+
+          // Create QuoteService
+          const quoteService = await db.quoteService.create({
+            data: {
+              quantity: sanitizedData.service.quantity,
+              totalHT: totalHTService,
+              vatAmount: vatAmountService,
+              totalTTC: totalTTCService,
+              detailsService: sanitizedData.service.detailsService,
+              quoteId: quote.id,
+              serviceId: service.id,
+            },
+          });
+        
+        })
+      )
+
+
+        //update Quote
 
         console.log("Devis créé avec succès.");
         
