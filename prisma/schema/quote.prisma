@@ -22,6 +22,8 @@ model Quote{
     quoteCost Float?
     // Brouillon, envoyé, signé, etc.
     status String 
+    // Montant (%) de l'accompte demandé
+    depositAmount Int?
     // Montant TVA
     vatAmount Float 
     // Prix TTC
@@ -30,6 +32,8 @@ model Quote{
     priceHT Float
     // Frais de déplacement
     travelCosts Float? 
+    // Type de frais de déplacement (forfait unique / journalier...)
+    travelCostsType String?
     // Taux horaire de la main-d'œuvre
     hourlyLaborRate Float? 
     // Conditions de paiement
