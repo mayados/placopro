@@ -10,5 +10,4 @@ model Service{
     bills BillService[]
 	units ServiceUnit[]
 	vatRates ServiceVatRate[]
-	
 }
