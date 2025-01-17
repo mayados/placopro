@@ -255,17 +255,26 @@ interface BillServiceType{
 }
 
 interface ServiceType{
-    id?: string,
+    id: string,
     label: string,
-    unitPriceHT?: string,
-    type?: string;
-    vatRate?: string;
-    unit?: string,
+    unitPriceHT: string,
+    type: string;
+    vatRate: string;
+    unit: string,  
+}
+
+interface ServiceWithSuggestionsIndicatorType{
+    id: string,
+    label: string,
+    unitPriceHT: string,
+    type: string;
+    vatRate: string;
+    unit: string,
     selectedFromSuggestions?: boolean,
 }
 
 interface ServiceFormQuoteType{
-    id?: string,
+    id: string | null,
     label: string,
     unitPriceHT?: string,
     type?: string;
