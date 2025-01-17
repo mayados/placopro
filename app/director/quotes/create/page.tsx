@@ -179,6 +179,7 @@ const CreateQuote = () => {
         const newServices = [...quote.services];
         newServices[index] = {
           ...newServices[index],
+          id: suggestion.id,
           label: suggestion.label,
           // Fil unitPriceHT and type fields with the values of the suggestion
           unitPriceHT: suggestion.unitPriceHT, 
@@ -231,6 +232,7 @@ const CreateQuote = () => {
           services: [
             ...quote.services,
             {
+                id : null,
               label: "",
               unitPriceHT: "",
               type: "",
