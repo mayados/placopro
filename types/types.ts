@@ -293,9 +293,28 @@ interface ServiceSuggestionType{
     type: string,
 }
 
-interface QuoteServiceType{
+interface QuoteServiceType {
     id: string;
+    label: string,
+    type: string,
+    vatRate: string,
+    unit: string, 
+    quantity: number,
+    detailsService: string,
 }
+
+interface ServiceAndQuoteServiceType{
+    id: string;
+    label: string,
+    unitPriceHT: number,
+    type: string,
+    vatRate: string,
+    unit: string, 
+    quantity: number,
+    detailsService: string,
+    serviceId : string,
+}
+
 
 interface ProspectType{
     id: string;
