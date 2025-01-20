@@ -211,16 +211,19 @@ const CreateQuote = () => {
               body: JSON.stringify(quote),
             });
             if (response.ok) {
+                const data = await response.json();
+                console.log("data renvoyés : "+data)
+                const newQuote = data;
+                console.log("voici le devis créé : "+newQuote.number)
                 try {
-                    // We redirect to the quotes' list
-                    router.push(`/director/quotes`);
+                    // Redirect to the newl created Quote
+                    router.push(`/director/quotes/${newQuote.number}`);
                 } catch (err) {
                     console.error("Redirection failed :", err);
                 }
             }
         }catch (error) {
             console.error("Erreur lors de la création du devis :", error);
-            // toast.error("There was a problem with updating your recipe. Please try again!");
         }
 
     };
