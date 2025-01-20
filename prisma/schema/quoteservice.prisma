@@ -4,7 +4,7 @@ model QuoteService{
     totalHT Float
     vatAmount Float
     totalTTC Float
-    detailsService Float
+    detailsService String
 	// QuoteService is linked to 1 Quote
     quoteId String @db.ObjectId
     quote Quote @relation(fields: [quoteId], references: [id], onUpdate: Cascade, onDelete: Cascade)
