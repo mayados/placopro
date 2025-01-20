@@ -119,106 +119,104 @@ export async function POST(req: NextRequest) {
       };
 
       const quoteNumber =  await generateQuoteNumber();
-
+      
       // for each data.services : see if it already exists. If it's the case, it has an id. In the other case, the Id is null.
       // we wait for all the promises to be resolved before to continue
       const servicesManaged = await Promise.all(
         data.services.map(async (service: ServiceType) => {
-
-          // First, we find the unit and tvaRate in the database because we need it after
+          // Retrieve unit from database for each service : already existing because we have a list of it when creating the quote
           const serviceUnit = await db.unit.findUnique({
-            where: {
-              label: service.unit
-            },
-          })
-
+            where: { label: service.unit },
+          });
+      
+          // Retrieve vatRate from database for each service : already existing because we have a list of it when creating the quote
           const serviceVatRate = await db.vatRate.findUnique({
-            where: {
-              rate: parseFloat(service.vatRate)
-            },
-          })
-
-          if (service.id === null && serviceUnit != undefined && serviceVatRate != undefined) {
-            //if the id is null, we create a new service, ServiceUnit and ServiceVatRate
- 
-            await db.$transaction(async (tx) => {
-              // 1 : Service's creation
-              const createdService = await tx.service.create({
-                data: {
-                  label: service.label,
-                  unitPriceHT: parseFloat(service.unitPriceHT),
-                  type: service.type,
-                },
-              });
-            
-              // Get id of createdService
-              const serviceId = createdService.id; 
-            
-              // 2 : ServiceUnit's creation
-              const createdServiceUnit = await tx.serviceUnit.create({
-                data: {
-                  unitId: serviceUnit.id,
-                  serviceId, 
-                },
-              });
-            
-              // 3 : ServiceVatRate's creation
-              const createdServiceVatRate = await tx.serviceVatRate.create({
-                data: {
-                  vatRateId: serviceVatRate.id,
-                  serviceId, 
-                },
-              });
-            
-              console.log("Toutes les entités ont été créées avec succès.");
-            });
-            
-          } else {
-          // If the id is not null, we update
+            where: { rate: parseFloat(service.vatRate) },
+          });
+      
+          // If the service has an id = already exists. We retrieve it from the database
+          if (service.id) {
+            console.log("je rentre dans le cas où l'id du service existe");
+      
             const existingService = await db.service.findUnique({
               where: { id: service.id },
-              // get the Client object
               include: {
-                units: true, 
+                units: true,
                 vatRates: true,
               },
             });
       
             if (!existingService) {
               console.error("Le service avec cet ID n'existe pas :", service.id);
-              return null; 
+              return null;
             }
       
-            // Verify if the unit or the vatRate is in the service or if we need to update
-            // existingService.units is an object Array, so we need to 
+            // if the unit isn't contained in the list of the units of the service, we create it (entity ServiceUnint)
             if (serviceUnit && !existingService.units.some(unit => unit.id === serviceUnit.id)) {
-              // We create a ServiceUnit
-              const newServiceUnit = await db.serviceUnit.create({
+              await db.serviceUnit.create({
                 data: {
-                  unitId: serviceUnit.id, 
+                  unitId: serviceUnit.id,
                   serviceId: existingService.id,
                 },
               });
-              // We create a ServiceVatRate
-              if (serviceVatRate && !existingService.vatRates.some(vatRate => vatRate.id === serviceVatRate.id)) {
-                // We create a ServiceUnit
-                const newServiceVatRate = await db.serviceVatRate.create({
+            }
+      
+            // if the vatRate isn't contained in the list of the vatRates of the service, we create it (entity ServiceVatRate)
+            if (serviceVatRate && !existingService.vatRates.some(vatRate => vatRate.id === serviceVatRate.id)) {
+              await db.serviceVatRate.create({
+                data: {
+                  vatRateId: serviceVatRate.id,
+                  serviceId: existingService.id,
+                },
+              });
+            }
+      
+            console.log("VatRate added to the list of vatRates of the service (new serviceVatRate created):", service.id);
+            return existingService;
+      
+          } else {
+            //  If the service doesn't have an ID, we create it but also create : ServiceUnit, ServiceVatRate,
+            console.log("je rentre dans le cas où l'id du service est null ou undefined");
+      
+            try {
+              await db.$transaction(async (tx) => {
+                const createdService = await tx.service.create({
                   data: {
-                    vatRateId: serviceVatRate.id, 
-                    serviceId: existingService.id,
+                    label: service.label,
+                    unitPriceHT: parseFloat(service.unitPriceHT),
+                    type: service.type,
                   },
                 });
       
-              console.log("ServiceVatRate / serviceUnit créé(s) :", newServiceUnit);
+                const serviceId = createdService.id;
+      
+                if (serviceUnit) {
+                  await tx.serviceUnit.create({
+                    data: {
+                      unitId: serviceUnit.id,
+                      serviceId,
+                    },
+                  });
+                }
+      
+                if (serviceVatRate) {
+                  await tx.serviceVatRate.create({
+                    data: {
+                      vatRateId: serviceVatRate.id,
+                      serviceId,
+                    },
+                  });
+                }
+      
+                console.log("Toutes les entités ont été créées avec succès pour le service :", service.label);
+              });
+            } catch (error) {
+              console.error("Erreur lors de la création du service :", error);
             }
-      
-            // Aucun changement nécessaire
-            console.log("Aucune mise à jour requise pour le service :", service.id);
-            return existingService; // Retournez le service existant
           }
-        }})
-      
+        })
       );
+      
     
         // We create the quote thanks to te datas retrieved
         const quote = await db.quote.create({
@@ -261,45 +259,87 @@ export async function POST(req: NextRequest) {
 
 
       // now we know each service is in the database, and the quote is created we can make operations on it
-      const qoteServices = await Promise.all(
-        servicesManaged.map(async (service: ServiceType) => {
-
-          // Calculs for each service to put datas in quoteService
-          let totalHTService = sanitizedData.service.unitPriceHT * sanitizedData.service.quantity;
-          console.log("total HT pour le service "+service.label+" : "+totalHTService+" €")
-          let vatRateService = parseFloat(service.vatRate);
-          let vatAmountService = totalHTService * (vatRateService / 100);
-          console.log("total montant de la TVA pour le service "+service.label+" : "+vatAmountService+" €")
-          let totalTTCService = totalHTService+vatAmountService; 
-          console.log("total TTC pour le service "+service.label+" : "+totalTTCService+" €")
-
-          // Each service count for the total of the Quote
-          totalHtQuote += totalHTService;
-          vatAmountQuote += vatAmountService;
-          totalTTCQuote += totalTTCService
-
-          // Create QuoteService
-          const quoteService = await db.quoteService.create({
-            data: {
-              quantity: sanitizedData.service.quantity,
-              totalHT: totalHTService,
-              vatAmount: vatAmountService,
-              totalTTC: totalTTCService,
-              detailsService: sanitizedData.service.detailsService,
-              quoteId: quote.id,
-              serviceId: service.id,
+      const quoteServices = await Promise.all(
+        data.services.map(async (service: ServiceAndQuoteServiceType) => {
+          // First, we retrieve the id of the service, because now, all services have an ID. We can retrieve it thanks to its unique label. 
+          const serviceRetrieved = await db.service.findUnique({
+            where: {
+              label:service.label
             },
-          });
+            select : {
+              id: true,
+            }
+          })
+
+          if(serviceRetrieved){
+
+            console.log("le service "+service)
+            console.log("prix unitaire "+service.unitPriceHT)
+            // Calculs for each service to put datas in quoteService
+            console.log("type de données de unitPriceHt du service : "+typeof(service.unitPriceHT))
+            console.log("Type de quantity :", typeof service.quantity, "Valeur :", service.quantity);
+
+            let totalHTService = service.unitPriceHT * service.quantity;
+            console.log("total HT pour le service "+service.label+" : "+totalHTService+" €")
+            let vatRateService = parseFloat(service.vatRate);
+            let vatAmountService = totalHTService * (vatRateService / 100);
+            console.log("total montant de la TVA pour le service "+service.label+" : "+vatAmountService+" €")
+            let totalTTCService = totalHTService+vatAmountService; 
+            console.log("total TTC pour le service "+service.label+" : "+totalTTCService+" €")
+
+
+            console.log("les premieres variables de  calculs ont été effectués")
+            // Each service count for the total of the Quote
+            totalHtQuote += totalHTService;
+            vatAmountQuote += vatAmountService;
+            totalTTCQuote += totalTTCService
+            console.log("dans les services, affichage ttc du devis  : "+totalTTCQuote)
+            console.log("les calculs de la premiere version ont été effectués")
+            // Create QuoteService
+
+  
+            const quoteService = await db.quoteService.create({
+              data: {
+                quantity: Number(service.quantity),
+                totalHT: totalHTService,
+                vatAmount: vatAmountService,
+                totalTTC: totalTTCService,
+                detailsService: service.detailsService,
+                quoteId: quote.id,
+                serviceId: serviceRetrieved.id,
+              },
+            });  
+            
+          }
+
         
         })
       )
 
+      // add travelCosts to totalHtQuote (which contains services costs HT)
+      totalHtQuote += travelCosts
+      // Count vatAmount for travelCosts and add the result to vatAmountQuote
+      const vatAmountForTravelCosts = travelCosts * (20 / 100);
+      console.log("montant tva pour les trajets : "+vatAmountForTravelCosts)
+      vatAmountQuote += vatAmountForTravelCosts
+      console.log("montant tva du devis : "+vatAmountQuote)
+      // add totalTTC travelCosts to totalTTCQuote
+      totalTTCQuote += parseFloat(travelCosts) + Number(vatAmountForTravelCosts)
+      console.log("total du prix du devis : "+totalTTCQuote)
 
         //update Quote
+        const newQuote = await db.quote.update({
+              where: { id: quote.id },
+              data: {
+                vatAmount: vatAmountQuote,
+                priceHT: Number(totalHtQuote),
+                priceTTC: totalTTCQuote,
+              }
+        })
 
-        console.log("Devis créé avec succès.");
+        console.log("Quote created with success.");
         
-        return NextResponse.json({ success: true, data: quote });
+        return NextResponse.json({ success: true, data: newQuote });
 
 
     } catch (error) {
