@@ -173,15 +173,16 @@ interface QuoteType{
     validityEndDate: Date;
     natureOfWork: string;
     description: string;
-    workStartDate?: Date;
-    estimateWorkEndDate?: Date;
+    workStartDate: Date;
+    estimatedWorkEndDate: Date;
     estimatedWorkDuration: number;
     isQuoteFree: boolean;
     status: string;
     vatAmount: number;
-    priceTtc: number;
-    priceHt: number;
+    priceTTC: number;
+    priceHT: number;
     travelCosts?: number;
+    depositAmount?: number;
     hourlyLaborRate?: number;
     paymentTerms: string;
     paymentDelay: number;
@@ -196,6 +197,10 @@ interface QuoteType{
     client: ClientType;
     workSite: WorkSiteType;
     services : QuoteServiceType[];
+}
+
+interface QuoteTypeSingle{
+    quote: QuoteType;
 }
 
 interface QuoteFormValueType{
@@ -263,6 +268,12 @@ interface ServiceType{
     unit: string,  
 }
 
+interface ServiceUnitType {
+    id: string,
+    unit: UnitType,
+    service: ServiceType,
+}
+
 interface ServiceWithSuggestionsIndicatorType{
     id: string,
     label: string,
@@ -271,6 +282,11 @@ interface ServiceWithSuggestionsIndicatorType{
     vatRate: string;
     unit: string,
     selectedFromSuggestions?: boolean,
+}
+
+interface UnitType {
+    id: string,
+    label: string,
 }
 
 interface ServiceFormQuoteType{
@@ -301,6 +317,10 @@ interface QuoteServiceType {
     unit: string, 
     quantity: number,
     detailsService: string,
+    service: ServiceType,
+    vatAmount: number,
+    totalHT: number,
+    totalTTC: number,
 }
 
 interface ServiceAndQuoteServiceType{
@@ -397,3 +417,4 @@ interface UnitChoiceType{
 interface UnitListType{
     units: UnitChoiceType[]
 }
+
