@@ -300,6 +300,7 @@ export async function POST(req: NextRequest) {
   
             const quoteService = await db.quoteService.create({
               data: {
+                unit: service.unit,
                 quantity: Number(service.quantity),
                 totalHT: totalHTService,
                 vatAmount: vatAmountService,
