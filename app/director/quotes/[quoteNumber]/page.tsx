@@ -2,6 +2,8 @@
 
 import { useEffect, useState, use } from "react";
 import { formatDate } from '@/lib/utils'
+import DownloadPDF from "@/components/DownloadPDF";
+
 // import toast, { Toaster } from 'react-hot-toast';
 // import { useRouter } from "next/navigation";
 
@@ -50,6 +52,7 @@ const Quote = ({ params }: { params: Promise<{ quoteNumber: string }>}) => {
         <>
             {/* <div><Toaster/></div> */}
             <h1 className="text-3xl text-white ml-3 text-center">Devis {quote?.number}</h1>
+            <DownloadPDF quote={quote} company={company} vatAmountTravelCost={vatAmountTravelCost} priceTTCTravelCost={priceTTCTravelCost} />
             {/* <div><Toaster /></div> */}
             <section>
                 <div>
@@ -107,14 +110,15 @@ const Quote = ({ params }: { params: Promise<{ quoteNumber: string }>}) => {
                     <tbody>
                         {/* quote.services => quoteService */}
                         {quote?.services.map((service, index) => {
+                            console.log("taux de tva du service "+service.service.vatRate)
 
                             return (
                                 <tr key={index}>
-                                    <td>{service.service.label} - {service.type}</td>
+                                    <td>{service.service.label} - {service.service.type}</td>
                                     <td>{service.detailsService}</td>
                                     <td>{service.quantity} {service.unit}</td>
                                     <td>{service.service.unitPriceHT}</td>
-                                    <td>{service.vatRate}</td>
+                                    <td>{service.vatRate} %</td>
                                     <td>{service.vatAmount}</td>
                                     <td>{service.totalHT}</td>
                                     <td>{service.totalTTC}</td>
