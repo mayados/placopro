@@ -300,6 +300,7 @@ export async function POST(req: NextRequest) {
   
             const quoteService = await db.quoteService.create({
               data: {
+                vatRate: service.vatRate,
                 unit: service.unit,
                 quantity: Number(service.quantity),
                 totalHT: totalHTService,
@@ -318,7 +319,7 @@ export async function POST(req: NextRequest) {
       )
 
       // add travelCosts to totalHtQuote (which contains services costs HT)
-      totalHtQuote += travelCosts
+      totalHtQuote += parseFloat(travelCosts)
       // Count vatAmount for travelCosts and add the result to vatAmountQuote
       const vatAmountForTravelCosts = travelCosts * (20 / 100);
       console.log("montant tva pour les trajets : "+vatAmountForTravelCosts)
