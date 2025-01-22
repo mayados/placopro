@@ -5,6 +5,7 @@ model QuoteService{
     vatAmount Float
     totalTTC Float
     unit String
+    vatRate String
     detailsService String
 	// QuoteService is linked to 1 Quote
     quoteId String @db.ObjectId
