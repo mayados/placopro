@@ -418,3 +418,10 @@ interface UnitListType{
     units: UnitChoiceType[]
 }
 
+interface FormValuesUpdateNotDraftQuote{
+    id: string | null,
+    status: string | null,
+    isSignedByClient: string | null,
+    signatureDate: Date | null,
+}
+
