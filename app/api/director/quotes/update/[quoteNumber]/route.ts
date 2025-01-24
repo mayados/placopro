@@ -5,11 +5,28 @@ export async function PUT(req: NextRequest) {
   const data = await req.json();
   const { id, status, isSignedByClient, signatureDate } = data;
 
+  // Mapping of french statuts to english
+  const statusMapping: Record<string, string> = {
+    "Prêt à l'envoi": "Ready to be send",
+    "Envoyé": "Sent",
+    "Accepté": "Accepted",
+    "Refusé": "Refused",
+  };
+
   try {
     // construct dynamically update's object
     const updateData: Record<string, any> = {};
 
-    if (status !== null) updateData.status = status;
+    // status conversion
+    if (status !== null) {
+        const mappedStatus = statusMapping[status];
+        if (mappedStatus) {
+            updateData.status = mappedStatus;
+        } else {
+            return new NextResponse("Invalid status value", { status: 400 });
+        }
+    }
+
     if (isSignedByClient !== null) {
         updateData.isSignedByClient = isSignedByClient === "Oui";
       }
