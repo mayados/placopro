@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
           const readyToBeSentQuotes = await db.quote.findMany({
             where: {
                 status: {
-                    contains: "Ready to be sent",
+                    contains: "Ready",
                     mode: 'insensitive',
                 }
             },
@@ -64,10 +64,7 @@ export async function GET(req: NextRequest) {
 
           const sentQuotes = await db.quote.findMany({
             where: {
-                status: {
-                    contains: "Sent",
-                    mode: 'insensitive',
-                }
+                status: "Sent",
             },
             select: {
                 id: true,
@@ -134,7 +131,7 @@ export async function GET(req: NextRequest) {
         });
 
         const totalReadyToBeSentQuotes: number = await db.quote.count({ 
-            where: { status: { contains: "Ready to be sent", mode: 'insensitive' } }
+            where: { status: { contains: "Ready", mode: 'insensitive' } }
         });
 
         const totalSentQuotes: number = await db.quote.count({ 
