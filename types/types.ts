@@ -186,7 +186,7 @@ interface QuoteType{
     hourlyLaborRate?: number;
     paymentTerms: string;
     paymentDelay: number;
-    latePaymentPenalities?: number;
+    latePaymentPenalties?: number;
     recoveryFee?: number;
     isSignedByClient: boolean;
     signatureDate: Date;
@@ -227,6 +227,34 @@ interface QuoteFormValueType{
     workSiteId: string | null,
     services: ServiceFormQuoteType[],
     serviceType: string,
+}
+
+// The values can be null, it means the form field hasn't been updated, so the quote either
+interface UpdatedQuoteFormValueType{
+    validityEndDate: string | null,
+    natureOfWork: string | null,
+    description: string | null,
+    workStartDate: string | null,
+    estimatedWorkEndDate: string | null,
+    estimatedWorkDuration: string | null,
+    vatAmount: number | null,
+    isQuoteFree: string | null,
+    hasRightOfWithdrawal: string | null,
+    priceTTC: number | null,
+    priceHT: number | null,
+    travelCosts: number | null,
+    hourlyLaborRate: number | null,
+    paymentTerms: string | null,
+    paymentDelay: number | null,
+    latePaymentPenalities: number | null,
+    recoveryFees: number | null,
+    withdrawalPeriod: number | null,
+    quoteCost: number | null,
+    clientId: string | null,
+    workSiteId: string | null,
+    services: ServiceFormQuoteType[] | [],
+    servicesToUnlink: ServiceFormQuoteType[] | [],
+    serviceType: string | null,
 }
 
 interface QuoteForListType{
