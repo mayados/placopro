@@ -47,3 +47,16 @@ export function capitalizeFirstLetter(word: string){
   const capitalizedFirstLetterWord = word.charAt(0).toUpperCase()+ word.slice(1)
   return capitalizedFirstLetterWord;
 }
+
+// HTML inputs of type Date are waiting a specific format which is : YYYY-MM-DD
+// We can use this function when we need to retrieve a date from the database
+export function formatDateForInput(date: string | Date | null): string {
+  // If there isn't a date, we return an empty string
+  if (!date) return "";
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
