@@ -103,6 +103,7 @@ const Quotes = () =>{
                     <Tab className="text-lg lg:text-base flex data-[selected]:bg-pink-600  data-[hover]:bg-pink-500 p-2 rounded-md">Acceptés ({totalAcceptedQuotes})</Tab>
                     <Tab className="text-lg lg:text-base flex data-[selected]:bg-pink-600  data-[hover]:bg-pink-500 p-2 rounded-md">Refusés ({totalRefusedQuotes})</Tab>
                 </TabList>
+                {/* All */}
                 <TabPanels>
                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
                         <table className="table-auto">
@@ -140,6 +141,7 @@ const Quotes = () =>{
                             </tbody>
                         </table>  
                     </TabPanel>
+                    {/* Drafts */}
                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
                         <table className="table-auto">
                             <thead>
