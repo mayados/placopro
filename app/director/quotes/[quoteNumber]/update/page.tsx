@@ -222,30 +222,34 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
       };
 
     const handleSubmit = async () => {
-        try{
+        console.log("Le quote final à update : "+JSON.stringify(updatedQuoteFormValues.servicesToUnlink))
+        console.log("Le quote intial : "+JSON.stringify(quote?.services))
 
-            const response = await fetch(`/api/director/quotes/create`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(quote),
-            });
-            if (response.ok) {
-                const data = await response.json();
-                console.log("data renvoyés : "+data)
-                const newQuote = data;
-                console.log("voici le devis créé : "+newQuote.number)
-                try {
-                    // Redirect to the newl created Quote
-                    router.push(`/director/quotes/${newQuote.number}`);
-                } catch (err) {
-                    console.error("Redirection failed :", err);
-                }
-            }
-        }catch (error) {
-            console.error("Erreur lors de la création du devis :", error);
-        }
+
+        // try{
+
+        //     const response = await fetch(`/api/director/quotes/create`, {
+        //       method: "POST",
+        //       headers: {
+        //         "Content-Type": "application/json",
+        //       },
+        //       body: JSON.stringify(quote),
+        //     });
+        //     if (response.ok) {
+        //         const data = await response.json();
+        //         console.log("data renvoyés : "+data)
+        //         const newQuote = data;
+        //         console.log("voici le devis créé : "+newQuote.number)
+        //         try {
+        //             // Redirect to the newl created Quote
+        //             router.push(`/director/quotes/${newQuote.number}`);
+        //         } catch (err) {
+        //             console.error("Redirection failed :", err);
+        //         }
+        //     }
+        // }catch (error) {
+        //     console.error("Erreur lors de la création du devis :", error);
+        // }
 
     };
 
@@ -270,35 +274,41 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
         });
       };
 
-    const addServiceToUnlink = (service: ServiceFormQuoteType) => {
+    const addServiceToUnlink = (quoteService: QuoteServiceType, index: number) => {
+        console.log("Le service à unlink : "+JSON.stringify(quoteService))
+        // Like we have to delete QuoteService (=link to quote and service), we pass the quoteService Id
         setUpdatedQuoteFormValues({
             ...updatedQuoteFormValues,
             servicesToUnlink: [
             ...updatedQuoteFormValues.servicesToUnlink,
             {
                 // Pass the datas from the service
-                id : service.id,
-                label: service.label,
-                unitPriceHT: service.unitPriceHT,
-                type: service.type,
-                unit: service.unit,
-                vatRate: service.vatRate,
+                id : quoteService.id,
+                label: quoteService.label,
+                unitPriceHT: quoteService.service.unitPriceHT,
+                type: quoteService.type,
+                unit: quoteService.unit,
+                vatRate: quoteService.vatRate,
                 selectedFromSuggestions: false,
-                quantity: service.quantity,
-                detailsService: service.detailsService,
+                quantity: quoteService.quantity,
+                detailsService: quoteService.detailsService,
             },
             ],
         });
 
-        console.log("Quote suite au retrait du service : "+updatedQuoteFormValues.servicesToUnlink[0])
+        removeService(index)
+
     };
 
     const removeService = (index: number) => {
-        const newServices = updatedQuoteFormValues.services.filter((_, i) => i !== index);
-        setUpdatedQuoteFormValues({
-            ...updatedQuoteFormValues,
-            services: newServices,
-        });
+        if(quote){
+            const newServices = quote.services.filter((_, i) => i !== index);
+            setQuote({
+                ...quote,
+                services: newServices,
+            });            
+        }
+
     };
 
     // We search services suggestions with the letters the user submit (= the query)
@@ -543,7 +553,7 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                                 <option key={vatRate.id} value={vatRate.rate}>{vatRate.rate}</option>
                             ))}
                     </Select> 
-                    <Button label="Enlever le service" icon={CircleX} type="button" action={() => addServiceToUnlink(service)} specifyBackground="text-red-500" />
+                    <Button label="Enlever le service" icon={CircleX} type="button" action={() => addServiceToUnlink(service, index)} specifyBackground="text-red-500" />
                 </div>
                 ))}
             {/* end of services retrieved from database */}
