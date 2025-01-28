@@ -7,6 +7,8 @@ import Button from "@/components/Button";
 import { CirclePlus, CircleX } from "lucide-react";
 import { capitalizeFirstLetter } from "@/lib/utils";
 import { formatDateForInput } from '@/lib/utils'
+import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
+
 // import toast, { Toaster } from 'react-hot-toast';
 
 const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }>}) => {
@@ -42,6 +44,10 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
     const serviceTypeChoices = ["plâtrerie","Peinture"];
     const [vatRateChoices, setVatRateChoices] = useState<VatRateChoiceType[]>([])
     const [unitChoices, setUnitChoices] = useState<UnitChoiceType[]>([])
+    // Allows to know if a quote is registered as a draft or ready (to be send)
+    // const [status, setStatus] = useState<"Draft" | "Ready">("Draft");
+    const [isOpen, setIsOpen] = useState(false);
+
 
     // cont which allows redirection
     const router = useRouter();
@@ -68,6 +74,10 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
             const data: QuoteTypeSingle =  await response.json()
               console.log("données reçues après le fetch du quote récupéré en database : "+data)
             //   const retrievedQuote = data.quote;
+            setUpdatedQuoteFormValues({
+                ...updatedQuoteFormValues,
+                number: data.quote.number,
+            });
               setQuote(data.quote);
 
         }
@@ -119,9 +129,7 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
 
         if(name === "client" || name === "workSite"){
             handleDisplaySuggestions(e)
-        }
-          
-    };
+        }    };
 
     //   Retrieve datas from the radio buttons. Because they are in a RadioGroup, we can't retrieve the value just thanks to an event, we have to get the name (of the group) + the value selected
     const handleRadioChange = (name: string, value: string) => {
@@ -221,38 +229,57 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
         setServiceSuggestions([]);
       };
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (statusReady?: string) => {
         console.log("Le quote final à update : "+JSON.stringify(updatedQuoteFormValues.servicesToUnlink))
         console.log("Le quote intial : "+JSON.stringify(quote?.services))
+        console.log("update du champ de termes de paiement lors d'un changement : "+updatedQuoteFormValues.paymentTerms)
+        console.log("lors du submit, le status est : "+statusReady)
 
-
-        // try{
-
-        //     const response = await fetch(`/api/director/quotes/create`, {
-        //       method: "POST",
-        //       headers: {
-        //         "Content-Type": "application/json",
-        //       },
-        //       body: JSON.stringify(quote),
-        //     });
-        //     if (response.ok) {
-        //         const data = await response.json();
-        //         console.log("data renvoyés : "+data)
-        //         const newQuote = data;
-        //         console.log("voici le devis créé : "+newQuote.number)
-        //         try {
-        //             // Redirect to the newl created Quote
-        //             router.push(`/director/quotes/${newQuote.number}`);
-        //         } catch (err) {
-        //             console.error("Redirection failed :", err);
-        //         }
-        //     }
-        // }catch (error) {
-        //     console.error("Erreur lors de la création du devis :", error);
-        // }
+        const status = statusReady ? "Ready": "Draft"
+        const quoteId = quote?.id
+        try{
+            
+            const updatedQuoteWithStatus = {
+                ...updatedQuoteFormValues,
+                status,
+                quoteId,
+            };
+            console.log("ce qui est envoyé à la route de modification : "+JSON.stringify(updatedQuoteWithStatus))
+            console.log("valeur envoyée de saveMode : "+status)
+            const response = await fetch(`/api/director/quotes/update/${quote?.number}/draft`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(updatedQuoteWithStatus),
+            });
+            if (response.ok) {
+                const data = await response.json();
+                console.log("data renvoyés : "+data)
+                const updatedQuote = data.updatedQuote;
+                console.log("voici le devis updaté : "+updatedQuote.number)
+                try {
+                    // Redirect to the updated Quote
+                    router.push(`/director/quotes/${updatedQuote.number}`);
+                } catch (err) {
+                    console.error("Redirection failed :", err);
+                }
+            }
+        }catch (error) {
+            console.error("Erreur lors de la création du devis :", error);
+        }
 
     };
 
+    const openChoiceDialog = () => {
+        setIsOpen(true);  
+        console.log("la fentre de dialog devrait être ouverte")
+        
+    };
+
+    const closeChoiceDialog = () => {
+        setIsOpen(false);  
+    };
 
     const addService = () => {
         setUpdatedQuoteFormValues({
@@ -366,9 +393,10 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
 
     if (!quote) return <div>Loading...</div>;
 
+    console.log("conditions de paiement du devis : "+quote.paymentTerms)
 
     return (
-        <>
+        <div className="relative">
             {/* <div><Toaster/></div> */}
             <h1 className="text-3xl text-white ml-3 text-center">Modification de devis</h1>
             {/* <div><Toaster /></div> */}
@@ -442,7 +470,7 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                     <label htmlFor="description">Description</label>
                     <Field className="w-full">
                         <Textarea name="description" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={quote?.description}
+                            value={updatedQuoteFormValues.description ? updatedQuoteFormValues.description : quote.description}
                             onChange={handleInputChange}
                         >
                         </Textarea>
@@ -604,11 +632,11 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                 <Select
                     name="type"
                     onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
-                    value={service.type || ""}
+                    value={service.selectedFromSuggestions ? service.type : ""}
                     className="w-full rounded-md bg-gray-700 text-white pl-3"
                     disabled={!!service.selectedFromSuggestions}
                 >
-                <option value="">Type de service</option>
+                <option value="">{service.selectedFromSuggestions ? service.type : "Type de service"}</option>
                     {serviceTypeChoices.map((type) => (
                         <option key={type} value={type}>{type}</option>
                     ))}
@@ -692,11 +720,11 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                 </div>
                 {/* payment Terms */}
                 <div>
-                    <label htmlFor="paymentTerms">Conditions de paiement</label>
+                    <label htmlFor="paymentTerms">Termes de paiement</label>
                     <Field className="w-full">
-                        <Textarea name="paymentTerms" 
-                            defaultValue={"Le paiement doit être effectué dans les 30 jours suivant la réception de la facture."} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={quote.paymentTerms}
+                        <Textarea name="paymentTerms" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                            // value={quote.paymentTerms}
+                            value={updatedQuoteFormValues.paymentTerms ? updatedQuoteFormValues.paymentTerms : quote.paymentTerms}
                             onChange={handleInputChange}
                         >
                         </Textarea>
@@ -786,10 +814,51 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                     </Field>
                 </div>
 
-                <button type="submit">Créer</button>
+                <button 
+                    className="bg-red-400"
+                    type="submit"
+                    onClick={() => {
+                        handleSubmit(); 
+                    }}
+                    >Modifier et enregistrer à l'état de brouillon
+                </button>
+                <button
+                    // type="button" avoid the form to be automatically submitted
+                    type="button"
+                    onClick={openChoiceDialog}
+                    className="bg-green-600 text-white px-4 py-2 rounded-md"
+                >
+                    Finaliser le devis
+                </button>
             </form>
-        </>
+            {/* Dialog to save as final version of quote*/}
+            {/* className=" top-[50%] left-[25%]" */}
+            {/* {isOpen ?? ( */}
+                <Dialog open={isOpen} onClose={closeChoiceDialog}  className="fixed top-[50%] left-[25%]" >
+                    <DialogPanel className="bg-gray-300 p-5 rounded-md shadow-lg text-black">
+                    <DialogTitle>Etes-vous sûr de vouloir enregistrer le devis en version finale ?</DialogTitle>
+                    <Description>Cette action est irréversible</Description>
+                    <p>Le devis ne pourra plus être modifié ultérieurement. </p>
+                        <div className="flex justify-between mt-4">
+                        <button
+                        // choice to to finalize quote
+                            onClick={() => {
+                                handleSubmit("Ready"); 
+                                closeChoiceDialog(); 
+                            }}
+                            className="bg-green-600 text-white px-4 py-2 rounded-md"
+                        >
+                            Finaliser le devis
+                        </button>
+                            <button onClick={closeChoiceDialog} className="bg-gray-300 text-black px-4 py-2 rounded-md">Annuler</button>
+                        </div>
+                    </DialogPanel>
+                </Dialog>
+            {/* )}  */}
+
+        </div>
     );
+
 };
 
 
