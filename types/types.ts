@@ -168,7 +168,7 @@ interface BillType{
 
 interface QuoteType{
     id:string;
-    number: number;
+    number: string;
     issueDate: Date;
     validityEndDate: Date;
     natureOfWork: string;
@@ -231,6 +231,7 @@ interface QuoteFormValueType{
 
 // The values can be null, it means the form field hasn't been updated, so the quote either
 interface UpdatedQuoteFormValueType{
+    number?: string
     validityEndDate: string | null,
     natureOfWork: string | null,
     description: string | null,
