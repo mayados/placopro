@@ -256,6 +256,8 @@ interface UpdatedQuoteFormValueType{
     services: ServiceFormQuoteType[] | [],
     servicesToUnlink: ServiceFormQuoteType[] | [],
     serviceType: string | null,
+    workSite?: string | null,
+    client?: string | null,
 }
 
 interface QuoteForListType{
