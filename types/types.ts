@@ -248,7 +248,7 @@ interface UpdatedQuoteFormValueType{
     paymentTerms: string | null,
     paymentDelay: number | null,
     latePaymentPenalities: number | null,
-    recoveryFees: number | null,
+    recoveryFee: number | null,
     withdrawalPeriod: number | null,
     quoteCost: number | null,
     clientId: string | null,
