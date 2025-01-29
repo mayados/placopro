@@ -22,7 +22,7 @@ export async function PUT(req: NextRequest) {
         paymentTerms,
         paymentDelay,
         latePaymentPenalities,
-        recoveryFees,
+        recoveryFee,
         withdrawalPeriod,
         quoteCost,
         clientId,
@@ -91,25 +91,35 @@ export async function PUT(req: NextRequest) {
   
       if (data.travelCosts !== 0){
         // In case of travelCosts changing, 
-        updateData.travelCosts = data.travelCosts
-        travelCosts = data.travelCosts
-        // First we need to count the quote's cost by erasing former travelCosts value. Then we can count with new travelCosts value
-        // we make for TotalHTQuote : totalHTQuote - intialQuote.travelCosts 
-        let priceHTWithoutFormerTravelCosts = totalHTQuote - travelCosts;
-        // Count of vatAmount : initialQuote.priceTTC - initialQuote.priceHT 
-        let vatAmountWithoutFormerTravelCosts = initialQuote.priceTTC - initialQuote.priceHT; 
-        // totalTTCQuote :  totalTTCQuote - (totalHTQuote + vatAmount)
-        let priceTTCWithoutFormerTravelCosts = totalTTCQuote - (totalHTQuote + vatAmountQuote);
+        updateData.travelCosts = parseFloat(data.travelCosts)
 
-        // Now we can count for the new travelsCosts, because we have quote's cost without any travelCosts
-        totalHTQuote = priceHTWithoutFormerTravelCosts + travelCosts
-        vatAmountQuote = priceHTWithoutFormerTravelCosts * 0.2
-        totalTTCQuote = totalHTQuote + vatAmountQuote
+        travelCosts = parseFloat(data.travelCosts)
+        console.log("Nouveaux travelCosts : "+travelCosts)
 
-        // We can add the values which will update the quote
-        updateData.priceHT = totalHTQuote
-        updateData.vatAmount = vatAmountQuote
-        updateData.priceTTC = totalTTCQuote
+        // Delete former travelCosts from totalHTQuote to only have good values (without new travelCosts for now)
+        let priceHTWithoutFormerTravelCosts = totalHTQuote - initialQuote.travelCosts;
+
+        // Add new travelCosts to have correct totalHTQuote
+        totalHTQuote = priceHTWithoutFormerTravelCosts + travelCosts;
+
+        // Count former vatAmount from travelCosts
+        let formerVatAmountTravelCosts = initialQuote.travelCosts * 0.2;
+        // Delete former value of vatAmount for travel costs 
+        vatAmountQuote -= formerVatAmountTravelCosts; 
+
+        // 5️⃣ Calculer la nouvelle TVA des travelCosts et l'ajouter
+        // Count new vatAmount for travelCosts only
+        let newVatAmountTravelCosts = travelCosts * 0.2;
+        // Add new vatAmount of travelCosts to vatAmount of the Quote
+        vatAmountQuote += newVatAmountTravelCosts; 
+
+        // Update total TTC of the Quote
+        totalTTCQuote = totalHTQuote + vatAmountQuote;
+
+        // Avoid negative values
+        updateData.priceHT = Math.max(0, totalHTQuote);
+        updateData.vatAmount = Math.max(0, vatAmountQuote);
+        updateData.priceTTC = Math.max(0, totalTTCQuote);
     }
   
       if (data.paymentTerms !== null){
@@ -124,8 +134,8 @@ export async function PUT(req: NextRequest) {
       updateData.latePaymentPenalties = data.latePaymentPenalties
     }
   
-    if(data.recoveryFees !== 0){
-      updateData.recoveryFees = data.recoveryFees
+    if(data.recoveryFee !== 0){
+      updateData.recoveryFee = data.recoveryFee
     }
   
   
