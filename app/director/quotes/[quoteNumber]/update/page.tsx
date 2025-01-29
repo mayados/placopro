@@ -21,19 +21,19 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
         workStartDate: null,
         estimatedWorkEndDate: null,
         estimatedWorkDuration: null,
-        vatAmount: 0,
-        priceTTC: 0,
-        priceHT: 0,
+        vatAmount: null,
+        priceTTC: null,
+        priceHT: null,
         isQuoteFree: null,
         hasRightOfWithdrawal: null,
-        travelCosts: 0,
-        hourlyLaborRate: 0,
+        travelCosts: null,
+        hourlyLaborRate: null,
         paymentTerms: null,
-        paymentDelay: 0,
-        latePaymentPenalities: 0,
-        recoveryFees: 0,
-        withdrawalPeriod: 0,
-        quoteCost: 0,
+        paymentDelay: null,
+        latePaymentPenalities: null,
+        recoveryFee: null,
+        withdrawalPeriod: null,
+        quoteCost: null,
         clientId: null as string | null,
         workSiteId: null as string | null,
         services: [],
@@ -805,11 +805,11 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                 </div>
                 {/* recovery fees */}
                 <div>
-                    <label htmlFor="recoveryFees">Frais forfaitaires de recouvrement (HT), en €</label>
+                    <label htmlFor="recoveryFee">Frais forfaitaires de recouvrement (HT), en €</label>
                     <Field className="w-full">
-                        <Input type="number" name="recoveryFees" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={updatedQuoteFormValues.recoveryFees !== null
-                                ? updatedQuoteFormValues.recoveryFees
+                        <Input type="number" name="recoveryFee" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                            value={updatedQuoteFormValues.recoveryFee !== null
+                                ? updatedQuoteFormValues.recoveryFee
                                 : quote.recoveryFee ?? ""} 
                             onChange={handleInputChange}
                         >
