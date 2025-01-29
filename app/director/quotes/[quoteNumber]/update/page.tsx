@@ -39,6 +39,8 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
         services: [],
         servicesToUnlink: [],
         serviceType: null,
+        workSite: null,
+        client: null,
     })
     // Define options for select for services
     const serviceTypeChoices = ["plâtrerie","Peinture"];
@@ -113,7 +115,8 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
         console.log("select :"+name+" valeur : "+value)
         setUpdatedQuoteFormValues({
             ...updatedQuoteFormValues,
-            [name]: value,
+            // Allow to delete completely the value contained in the field 
+            [name]:value === "" ? "" : value
         });
 
         if(name === "client"){
@@ -411,7 +414,11 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                 <div>
                     <label htmlFor="client">Client</label>
                     <Field className="w-full">
-                        <Input type="text" name="client" value={quote?.client?.name} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="text" name="client" 
+                            value={updatedQuoteFormValues.client !== null
+                                ? updatedQuoteFormValues.client
+                                : quote?.client.name || ""}
+                            className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -435,7 +442,11 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                 <div>
                     <label htmlFor="workSite">Chantier</label>
                     <Field className="w-full">
-                        <Input type="text" name="workSite" value={quote?.workSite.title} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="text" name="workSite" 
+                            value={updatedQuoteFormValues.workSite !== null
+                                ? updatedQuoteFormValues.workSite
+                                : quote?.workSite.title || ""}
+                            className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -459,7 +470,9 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                     <label htmlFor="natureOfWork">Nature des travaux</label>
                     <Field className="w-full">
                         <Input type="text" name="natureOfWork" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={quote?.natureOfWork}
+                            value={updatedQuoteFormValues.natureOfWork !== null
+                                ? updatedQuoteFormValues.natureOfWork
+                                : quote.natureOfWork ?? ""} 
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -470,7 +483,9 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                     <label htmlFor="description">Description</label>
                     <Field className="w-full">
                         <Textarea name="description" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={updatedQuoteFormValues.description ? updatedQuoteFormValues.description : quote.description}
+                            value={updatedQuoteFormValues.description !== null
+                                ? updatedQuoteFormValues.description
+                                : quote.description ?? ""} 
                             onChange={handleInputChange}
                         >
                         </Textarea>
@@ -503,8 +518,11 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                     <label htmlFor="estimatedWorkDuration">Durée estimée des travaux (en jours)</label>
                     <Field className="w-full">
                         <Input type="number" name="estimatedWorkDuration" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                           value={quote.estimatedWorkDuration}
-                           onChange={handleInputChange}
+                            // Display quote.estimatedWorkDuration only if it exists 
+                            value={updatedQuoteFormValues.estimatedWorkDuration !== null
+                                ? updatedQuoteFormValues.estimatedWorkDuration
+                                : quote.estimatedWorkDuration ?? ""} 
+                            onChange={handleInputChange}
                         >
                         </Input>
                     </Field>
@@ -632,7 +650,7 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                 <Select
                     name="type"
                     onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
-                    value={service.selectedFromSuggestions ? service.type : ""}
+                    value={service.selectedFromSuggestions ? "" : service.type }
                     className="w-full rounded-md bg-gray-700 text-white pl-3"
                     disabled={!!service.selectedFromSuggestions}
                 >
@@ -712,7 +730,9 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                     <label htmlFor="quoteCost">Coût de création du devis (HT), en €</label>
                     <Field className="w-full">
                         <Input type="number" name="quoteCost" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={quote.quoteCost}
+                            value={updatedQuoteFormValues.quoteCost !== null
+                                ? updatedQuoteFormValues.quoteCost
+                                : quote.quoteCost ?? ""} 
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -723,8 +743,9 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                     <label htmlFor="paymentTerms">Termes de paiement</label>
                     <Field className="w-full">
                         <Textarea name="paymentTerms" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            // value={quote.paymentTerms}
-                            value={updatedQuoteFormValues.paymentTerms ? updatedQuoteFormValues.paymentTerms : quote.paymentTerms}
+                            value={updatedQuoteFormValues.paymentTerms !== null
+                                ? updatedQuoteFormValues.paymentTerms
+                                : quote.paymentTerms ?? ""} 
                             onChange={handleInputChange}
                         >
                         </Textarea>
@@ -735,7 +756,9 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                     <label htmlFor="paymentDelay">Délais de paiement (en jours)</label>
                     <Field className="w-full">
                         <Input type="number" name="paymentDelay" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={quote.paymentDelay}
+                            value={updatedQuoteFormValues.paymentDelay !== null
+                                ? updatedQuoteFormValues.paymentDelay
+                                : quote.paymentDelay ?? ""} 
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -746,7 +769,9 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                     <label htmlFor="latePaymentPenalities">Frais de retard de paiement (HT), en €</label>
                     <Field className="w-full">
                         <Input type="number" name="latePaymentPenalities" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={Number(quote.latePaymentPenalties)}
+                            value={updatedQuoteFormValues.latePaymentPenalities !== null
+                                ? updatedQuoteFormValues.latePaymentPenalities
+                                : Number(quote.latePaymentPenalties ?? "")} 
                            onChange={handleInputChange}
                         >
                         </Input>
@@ -757,7 +782,9 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                     <label htmlFor="travelCosts">Frais de déplacement (HT), en €</label>
                     <Field className="w-full">
                         <Input type="number" name="travelCosts" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={quote.travelCosts}
+                            value={updatedQuoteFormValues.travelCosts !== null
+                                ? updatedQuoteFormValues.travelCosts
+                                : quote.travelCosts ?? ""} 
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -768,7 +795,9 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                     <label htmlFor="hourlyLaborRate">Taux horaire main d'oeuvre (HT), en €</label>
                     <Field className="w-full">
                         <Input type="number" name="hourlyLaborRate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={quote.hourlyLaborRate}
+                            value={updatedQuoteFormValues.hourlyLaborRate !== null
+                                ? updatedQuoteFormValues.hourlyLaborRate
+                                : quote.hourlyLaborRate ?? ""} 
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -779,7 +808,9 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                     <label htmlFor="recoveryFees">Frais forfaitaires de recouvrement (HT), en €</label>
                     <Field className="w-full">
                         <Input type="number" name="recoveryFees" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={quote.recoveryFee}
+                            value={updatedQuoteFormValues.recoveryFees !== null
+                                ? updatedQuoteFormValues.recoveryFees
+                                : quote.recoveryFee ?? ""} 
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -807,7 +838,9 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                     <label htmlFor="withdrawalPeriod">Délai de rétractation (en jours)</label>
                     <Field className="w-full">
                         <Input type="number" name="withdrawalPeriod" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={quote.withdrawalPeriod}
+                            value={updatedQuoteFormValues.withdrawalPeriod !== null
+                                ? updatedQuoteFormValues.withdrawalPeriod
+                                : quote.withdrawalPeriod ?? ""} 
                             onChange={handleInputChange}
                         >
                         </Input>
