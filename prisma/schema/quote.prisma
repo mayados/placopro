@@ -31,7 +31,7 @@ model Quote{
     // prix HT
     priceHT Float
     // Frais de déplacement
-    travelCosts Float? 
+    travelCosts Float 
     // Type de frais de déplacement (forfait unique / journalier...)
     travelCostsType String?
     // Taux horaire de la main-d'œuvre
