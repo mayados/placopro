@@ -85,11 +85,11 @@ export async function PUT(req: NextRequest) {
         updateData.estimatedWorkEndDate = data.estimatedWorkEndDate
       }
   
-      if (data.estimatedWorkDuration !== 0){
-          updateData.estimatedWorkDuration = data.estimatedWorkDuration
+      if (data.estimatedWorkDuration !== null){
+          updateData.estimatedWorkDuration = parseInt(data.estimatedWorkDuration)
       }
   
-      if (data.travelCosts !== 0){
+      if (data.travelCosts !== null){
         // In case of travelCosts changing, 
         updateData.travelCosts = parseFloat(data.travelCosts)
 
@@ -127,20 +127,20 @@ export async function PUT(req: NextRequest) {
     }
   
       if (data.paymentDelay !== null){
-        updateData.paymentDelay = data.paymentDelay
+        updateData.paymentDelay = parseInt(data.paymentDelay)
     }
   
     if(data.latePaymentPenalties !== 0){
-      updateData.latePaymentPenalties = data.latePaymentPenalties
+      updateData.latePaymentPenalties = parseFloat(data.latePaymentPenalties)
     }
   
     if(data.recoveryFee !== 0){
-      updateData.recoveryFee = data.recoveryFee
+      updateData.recoveryFee = parseFloat(data.recoveryFee)
     }
   
   
     if(data.withdrawalPeriod !== 0){
-      updateData.withdrawalPeriod = data.withdrawalPeriod
+      updateData.withdrawalPeriod = parseFloat(data.withdrawalPeriod)
     }
   
     if(data.clientId !== null){
