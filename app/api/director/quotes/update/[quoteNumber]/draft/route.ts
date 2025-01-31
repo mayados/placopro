@@ -36,356 +36,216 @@ export async function PUT(req: NextRequest) {
   console.log(data)
   console.log("valeur de saveMode  : "+data.status)
 
-  try {
+// Utils functions for simple properties
+const isNotNull = (value: string | number | boolean): boolean => value !== null && value !== undefined;
 
-    const initialQuote = await db.quote.findUnique({
-      where: { 
-        id: quoteId
+const updateIfNotNull = (updateData: Record<string,  string | number | boolean>, field: string, value: string | number | boolean) => {
+  if (isNotNull(value)) {
+    updateData[field] = typeof value === 'string' && !isNaN(Number(value)) 
+      ? parseFloat(value) 
+      : value;
+  }
+};
+
+// Calculations : vatAmount and priceTTC
+const calculateTotals = (baseAmount: number, vatRate: number = 0.2) => {
+  const vatAmount = baseAmount * vatRate;
+  const totalTTC = baseAmount + vatAmount;
+  return { vatAmount, totalTTC };
+};
+
+// Creation of a quoteService for an existing service (=serviceId retrieved form data not null)
+const handleExistingService = async (
+  service: ServiceAndQuoteServiceType,
+  quoteId: string,
+  updateData: Record<string, string | number | boolean>
+) => {
+  const totalHTService = service.unitPriceHT * service.quantity;
+  const vatRateService = parseFloat(service.vatRate);
+  const { vatAmount: vatAmountService, totalTTC: totalTTCService } = calculateTotals(totalHTService, vatRateService / 100);
+
+  await db.quoteService.create({
+    data: {
+      quantity: parseFloat(service.quantity.toString()),
+      totalHT: totalHTService,
+      totalTTC: totalTTCService,
+      vatAmount: vatAmountService,
+      unit: service.unit,
+      vatRate: service.vatRate,
+      detailsService: service.detailsService,
+      quoteId: quoteId,
+      serviceId: service.id,
+    }
+  });
+
+  return { totalHTService, vatAmountService, totalTTCService };
+};
+
+// Creation of a new Service for (=serviceId retrieved form data is null)
+const createNewService = async (
+  service: ServiceAndQuoteServiceType,
+  quoteId: string,
+  updateData: Record<string, string | number | boolean>
+) => {
+  const serviceUnit = await db.unit.findUnique({
+    where: { label: service.unit },
+  });
+
+  const serviceVatRate = await db.vatRate.findUnique({
+    where: { rate: parseFloat(service.vatRate) },
+  });
+
+  const createdService = await db.service.create({
+    data: {
+      label: service.label,
+      unitPriceHT: parseFloat(service.unitPriceHT.toString()),
+      type: service.type,
+    },
+  });
+
+  if (serviceUnit) {
+    await db.serviceUnit.create({
+      data: {
+        unitId: serviceUnit.id,
+        serviceId: createdService.id,
       },
     });
+  }
 
-    if(initialQuote){
-      let travelCosts = initialQuote.travelCosts;
-      let totalHTQuote = initialQuote.priceHT
-      let totalTTCQuote = initialQuote.priceTTC
-      let vatAmountQuote = initialQuote.vatAmount
+  if (serviceVatRate) {
+    await db.serviceVatRate.create({
+      data: {
+        vatRateId: serviceVatRate.id,
+        serviceId: createdService.id,
+      },
+    });
+  }
 
-    
-      // construct dynamically update's object
-      const updateData: Record<string, any> = {};
-  
-      // If the status changes
-      if(data.status === "Ready"){
-        updateData.status = data.status;
-      }
-      console.log("updated data : "+JSON.stringify(updateData.status))
-  
-  
-      if(data.number !== null){
-        updateData.number = data.number
-      }
-  
-      if(data.validityEndDate !== null){
-        updateData.validityEndDate = data.validityEndDate
-      }
-  
-      if(data.natureOfWork !== null){
-        updateData.natureOfWork = data.natureOfWork
-      }
-  
-      if(data.description !== null){
-        updateData.description = data.description
-      }
+  return handleExistingService({
+    ...service,
+    id: createdService.id
+  }, quoteId, updateData);
+};
+
+  // Update(s)
+    try {
       
-      if(data.workStartDate !== null){
-        updateData.workStartDate = data.workStartDate
+      // Retrieve initialQuote from database (quote to modify)
+      const initialQuote = await db.quote.findUnique({
+        where: { id: data.quoteId },
+      });
+
+      if (!initialQuote) {
+        return new NextResponse("Quote not found", { status: 404 });
       }
-  
-      if(data.estimatedWorkEndDate !== null){
-        updateData.estimatedWorkEndDate = data.estimatedWorkEndDate
-      }
-  
-      if (data.estimatedWorkDuration !== null){
-          updateData.estimatedWorkDuration = parseInt(data.estimatedWorkDuration)
-      }
-  
-      if (data.travelCosts !== null){
-        // In case of travelCosts changing, 
-        updateData.travelCosts = parseFloat(data.travelCosts)
 
-        travelCosts = parseFloat(data.travelCosts)
-        console.log("Nouveaux travelCosts : "+travelCosts)
+      // Financial initial values allowing to calcul the different prices
+      let totalHTQuote = initialQuote.priceHT;
+      let vatAmountQuote = initialQuote.vatAmount;
+      let totalTTCQuote = initialQuote.priceTTC;
 
-        // Delete former travelCosts from totalHTQuote to only have good values (without new travelCosts for now)
-        let priceHTWithoutFormerTravelCosts = totalHTQuote - initialQuote.travelCosts;
+      const updateData: Record<string, string | number | boolean> = {};
 
-        // Add new travelCosts to have correct totalHTQuote
-        totalHTQuote = priceHTWithoutFormerTravelCosts + travelCosts;
+      // Update simple fields 
+      const fieldsToUpdate = [
+        'status', 'number', 'validityEndDate', 'natureOfWork', 'description',
+        'workStartDate', 'estimatedWorkEndDate', 'estimatedWorkDuration',
+        'paymentTerms', 'paymentDelay', 'latePaymentPenalties', 'recoveryFee',
+        'withdrawalPeriod', 'clientId', 'workSiteId', 'serviceType'
+      ];
 
-        // Count former vatAmount from travelCosts
-        let formerVatAmountTravelCosts = initialQuote.travelCosts * 0.2;
-        // Delete former value of vatAmount for travel costs 
-        vatAmountQuote -= formerVatAmountTravelCosts; 
+      // For each simple field, if it's not null, we update it (by placing it into the const updateData)
+      fieldsToUpdate.forEach(field => updateIfNotNull(updateData, field, data[field]));
 
-        // 5️⃣ Calculer la nouvelle TVA des travelCosts et l'ajouter
-        // Count new vatAmount for travelCosts only
-        let newVatAmountTravelCosts = travelCosts * 0.2;
-        // Add new vatAmount of travelCosts to vatAmount of the Quote
-        vatAmountQuote += newVatAmountTravelCosts; 
+      // Manage travelCosts (if data retrieved are ot null)
+      if (isNotNull(data.travelCosts)) {
+        const newTravelCosts = parseFloat(data.travelCosts.toString());
+        updateData.travelCosts = newTravelCosts;
 
-        // Update total TTC of the Quote
+        const priceHTWithoutFormerTravelCosts = totalHTQuote - initialQuote.travelCosts;
+        totalHTQuote = priceHTWithoutFormerTravelCosts + newTravelCosts;
+        
+        const { vatAmount: newVatAmount, totalTTC } = calculateTotals(newTravelCosts);
+        vatAmountQuote = vatAmountQuote - (initialQuote.travelCosts * 0.2) + newVatAmount;
         totalTTCQuote = totalHTQuote + vatAmountQuote;
 
-        // Avoid negative values
-        updateData.priceHT = Math.max(0, totalHTQuote);
-        updateData.vatAmount = Math.max(0, vatAmountQuote);
-        updateData.priceTTC = Math.max(0, totalTTCQuote);
-    }
-  
-      if (data.paymentTerms !== null){
-        updateData.paymentTerms = data.paymentTerms
-    }
-  
-      if (data.paymentDelay !== null){
-        updateData.paymentDelay = parseInt(data.paymentDelay)
-    }
-  
-    if(data.latePaymentPenalties !== 0){
-      updateData.latePaymentPenalties = parseFloat(data.latePaymentPenalties)
-    }
-  
-    if(data.recoveryFee !== 0){
-      updateData.recoveryFee = parseFloat(data.recoveryFee)
-    }
-  
-  
-    if(data.withdrawalPeriod !== 0){
-      updateData.withdrawalPeriod = parseFloat(data.withdrawalPeriod)
-    }
-  
-    if(data.clientId !== null){
-      updateData.clientId = data.clientId
-    }
-  
-    if(data.workSiteId !== null){
-      updateData.workSiteId = data.workSiteId
-    }
-  
-    if(data.serviceType !== null){
-      updateData.serviceType = data.serviceType
-    }
-  
-      // If there are services added
-      if(data.services.length !== 0){
-  
-        // Verify, for each service, if it already exists or not.
-        // If it doesn't exist, create the service and a quoteService
-        //  If it does exist, create a quoteService
-        console.log("il y a des services à ajouter")
-        for (const service of data.services) {
-          // Retrieve unit from database for each service : already existing because we have a list of it when creating the quote
-          const serviceUnit = await db.unit.findUnique({
-            where: { label: service.unit },
-          });
-                
-          // Retrieve vatRate from database for each service : already existing because we have a list of it when creating the quote
-          const serviceVatRate = await db.vatRate.findUnique({
-            where: { rate: parseFloat(service.vatRate) },
-          });
-                
-          // If the service has an id = already exists. We retrieve it from the database
-          if (service.id) {
-            console.log("je rentre dans le cas où l'id du service existe");
-      
-            const existingService = await db.service.findUnique({
-              where: { id: service.id },
-              include: {
-                units: true,
-                vatRates: true,
-              },
-            });
-  
-            let totalHTService = service.unitPriceHT * service.quantity;
-            let vatRateService = parseFloat(service.vatRate);
-            let vatAmountService = totalHTService * (vatRateService / 100);
-            let totalTTCService = totalHTService + vatAmountService; 
-  
-            // Create a quoteService (we need Id of the service to create it)
-            const newQuoteService = await db.quoteService.create({
-              data: {
-                quantity: parseFloat(service.quantity),
-                totalHT: totalHTService,
-                totalTTC: totalTTCService,
-                vatAmount: vatAmountService,
-                unit: service.unit,
-                vatRate: service.vatRate,
-                detailsService: service.detailsService,
-                quoteId: quoteId,
-                serviceId:  service.id,
-              }
-              
-            })
-  
-            // Each service count for the total of the Quote
-            totalHTQuote += totalHTService;
-            vatAmountQuote += vatAmountService;
-            totalTTCQuote += totalTTCService
-            // Add variables to updateData to update the quote costs
-            updateData.priceHT = totalHTQuote;
-            updateData.priceTTC = totalTTCQuote;
-            updateData.vatAmount = vatAmountQuote;
-  
-            if (!existingService) {
-              console.error("Le service avec cet ID n'existe pas :", service.id);
-              return null;
-            }
-      
-            // if the unit isn't contained in the list of the units of the service, we create it (entity ServiceUnint)
-            if (serviceUnit && !existingService.units.some(unit => unit.id === serviceUnit.id)) {
-              await db.serviceUnit.create({
-                data: {
-                  unitId: serviceUnit.id,
-                  serviceId: existingService.id,
-                },
-              });
-            }
-      
-            // if the vatRate isn't contained in the list of the vatRates of the service, we create it (entity ServiceVatRate)
-            if (serviceVatRate && !existingService.vatRates.some(vatRate => vatRate.id === serviceVatRate.id)) {
-              await db.serviceVatRate.create({
-                data: {
-                  vatRateId: serviceVatRate.id,
-                  serviceId: existingService.id,
-                },
-              });
-            }
-      
-            console.log("VatRate added to the list of vatRates of the service (new serviceVatRate created):", service.id);
-            // return existingService;
-      
-          } else {
-            //  If the service doesn't have an ID, we create it but also create : ServiceUnit, ServiceVatRate,
-            console.log("je rentre dans le cas où l'id du service est null ou undefined");
-      
-            try {
-              await db.$transaction(async (tx) => {
-                const createdService = await tx.service.create({
-                  data: {
-                    label: service.label,
-                    unitPriceHT: parseFloat(service.unitPriceHT),
-                    type: service.type,
-                  },
-                });
-      
-                const serviceId = createdService.id;
-      
-                if (serviceUnit) {
-                  await tx.serviceUnit.create({
-                    data: {
-                      unitId: serviceUnit.id,
-                      serviceId,
-                    },
-                  });
-                }
-      
-                if (serviceVatRate) {
-                  await tx.serviceVatRate.create({
-                    data: {
-                      vatRateId: serviceVatRate.id,
-                      serviceId,
-                    },
-                  });
-                }
-  
-                let totalHTService = createdService.unitPriceHT * service.quantity;
-                let vatRateService = parseFloat(service.vatRate);
-                let vatAmountService = totalHTService * (vatRateService / 100);
-                let totalTTCService = totalHTService + vatAmountService; 
-  
-                // Create a quoteService (we need Id of the service to create it)
-                const newQuoteService = await db.quoteService.create({
-                  data: {
-                    quantity: parseFloat(service.quantity),
-                    totalHT: totalHTService,
-                    totalTTC: totalTTCService,
-                    vatAmount: vatAmountService,
-                    unit: service.unit,
-                    vatRate: service.vatRate,
-                    detailsService: service.detailsService,
-                    quoteId: quoteId,
-                    serviceId:  serviceId,
-                  }
-                })
-
-                // Each service count for the total of the Quote
-                totalHTQuote += totalHTService;
-                vatAmountQuote += vatAmountService;
-                totalTTCQuote += totalTTCService
-                // Add variables to updateData to update the quote costs
-                updateData.priceHT = totalHTQuote;
-                updateData.priceTTC = totalTTCQuote;
-                updateData.vatAmount = vatAmountQuote;
-      
-                console.log("Toutes les entités ont été créées avec succès pour le service :", service.label);
-              });
-            } catch (error) {
-              console.error("Erreur lors de la création du service :", error);
-            }
-  
-        }
-        } 
+        Object.assign(updateData, {
+          priceHT: Math.max(0, totalHTQuote),
+          vatAmount: Math.max(0, vatAmountQuote),
+          priceTTC: Math.max(0, totalTTCQuote)
+        });
       }
-  
-      // If there are services to unlink
-      if(data.servicesToUnlink.length !== 0){
-            // If there are services to unlink, we have to delete the quoteService in question (not the entire service because it can be use an other time)
+
+      // Manage services to add
+      if (data.services.length > 0) {
+        for (const service of data.services) {
+          const totals = service.id
+            ? await handleExistingService(service, data.quoteId, updateData)
+            : await createNewService(service, data.quoteId, updateData);
+
+          totalHTQuote += totals.totalHTService;
+          vatAmountQuote += totals.vatAmountService;
+          totalTTCQuote += totals.totalTTCService;
+
+          Object.assign(updateData, {
+            priceHT: totalHTQuote,
+            priceTTC: totalTTCQuote,
+            vatAmount: vatAmountQuote
+          });
+        }
+      }
+
+      // Manage services to delete
+      if (data.servicesToUnlink.length > 0) {
         for (const quoteService of data.servicesToUnlink) {
-          let totalHTService = quoteService.unitPriceHT * quoteService.quantity;
-          let vatRateService = parseFloat(quoteService.vatRate);
-          let vatAmountService = totalHTService * (vatRateService / 100);
-          let totalTTCService = totalHTService + vatAmountService; 
-          console.log("Le total HT du devis pour les services à supprimer : "+totalHTQuote+" €. Et le total HT du service : "+totalHTService+" €")
+          const totalHTService = quoteService.unitPriceHT * quoteService.quantity;
+          const vatRateService = parseFloat(quoteService.vatRate);
+          const { vatAmount: vatAmountService, totalTTC: totalTTCService } = 
+            calculateTotals(totalHTService, vatRateService / 100);
+
           totalHTQuote -= totalHTService;
-          console.log("Le montant de TVA du devis pour les services à supprimer : "+vatAmountQuote+" €. Et le montant de TVA du service : "+vatRateService+" €")
           vatAmountQuote -= vatAmountService;
-          console.log("Le total TTC du devis pour les services à supprimer : "+totalTTCQuote+" €. Et le total TTC du service : "+totalTTCService+" €")
-          totalTTCQuote -= totalTTCService
-          // Add variables to updateData to update the quote costs
-          updateData.priceHT = totalHTQuote;
-          updateData.priceTTC = totalTTCQuote;
-          updateData.vatAmount = vatAmountQuote;
+          totalTTCQuote -= totalTTCService;
 
           await db.quoteService.delete({
-            where: {
-              id: quoteService.id
-            },
+            where: { id: quoteService.id },
           });
-          console.log(`Service supprimé avec succès`);
         }
+
+        Object.assign(updateData, {
+          priceHT: totalHTQuote,
+          priceTTC: totalTTCQuote,
+          vatAmount: vatAmountQuote
+        });
       }
-      // we have to verify, for each value which can be updated. If the value received is null there is no data tu update for the field. 
-  
-      // if a service was deleted or added, we have to re-count priceHT ans price TTC for the Quote
-      // it is the same for travelCosts
-  
-  
-      // Verify if there are datas to update
-      // In all the cases, we have 2 values : the number and the saveMode. 
-      // But if the status's value has changed, we have to update
-      if (Object.keys(updateData).length === 2) {
+
+      // If updateData is less or equal 2 values, there is nothing to update. (Indeed, in every case we'll alaways have quote's number and saveMode's value)
+      if (Object.keys(updateData).length <= 2) {
         return new NextResponse("No data to update", { status: 400 });
       }
-  
-      
-  
-      // If there are services added (in services), we have to verify if the service already exists, create a quoteService linked
-  
-      // Update in database
-      const updateOfQuote = await db.quote.update({
+
+      const updatedQuote = await db.quote.update({
         where: { number: data.number },
         data: updateData,
       });
-  
-      const updatedQuote = await db.quote.findUnique({
+
+      const fullUpdatedQuote = await db.quote.findUnique({
         where: { number: data.number },
         include: {
-          client: true, 
+          client: true,
           workSite: true,
           services: {
             include: {
-              service: true, 
+              service: true,
             },
           },
         },
       });
-  
-      return NextResponse.json({ updatedQuote: updatedQuote }, { status: 200 });
+
+      return NextResponse.json({ updatedQuote: fullUpdatedQuote }, { status: 200 });
+
+    } catch (error) {
+      console.error("Erreur détaillée :", error instanceof Error ? error.message : error);
+      return new NextResponse("Internal error", { status: 500 });
     }
-
-
-  } catch (error) {
-    console.error("Erreur détaillée :", error instanceof Error ? error.message : error);
-    // console.error("Error with quote's update:", error);
-    return new NextResponse("Internal error", { status: 500 });
-  }
 }
