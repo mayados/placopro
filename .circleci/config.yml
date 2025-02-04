@@ -28,5 +28,4 @@ workflows:
               - develop
               - test
               # So CircleCI can take into account pushes
-              # - develop  
 
