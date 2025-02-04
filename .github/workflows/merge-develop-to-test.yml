@@ -13,15 +13,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_PAT_MERGE }}
-
+          fetch-depth: 0
+          
       - name: Configurer Git
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
 
       - name: Merge develop into test
-        with:
-          fetch-depth: 0
         run: |
           git fetch origin
           git checkout test
