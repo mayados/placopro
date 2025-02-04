@@ -1,0 +1,27 @@
+name: Create Pull Request
+
+on:
+  workflow_run:
+    workflows: ["test-workflow"]
+    types:
+      - completed
+
+jobs:
+  create-pr:
+    # Verify circleCI tests have passed with success
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create Pull Request to main
+        uses: peter-evans/create-pull-request@v5
+        with:
+          # Using secure PAT (Github Personnal Access Token)
+          token: ${{ secrets.GH_PAT }}  
+          base: main
+          branch: test
+          title: "🔄 Merge `test` -> `main` (Tests success)"
+          body: "Tests CircleCI validated. PR ready for review."
+          draft: false
