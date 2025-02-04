@@ -20,6 +20,8 @@ jobs:
           git config --global user.email "actions@github.com"
 
       - name: Merge develop into test
+        with:
+          fetch-depth: 0
         run: |
           git fetch origin
           git checkout test
