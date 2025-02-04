@@ -24,8 +24,7 @@ workflows:
       - test:
           filters:
             branches:
-              only: 
-              - test
+              only: test
               # So CircleCI can take into account pushes
-              - develop  
+              # - develop  
 
