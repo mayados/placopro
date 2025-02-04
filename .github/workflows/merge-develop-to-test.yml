@@ -25,4 +25,4 @@ jobs:
           git fetch origin
           git checkout test
           git merge origin/develop --no-ff -m "Auto-merge develop -> test"
-          git push origin test  # Push vers la branche `test`
+          git push origin test  # Push to branch `test`
