@@ -1,17 +1,27 @@
 version: 2.1
-orbs:
-  node: circleci/node@5.1.1
+
 jobs:
-  build-and-test:
+  test:
     docker:
-      - image: "cimg/base:stable"
+      - image: cimg/node:20.9
     steps:
+      - add_ssh_keys:
+          fingerprints:
+            # Fingerprint of the deploy key
+            - "SHA256:ZZ5iIB1IIyOGTIoGlhGNhiP+QRd96//qxPmUwwucWNQ" 
       - checkout
-      - node/install
-      - node/install-packages
       - run:
-          command: npm run test
+          name: Install dependencies
+          command: npm install
+      - run:
+          name: Execute tests
+          command: npm test
+
 workflows:
-  build-and-test:
+  version: 2
+  test-workflow:
     jobs:
-      - build-and-test
+      - test:
+          filters:
+            branches:
+              only: test
