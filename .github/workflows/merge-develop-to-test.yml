@@ -25,3 +25,4 @@ jobs:
           git checkout test
           git merge origin/develop --no-ff --allow-unrelated-histories -m "Auto-merge develop -> test"
           git push origin test
+
