@@ -12,20 +12,24 @@ export function formatDateToInput(date: Date): string {
 
 // Allows to create a slug thanks to a string
 export function slugify(str: string): string {
-    // trim leading/trailing white space
-    str = str.replace(/^\s+|\s+$/g, ''); 
-    // convert string to lowercase
-    str = str.toLowerCase(); 
-    // remove accents
-    str = str.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); 
-    // remove any non-alphanumeric characters    
-    str = str.replace(/[^a-z0-9 -]/g, '') 
-            // replace spaces with hyphens    
-             .replace(/\s+/g, '-') 
-            // remove consecutive hyphens             
-             .replace(/-+/g, '-'); 
-    return str;
-  }
+  // Trim leading/trailing white spaces
+  str = str.trim();
+  // Convert string to lowercase
+  str = str.toLowerCase();
+  // Remove accents
+  str = str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  // Remove any non-alphanumeric characters except spaces and hyphens
+  str = str.replace(/[^a-z0-9 -]/g, '');
+  // Replace spaces with hyphens
+  str = str.replace(/\s+/g, '-');
+  // Remove consecutive hyphens
+  str = str.replace(/-+/g, '-');
+  // delete '-' in the beginning or the end of the string
+  str = str.replace(/^-+|-+$/g, '');
+  
+  return str;
+}
+
 
   const usedClientNumbers: Set<string> = new Set();
 
