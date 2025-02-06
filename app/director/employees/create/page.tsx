@@ -35,7 +35,7 @@ const createEmployee = () => {
             console.log("prénom de l employé : "+employee.firstName)
             console.log("mail de l employé : "+employee.email)
             console.log("role de l employé : "+employee.role)
-            const response = await fetch(`/api/director/users/create`, {
+            const response = await fetch(`/api/users`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",

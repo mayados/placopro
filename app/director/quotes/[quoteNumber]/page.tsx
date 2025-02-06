@@ -4,6 +4,8 @@ import { useEffect, useState, use } from "react";
 import { formatDate } from '@/lib/utils'
 import DownloadPDF from "@/components/DownloadPDF";
 import { Field, Input, Label, Legend, Radio, RadioGroup, Select } from "@headlessui/react";
+import { fetchQuote } from "@/services/api/quoteService";
+import { fetchCompany } from "@/services/api/companyService";
 
 // import toast, { Toaster } from 'react-hot-toast';
 // import { useRouter } from "next/navigation";
@@ -25,38 +27,41 @@ const Quote = ({ params }: { params: Promise<{ quoteNumber: string }>}) => {
 
     
         useEffect(() => {
-          async function fetchQuote() {
-            // Params is now asynchronous. It's a Promise
-            // So we need to await before access its properties
-            const resolvedParams = await params;
-            const quoteNumber = resolvedParams.quoteNumber;
-      
-            const response = await fetch(`/api/quote/${quoteNumber}`);
-            const data: QuoteTypeSingle = await response.json();
-            setQuote(data.quote); 
-            setFormValues({
-                ...formValues,
-                id: data.quote.id,
-            });
-            if(data.quote.travelCosts){
-                // travelCosts cost => vatAmount and priceTTC
-                setVatAmountTravelCost((data.quote.travelCosts) * (20/100))  
-                setPriceTTCTravelCost((data.quote.travelCosts) + vatAmountTravelCost )            
+            async function loadQuote() {
+                // Params is now asynchronous. It's a Promise
+                // So we need to await before access its properties
+                const resolvedParams = await params;
+                const quoteNumber = resolvedParams.quoteNumber;
+
+                try{
+                    const data = await fetchQuote(quoteNumber)
+                    setQuote(data.quote); 
+                    setFormValues({
+                        ...formValues,
+                        id: data.quote.id,
+                    });
+                    if(data.quote.travelCosts){
+                        // travelCosts cost => vatAmount and priceTTC
+                        setVatAmountTravelCost((data.quote.travelCosts) * (20/100))  
+                        setPriceTTCTravelCost((data.quote.travelCosts) + vatAmountTravelCost )            
+                    }
+                }catch (error) {
+                    console.error("Impossible to load the quote :", error);
+                }
             }
-        }
 
-        async function fetchCompany(){
-            const companySlug = "placopro";
+            async function loadCompany() {
+                try{
+                    const companySlug = "placopro";
+                    const data = await fetchCompany(companySlug)
+                    setCompany(data.company); 
+                }catch (error) {
+                    console.error("Impossible to load the quote :", error);
+                }
+            }
       
-            const response = await fetch(`/api/companies/${companySlug}`);
-            const data: CompanyTypeSingle = await response.json();
-            setCompany(data.company); 
-        }
-
-        
-      
-          fetchQuote();
-          fetchCompany()
+          loadQuote();
+          loadCompany()
         }, [params]);
 
         const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {

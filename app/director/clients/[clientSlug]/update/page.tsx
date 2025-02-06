@@ -19,7 +19,7 @@ const modifyClient = ({ params }: { params: Promise<{ clientSlug: string }>}) =>
           const resolvedParams = await params;
           const clientSlug = resolvedParams.clientSlug;
     
-          const response = await fetch(`/api/director/clients/${clientSlug}`);
+          const response = await fetch(`/api/clients/${clientSlug}`);
           const data: ClientTypeSingle = await response.json();
           setClient(data.client);
         }

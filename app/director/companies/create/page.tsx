@@ -46,7 +46,7 @@ const createCompany = () => {
         try{
             console.log("Nom de l entreprise : "+company.name)
 
-            const response = await fetch(`/api/director/companies/create`, {
+            const response = await fetch(`/api//companies`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",

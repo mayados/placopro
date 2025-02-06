@@ -21,7 +21,7 @@ const modifyWorkSite = ({ params }: { params: Promise<{ workSiteSlug: string }>}
         async function fetchWorkSite() {
             const resolvedParams = await params;
             const workSiteSlug = resolvedParams.workSiteSlug;
-            const response = await fetch(`/api/director/workSites/${workSiteSlug}`);
+            const response = await fetch(`/api/workSites/${workSiteSlug}`);
             const data: WorkSiteTypeSingle = await response.json();
             setWorkSite(data.workSite);
             if (data.workSite.client) {
@@ -57,7 +57,7 @@ const modifyWorkSite = ({ params }: { params: Promise<{ workSiteSlug: string }>}
     
         // Fetch suggestions for non-empty input
         try {
-            const response = await fetch(`/api/director/clients/find/${value}`);
+            const response = await fetch(`/api/clients?search=${value}`);
             if (response.ok) {
                 const data = await response.json();
                 setSuggestions(data.suggestions);
@@ -89,7 +89,7 @@ const modifyWorkSite = ({ params }: { params: Promise<{ workSiteSlug: string }>}
             console.log("ClientId : "+workSite.client.id)
             console.log("slug : "+workSite.slug)
 
-            const response = await fetch(`/api/director/workSites/update/${workSite.slug}`, {
+            const response = await fetch(`/api/workSites/${workSite.slug}`, {
               method: "PUT",
               headers: {
                 "Content-Type": "application/json",

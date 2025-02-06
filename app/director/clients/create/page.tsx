@@ -47,7 +47,7 @@ const createClient = () => {
             console.log("Numéro de prospect : "+client.prospectNumber)
 
 
-            const response = await fetch(`/api/director/clients/create`, {
+            const response = await fetch(`/api/clients`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -56,7 +56,7 @@ const createClient = () => {
             });
             if (response.ok) {
                 try {
-                    // We redirect to the employees' list
+                    // We redirect to the clients' list
                     router.push(`/director/clients`);
                 } catch (err) {
                     console.error("Redirection failed :", err);
@@ -64,7 +64,7 @@ const createClient = () => {
             }
         }catch (error) {
             console.error("Erreur lors de la création du client :", error);
-            // toast.error("There was a problem with updating your recipe. Please try again!");
+            // toast.error("There was a problem with updating the client. Please try again!");
         }
 
     };
@@ -86,7 +86,6 @@ const createClient = () => {
                     <label htmlFor="name">Nom</label>
                     <Field className="w-full">
                         <Input type="text" name="name" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            // value={employee.lastName}
                             onChange={handleInputChange}
                             >
                         </Input>

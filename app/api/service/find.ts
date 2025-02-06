@@ -1,10 +1,13 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: NextRequest, {params}: {params: {value: string}})
+export async function GET(req: NextRequest)
 {
-    const resolvedParams = await params;
-    const serviceInputValue = resolvedParams.value;
+
+    const serviceInputValue = req.nextUrl.searchParams.get('search');
+    if (!serviceInputValue) {
+        return new NextResponse("Missing 'search' query parameter to find services suggestions", { status: 400 });
+    }
 
     try{
 

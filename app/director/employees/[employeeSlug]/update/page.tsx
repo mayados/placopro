@@ -21,7 +21,7 @@ const ModifyEmployee = ({ params }: { params: Promise<{ employeeSlug: string }>}
             const resolvedParams = await params;
             const employeeSlug = resolvedParams.employeeSlug;
       
-            const response = await fetch(`/api/director/users/${employeeSlug}`);
+            const response = await fetch(`/api/users/${employeeSlug}`);
             const data = await response.json();
             setEmployee(data.employee);
           }
@@ -54,7 +54,7 @@ const ModifyEmployee = ({ params }: { params: Promise<{ employeeSlug: string }>}
     const handleSubmit = async () => {
         try{
 
-            const response = await fetch(`/api/director/users/update/${employee.slug}`, {
+            const response = await fetch(`/api/users/${employee.slug}`, {
               method: "PUT",
               headers: {
                 "Content-Type": "application/json",

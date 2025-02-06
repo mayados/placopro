@@ -27,7 +27,7 @@ const WorkSites = () =>{
 
     useEffect(() => {
         const fetchWorkSites = async () => {
-          const response = await fetch(`/api/director/workSites`)
+          const response = await fetch(`/api/workSites`)
           const data: WorkSiteWithTotalsAndStatus =  await response.json()
           console.log("données reçues après le fetch : "+data)
           console.log("exemple d'un worksite reçu : "+data['workSites'][0])
@@ -49,7 +49,7 @@ const WorkSites = () =>{
 
     const deleteWorkSite = async (workSiteId: string) => {
         try {
-            const response = await fetch(`/api/director/workSites/delete/${workSiteId}`, {
+            const response = await fetch(`/api/workSites/${workSiteId}`, {
                 method: "DELETE",
             });
             if (response.ok) {

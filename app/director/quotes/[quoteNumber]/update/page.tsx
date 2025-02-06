@@ -8,6 +8,10 @@ import { CirclePlus, CircleX } from "lucide-react";
 import { capitalizeFirstLetter } from "@/lib/utils";
 import { formatDateForInput } from '@/lib/utils'
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
+import { fetchQuote } from "@/services/api/quoteService";
+import { fetchVatRates } from "@/services/api/vatRateService";
+import { fetchUnits } from "@/services/api/unitService";
+import { fetchSuggestions } from "@/services/api/suggestionService";
 
 // import toast, { Toaster } from 'react-hot-toast';
 
@@ -68,36 +72,50 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
     const hasRightOfWithdrawalChoices = ["Oui","Non"];
 
 
-        useEffect(() => {
-        const fetchQuote = async () => {
-            const resolvedParams = await params;
-            const quoteNumber = resolvedParams.quoteNumber;
-            const response = await fetch(`/api/quote/${quoteNumber}`)
-            const data: QuoteTypeSingle =  await response.json()
-              console.log("données reçues après le fetch du quote récupéré en database : "+data)
-            //   const retrievedQuote = data.quote;
-            setUpdatedQuoteFormValues({
-                ...updatedQuoteFormValues,
-                number: data.quote.number,
-            });
-              setQuote(data.quote);
+    useEffect(() => {
 
+        async function loadQuote() {
+                // Params is now asynchronous. It's a Promise
+                // So we need to await before access its properties
+                const resolvedParams = await params;
+                const quoteNumber = resolvedParams.quoteNumber;
+
+                try{
+                    const data = await fetchQuote(quoteNumber)
+                    setUpdatedQuoteFormValues({
+                        ...updatedQuoteFormValues,
+                        number: data.quote.number,
+                    });
+                      setQuote(data.quote);
+
+                }catch (error) {
+                    console.error("Impossible to load the quote :", error);
+                }
         }
-        const fetchVatRates = async () => {
-              const response = await fetch(`/api/vatRates`)
-              const data: VatRateListType =  await response.json()
-                console.log("données reçues après le fetch : "+data)
-                setVatRateChoices(data.vatRates)
-        }
-        const fetchUnits = async () => {
-            const response = await fetch(`/api/units`)
-            const data: UnitListType =  await response.json()
-              console.log("données reçues après le fetch : "+data)
-              setUnitChoices(data.units)
-      }
-        fetchQuote();
-        fetchVatRates();
-        fetchUnits();
+
+        const loadVatRates = async () => {
+                try{
+                    const data = await fetchVatRates();
+                    setVatRateChoices(data.vatRates)
+
+                }catch (error) {
+                    console.error("Impossible to load VAT rates :", error);
+                    }
+        };
+
+        const loadUnits = async () => {
+                try{
+                    const data = await fetchUnits();
+                    setUnitChoices(data.units)
+            
+                }catch (error) {
+                    console.error("Impossible to load units :", error);
+                }     
+        };
+
+        loadQuote();
+        loadVatRates();
+        loadUnits();
     },[]);
 
         console.log("name du client retrieved de la database "+quote?.client.name)
@@ -146,7 +164,9 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
       ) => {
         const { name, value } = e.target;
-      
+
+        if (name !== "client" && name !== "workSite") return; // Sécurité
+
         if (value.trim().length < 2) {
           if (name === "client") {
             setClientSuggestions(null);
@@ -160,21 +180,13 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
           return;
         }
       
-        try {
-          const endpoint =
-            name === "client"
-            
-              ? `/api/clients?search=${value}`
-              : `/api/workSites?search=${value}`;
-          const response = await fetch(endpoint);
-          const data = await response.json();
+       try {
+          const data = await fetchSuggestions(name, value);
       
-          if (response.ok) {
-            if (name === "client") {
-              setClientSuggestions(data.suggestions);
-            } else if (name === "workSite") {
-              setWorkSiteSuggestions(data.suggestions);
-            }
+          if (name === "client") {
+            setClientSuggestions(data.suggestions as ClientSuggestionType[]);
+          } else if (name === "workSite") {
+            setWorkSiteSuggestions(data.suggestions as WorkSiteSuggestionType[]);
           }
         } catch (error) {
           console.error(`Erreur lors de la récupération des suggestions pour ${name} :`, error);
@@ -232,6 +244,28 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
         // Delete suggestions after the clic
         setServiceSuggestions([]);
       };
+
+    const updateDraftQuote = async (statusReady?: string) => {
+        console.log("Le quote final à update : "+JSON.stringify(updatedQuoteFormValues.servicesToUnlink))
+        console.log("Le quote intial : "+JSON.stringify(quote?.services))
+        console.log("update du champ de termes de paiement lors d'un changement : "+updatedQuoteFormValues.paymentTerms)
+        console.log("lors du submit, le status est : "+statusReady)
+
+        const status = statusReady ? "Ready": "Draft"
+        const quoteId = quote?.id
+
+        try{
+            const updatedQuoteWithStatus = {
+                ...updatedQuoteFormValues,
+                status,
+                quoteId,
+            };
+
+        }catch(error){
+
+        }
+    }
+
 
     const handleSubmit = async (statusReady?: string) => {
         console.log("Le quote final à update : "+JSON.stringify(updatedQuoteFormValues.servicesToUnlink))
