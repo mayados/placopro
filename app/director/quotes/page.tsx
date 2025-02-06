@@ -36,7 +36,7 @@ const Quotes = () =>{
 
     useEffect(() => {
         const fetchQuotes = async () => {
-          const response = await fetch(`/api/director/quotes`)
+          const response = await fetch(`/api/quote`)
           const data: QuotesWithTotalsAndStatus =  await response.json()
           console.log("données reçues après le fetch : "+data)
           console.log("exemple d'un devis reçu : "+data['quotes'][0])
@@ -62,7 +62,7 @@ const Quotes = () =>{
 
     const deleteQuote = async (quoteId: string) => {
         try {
-            const response = await fetch(`/api/director/quotes/delete/${quoteId}`, {
+            const response = await fetch(`/api/quote/${quoteId}`, {
                 method: "DELETE",
             });
             if (response.ok) {

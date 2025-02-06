@@ -15,7 +15,7 @@ const Clients = () =>{
 
     useEffect(() => {
         const fetchClients = async () => {
-          const response = await fetch(`/api/director/clients`)
+          const response = await fetch(`/api/clients`)
           const data: ClientTypeList =  await response.json()
           console.log("données reçues après le fetch : "+data)
           setClients(data.clients)
@@ -27,7 +27,7 @@ const Clients = () =>{
 
     const deleteClient = async (clientId: string) => {
         try {
-            const response = await fetch(`/api/director/clients/delete/${clientId}`, {
+            const response = await fetch(`/api/director/clients/${clientId}`, {
                 method: "DELETE",
             });
             if (response.ok) {
