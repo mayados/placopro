@@ -72,7 +72,7 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
         const fetchQuote = async () => {
             const resolvedParams = await params;
             const quoteNumber = resolvedParams.quoteNumber;
-            const response = await fetch(`/api/director/quotes/${quoteNumber}`)
+            const response = await fetch(`/api/quote/${quoteNumber}`)
             const data: QuoteTypeSingle =  await response.json()
               console.log("données reçues après le fetch du quote récupéré en database : "+data)
             //   const retrievedQuote = data.quote;
@@ -84,13 +84,13 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
 
         }
         const fetchVatRates = async () => {
-              const response = await fetch(`/api/director/vatRates`)
+              const response = await fetch(`/api/vatRates`)
               const data: VatRateListType =  await response.json()
                 console.log("données reçues après le fetch : "+data)
                 setVatRateChoices(data.vatRates)
         }
         const fetchUnits = async () => {
-            const response = await fetch(`/api/director/units`)
+            const response = await fetch(`/api/units`)
             const data: UnitListType =  await response.json()
               console.log("données reçues après le fetch : "+data)
               setUnitChoices(data.units)
@@ -163,8 +163,9 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
         try {
           const endpoint =
             name === "client"
-              ? `/api/director/clients/find/${value}`
-              : `/api/director/workSites/find/${value}`;
+            
+              ? `/api/clients?search=${value}`
+              : `/api/workSites?search=${value}`;
           const response = await fetch(endpoint);
           const data = await response.json();
       
@@ -249,10 +250,11 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
             };
             console.log("ce qui est envoyé à la route de modification : "+JSON.stringify(updatedQuoteWithStatus))
             console.log("valeur envoyée de saveMode : "+status)
-            const response = await fetch(`/api/director/quotes/update/${quote?.number}/draft`, {
+            const response = await fetch(`/api/quote/${quote?.number}`, {
               method: "PUT",
               headers: {
                 "Content-Type": "application/json",
+                "X-Update-Type": "draft",
               },
               body: JSON.stringify(updatedQuoteWithStatus),
             });
@@ -261,9 +263,15 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                 console.log("data renvoyés : "+data)
                 const updatedQuote = data.updatedQuote;
                 console.log("voici le devis updaté : "+updatedQuote.number)
+                console.log("status du devis updaté "+updatedQuote.status)
                 try {
-                    // Redirect to the updated Quote
-                    router.push(`/director/quotes/${updatedQuote.number}`);
+                    if(updatedQuote.status === "Draft"){
+                        // Redirect to the updated Quote
+                        router.push(`/director/quotes/${updatedQuote.number}/update`);                        
+                    }else{
+                        router.push(`/director/quotes/${updatedQuote.number}`);                        
+                    }
+
                 } catch (err) {
                     console.error("Redirection failed :", err);
                 }
@@ -346,7 +354,7 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
     const fetchServiceSuggestions = async (value: string) => {
         if (value.length < 2) return; 
         try {
-            const response = await fetch(`/api/director/services/find/${value}`);
+            const response = await fetch(`/api/service/${value}`);
             const data = await response.json();
             console.log("API response data for services :", data); 
             console.log("Longueur des datas du tableau de datas de services : "+data.suggestions.length)

@@ -31,7 +31,7 @@ const Quote = ({ params }: { params: Promise<{ quoteNumber: string }>}) => {
             const resolvedParams = await params;
             const quoteNumber = resolvedParams.quoteNumber;
       
-            const response = await fetch(`/api/director/quotes/${quoteNumber}`);
+            const response = await fetch(`/api/quote/${quoteNumber}`);
             const data: QuoteTypeSingle = await response.json();
             setQuote(data.quote); 
             setFormValues({
@@ -48,7 +48,7 @@ const Quote = ({ params }: { params: Promise<{ quoteNumber: string }>}) => {
         async function fetchCompany(){
             const companySlug = "placopro";
       
-            const response = await fetch(`/api/director/companies/${companySlug}`);
+            const response = await fetch(`/api/companies/${companySlug}`);
             const data: CompanyTypeSingle = await response.json();
             setCompany(data.company); 
         }
@@ -81,10 +81,10 @@ const Quote = ({ params }: { params: Promise<{ quoteNumber: string }>}) => {
         const handleSubmit = async () => {
         try{
     
-            const response = await fetch(`/api/director/quotes/update/${quote?.number}`, {
+            const response = await fetch(`/api/quote/${quote?.number}`, {
                 method: "PUT",
                 headers: {
-                "Content-Type": "application/json",
+                    "Content-Type": "application/json",
                 },
                 body: JSON.stringify(formValues),
             });
