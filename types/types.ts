@@ -449,10 +449,19 @@ interface UnitListType{
     units: UnitChoiceType[]
 }
 
+interface ServiceSuggestionsListType{
+    suggestions: ServiceType[]
+}
+
 interface FormValuesUpdateNotDraftQuote{
     id: string | null,
     status: string | null,
     isSignedByClient: string | null,
     signatureDate: Date | null,
 }
+
+interface SuggestionsResponse<T> {
+    suggestions: T[];
+  }
+  
 
