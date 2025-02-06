@@ -20,7 +20,7 @@ const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) 
           const resolvedParams = await params;
           const companySlug = resolvedParams.companySlug;
     
-          const response = await fetch(`/api/director/companies/${companySlug}`);
+          const response = await fetch(`/api/companies/${companySlug}`);
           const data: CompanyTypeSingle = await response.json();
           setCompany(data.company);
         }
@@ -55,7 +55,7 @@ const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) 
         try{
             console.log("Nom de l entreprise : "+company.name)
 
-            const response = await fetch(`/api/director/companies/update/${company.slug}`, {
+            const response = await fetch(`/api//companies/${company.slug}`, {
               method: "PUT",
               headers: {
                 "Content-Type": "application/json",

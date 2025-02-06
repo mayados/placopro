@@ -6,6 +6,11 @@ import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import { CirclePlus, CircleX } from "lucide-react";
 import { capitalizeFirstLetter } from "@/lib/utils";
+import { fetchVatRates } from "@/services/api/vatRateService";
+import { fetchUnits } from "@/services/api/unitService";
+import { fetchServiceSuggestions } from "@/services/api/serviceService";
+import { createQuote } from "@/services/api/quoteService";
+import { fetchSuggestions } from "@/services/api/suggestionService";
 // import toast, { Toaster } from 'react-hot-toast';
 
 const CreateQuote = () => {
@@ -58,22 +63,30 @@ const CreateQuote = () => {
 
 
 
-        useEffect(() => {
-            const fetchVatRates = async () => {
-              const response = await fetch(`/api/director/vatRates`)
-              const data: VatRateListType =  await response.json()
-                console.log("données reçues après le fetch : "+data)
+    useEffect(() => {
+
+        const loadVatRates = async () => {
+            try{
+                const data = await fetchVatRates();
                 setVatRateChoices(data.vatRates)
-        }
-        const fetchUnits = async () => {
-            const response = await fetch(`/api/director/units`)
-            const data: UnitListType =  await response.json()
-              console.log("données reçues après le fetch : "+data)
-              setUnitChoices(data.units)
-      }
-        
-        fetchVatRates()
-        fetchUnits();
+
+            }catch (error) {
+                console.error("Impossible to load VAT rates :", error);
+                }
+        };
+
+        const loadUnits = async () => {
+            try{
+                const data = await fetchUnits();
+                setUnitChoices(data.units)
+
+            }catch (error) {
+                console.error("Impossible to load units :", error);
+            }     
+        };
+
+        loadVatRates()
+        loadUnits();
     },[]);
     
 
@@ -111,10 +124,12 @@ const CreateQuote = () => {
         }));
       };
 
-    const handleDisplaySuggestions = async (
+      const handleDisplaySuggestions = async (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
       ) => {
         const { name, value } = e.target;
+      
+        if (name !== "client" && name !== "workSite") return;
       
         if (value.trim().length < 2) {
           if (name === "client") {
@@ -130,19 +145,12 @@ const CreateQuote = () => {
         }
       
         try {
-          const endpoint =
-            name === "client"
-              ? `/api/director/clients/find/${value}`
-              : `/api/director/workSites/find/${value}`;
-          const response = await fetch(endpoint);
-          const data = await response.json();
+          const data = await fetchSuggestions(name, value);
       
-          if (response.ok) {
-            if (name === "client") {
-              setClientSuggestions(data.suggestions);
-            } else if (name === "workSite") {
-              setWorkSiteSuggestions(data.suggestions);
-            }
+          if (name === "client") {
+            setClientSuggestions(data.suggestions as ClientSuggestionType[]);
+          } else if (name === "workSite") {
+            setWorkSiteSuggestions(data.suggestions as WorkSiteSuggestionType[]);
           }
         } catch (error) {
           console.error(`Erreur lors de la récupération des suggestions pour ${name} :`, error);
@@ -200,34 +208,22 @@ const CreateQuote = () => {
         setServiceSuggestions([]);
       };
 
-    const handleSubmit = async () => {
-        try{
-
-            const response = await fetch(`/api/director/quotes/create`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(quote),
-            });
-            if (response.ok) {
-                const data = await response.json();
-                console.log("data renvoyés : "+data)
-                const newQuote = data;
-                console.log("voici le devis créé : "+newQuote.number)
-                try {
-                    // Redirect to the newl created Quote
-                    router.push(`/director/quotes/${newQuote.number}`);
-                } catch (err) {
-                    console.error("Redirection failed :", err);
-                }
+      const handleQuoteCreation = async () => {
+        try {
+            const newQuote = await createQuote(quote);
+    
+            console.log("Devis créé avec succès :", newQuote);
+    
+            try {
+                // Redirection vers le devis créé
+                router.push(`/director/quotes/${newQuote.number}`);
+            } catch (err) {
+                console.error("Échec de la redirection :", err);
             }
-        }catch (error) {
+        } catch (error) {
             console.error("Erreur lors de la création du devis :", error);
         }
-
     };
-
 
     const addService = () => {
         setQuote({
@@ -257,15 +253,12 @@ const CreateQuote = () => {
         });
     };
 
-    // We search ingredient suggestions with the letters the user submit (= the query)
+    // We search services suggestions with the letters the user submit (= the query)
     // We don't search if the query is less than 2 characters
-    const fetchServiceSuggestions = async (value: string) => {
+    const loadServiceSuggestions = async (value: string) => {
         if (value.length < 2) return; 
-        try {
-            const response = await fetch(`/api/director/services/find/${value}`);
-            const data = await response.json();
-            console.log("API response data for services :", data); 
-            console.log("Longueur des datas du tableau de datas : "+data.suggestions.length)
+        try{
+            const data = await fetchServiceSuggestions(value);
             if (Array.isArray(data.suggestions) && data.suggestions.length > 0) {
                 setServiceSuggestions(data.suggestions); 
                 console.log("Les datas reçues sont supérieures à 0")
@@ -274,10 +267,10 @@ const CreateQuote = () => {
                 console.log("Pas de datas reçues")
 
             }
-        } catch (error) {
+        }catch(error){
             console.error("Erreur lors de la récupération des suggestions de services :", error);
         }
-    };
+    }
 
 
 // Fonction pour gérer les changements sur les champs autres que le label
@@ -306,7 +299,7 @@ const CreateQuote = () => {
         });
 
         if(fieldName === "label"){
-            fetchServiceSuggestions(value);
+            loadServiceSuggestions(value);
         }
     };
 
@@ -319,7 +312,7 @@ const CreateQuote = () => {
                 autoComplete="off"
                 onSubmit={(e) => {
                     e.preventDefault();
-                    handleSubmit();
+                    handleQuoteCreation();
                 }}
             >
                 {/* Client of the quote */}

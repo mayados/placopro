@@ -7,6 +7,7 @@ import { formatDate } from '@/lib/utils'
 // import toast, { Toaster } from 'react-hot-toast';
 import { Dialog, DialogTitle, DialogPanel, Description, Tab, TabGroup ,TabList, TabPanel, TabPanels } from '@headlessui/react';
 import Link from "next/link";
+import { deleteQuote, fetchQuotes } from "@/services/api/quoteService";
 
 const Quotes = () =>{
 
@@ -35,46 +36,42 @@ const Quotes = () =>{
     const [isOpen, setIsOpen] = useState(false);
 
     useEffect(() => {
-        const fetchQuotes = async () => {
-          const response = await fetch(`/api/quote`)
-          const data: QuotesWithTotalsAndStatus =  await response.json()
-          console.log("données reçues après le fetch : "+data)
-          console.log("exemple d'un devis reçu : "+data['quotes'][0])
-          // We hydrate each const with the datas
-          setQuotes(data['quotes'])
-          setDraftQuotes(data['draftQuotes'])
-          setReadyToBeSentQuotes(data['readyToBeSentQuotes'])
-          setSentQuotes(data['sentQuotes'])
-          setAcceptedQuotes(data['acceptedQuotes'])
-          setRefusedQuotes(data['refusedQuotes'])
-    
-          setTotalQuotes(data['totalQuotes'] || 0)
-          setTotalDraftQuotes(data['totalDraftQuotes'] || 0)
-          setTotalReadyToBeSentQuotes(data['totalReadyToBeSentQuotes'] || 0)
-          setTotalSentQuotes(data['totalSentQuotes'] || 0)
-          setTotalAcceptedQuotes(data['totalAcceptedQuotes'] || 0)
-          setTotalRefusedQuotes(data['totalRefusedQuotes'] || 0)
-    
-        }
-    
-        fetchQuotes()
+        const loadQuotes = async () => {
+            try {
+                // We call API method which is contained in services/api/quoeService
+              const data = await fetchQuotes();
+              
+              setQuotes(data.quotes);
+              setDraftQuotes(data.draftQuotes);
+              setReadyToBeSentQuotes(data.readyToBeSentQuotes);
+              setSentQuotes(data.sentQuotes);
+              setAcceptedQuotes(data.acceptedQuotes);
+              setRefusedQuotes(data.refusedQuotes);
+      
+              setTotalQuotes(data.totalQuotes || 0);
+              setTotalDraftQuotes(data.totalDraftQuotes || 0);
+              setTotalReadyToBeSentQuotes(data.totalReadyToBeSentQuotes || 0);
+              setTotalSentQuotes(data.totalSentQuotes || 0);
+              setTotalAcceptedQuotes(data.totalAcceptedQuotes || 0);
+              setTotalRefusedQuotes(data.totalRefusedQuotes || 0);
+      
+            } catch (error) {
+              console.error("Impossible to load quotes :", error);
+            }
+          };
+      
+          loadQuotes();
     },[]);
 
-    const deleteQuote = async (quoteId: string) => {
+    // Delete a quote
+    const handleDelete = async (quoteId: string) => {
         try {
-            const response = await fetch(`/api/quote/${quoteId}`, {
-                method: "DELETE",
-            });
-            if (response.ok) {
-                setIsOpen(false);  
-                // toast.success('Devis supprimé avec succès');                 
-                setQuotes(prevQuotes => prevQuotes.filter(quote => quote.id !== quoteId));
-            }
+            await deleteQuote(quoteId);  
+            setQuotes(prevQuotes => prevQuotes.filter(quote => quote.id !== quoteId)); // Mettre à jour l'état local pour supprimer le devis
         } catch (error) {
-            // console.error("Error with quote deletion :", error);
-            // toast.error("Quelque chose s'est mal passé lors de la suppression du devis. Veuillez réessayer !");                 
+            console.error("Erreur avec la suppression du devis", error);
         }
-    }
+    };
 
     const openDeleteDialog = (quoteId: string) => {
         setQuoteToDelete(quoteId);
@@ -339,7 +336,7 @@ const Quotes = () =>{
             <Description>Cette action est irréversible</Description>
             <p>Etes-vous sûr de vouloir supprimer ce devis ? Toutes ses données seront supprimées de façon permanente. Cette action est irréversible.</p>
                 <div className="flex justify-between mt-4">
-                    <button onClick={() => deleteQuote(quoteToDelete)} className="bg-red-600 text-white px-4 py-2 rounded-md">Delete</button>
+                    <button onClick={() => handleDelete(quoteToDelete)} className="bg-red-600 text-white px-4 py-2 rounded-md">Delete</button>
                     <button onClick={closeDeleteDialog} className="bg-gray-300 text-black px-4 py-2 rounded-md">Cancel</button>
                 </div>
             </DialogPanel>

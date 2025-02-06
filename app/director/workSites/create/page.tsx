@@ -57,7 +57,7 @@ const CreateWorkSite = () => {
 
         try {
             console.log("value :"+value)
-            const response = await fetch(`/api/director/clients/find/${value}`);
+            const response = await fetch(`/api/clients?search=${value}`);
             const data = await response.json();
             if (response.ok) {
                 setSuggestions(data.suggestions); 
@@ -98,7 +98,7 @@ const CreateWorkSite = () => {
             console.log("complément d'adresse : "+workSite.additionnalAddress)
             console.log("ClientId : "+workSite.clientId)
 
-            const response = await fetch(`/api/director/workSites/create`, {
+            const response = await fetch(`/api/workSites`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",

@@ -16,7 +16,7 @@ const Employee = ({ params }: { params: Promise<{ employeeSlug: string }>}) => {
             const resolvedParams = await params;
             const employeeSlug = resolvedParams.employeeSlug;
       
-            const response = await fetch(`/api/director/users/${employeeSlug}`);
+            const response = await fetch(`/api/users/${employeeSlug}`);
             const data = await response.json();
             setEmployee(data.employee);
           }

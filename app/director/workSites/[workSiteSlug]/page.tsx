@@ -17,7 +17,7 @@ const WorkSite = ({ params }: { params: Promise<{ workSiteSlug: string }>}) => {
             const resolvedParams = await params;
             const workSiteSlug = resolvedParams.workSiteSlug;
       
-            const response = await fetch(`/api/director/workSites/${workSiteSlug}`);
+            const response = await fetch(`/api/workSites/${workSiteSlug}`);
             const data: WorkSiteTypeSingle = await response.json();
             setWorkSite(data.workSite);
           }

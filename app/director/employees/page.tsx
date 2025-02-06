@@ -19,7 +19,7 @@ const Employees = () =>  {
 
   useEffect(() => {
     const fetchEmployees = async () => {
-      const response = await fetch(`/api/director/users`)
+      const response = await fetch(`/api/users`)
       const data: ClerkUserListType =  await response.json()
 
       setEmployees(data.userList)
@@ -32,7 +32,7 @@ const Employees = () =>  {
 
   const deleteEmployee = async (employeeId: string) => {
     try {
-        const response = await fetch(`/api/director/users/delete/${employeeId}`, {
+        const response = await fetch(`/api/users/${employeeId}`, {
             method: "DELETE",
         });
         if (response.ok) {

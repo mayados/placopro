@@ -16,7 +16,7 @@ const Companies = () =>{
 
     useEffect(() => {
         const fetchCompanies = async () => {
-          const response = await fetch(`/api/director/companies`)
+          const response = await fetch(`/api/companies`)
           const data: any =  await response.json()
           console.log("données reçues après le fetch : "+data)
           setCompanies(data.companies)
@@ -28,7 +28,7 @@ const Companies = () =>{
 
     const deleteCompany = async (companyId: string) => {
         try {
-            const response = await fetch(`/api/director/companies/delete/${companyId}`, {
+            const response = await fetch(`/api/companies/${companyId}`, {
                 method: "DELETE",
             });
             if (response.ok) {

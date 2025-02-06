@@ -27,17 +27,17 @@ const Clients = () =>{
 
     const deleteClient = async (clientId: string) => {
         try {
-            const response = await fetch(`/api/director/clients/${clientId}`, {
+            const response = await fetch(`/api/clients/${clientId}`, {
                 method: "DELETE",
             });
             if (response.ok) {
                 setIsOpen(false);  
-                // toast.success('Entreprise supprimée avec succès');                 
+                // toast.success('Client deleted with success');                 
                 setClients(prevClients => prevClients.filter(client => client.id !== clientId));
             }
         } catch (error) {
-            // console.error("Error with company deletion :", error);
-            // toast.error("Quelque chose s'est mal passé lors de la suppression de l'entreprise. Veuillez réessayer !");                 
+            // console.error("Error with client deletion :", error);
+            // toast.error("Quelque chose s'est mal passé lors de la suppression du client. Veuillez réessayer !");                 
         }
     }
 
@@ -100,7 +100,7 @@ const Clients = () =>{
                 </tbody>
             </table>   
         </section>  
-        {/* Delete category Dialog */}
+        {/* Delete client Dialog */}
         {isOpen && clientToDelete && (
         <Dialog open={isOpen} onClose={closeDeleteDialog} className="absolute top-[50%] left-[25%]" >
             <DialogPanel className="bg-gray-300 p-5 rounded-md shadow-lg text-black">
