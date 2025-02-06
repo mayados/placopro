@@ -2,7 +2,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GET as findServices} from "@/app/api/service/find"; 
 
-export async function GET(req: NextRequest, {params}: {params: {value: string}}) {
-
-    return findServices(req, {params}); 
+export async function GET(req: NextRequest) {
+    if(req.nextUrl.searchParams.get('search')){
+        return findServices(req);
+    }
+ 
 }
