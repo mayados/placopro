@@ -24,6 +24,13 @@ interface UserType{
     slug: string;
 }
 
+interface UserFormValueType{
+    firstName: string,
+    lastName: string,
+    role: string,
+    email: string,
+}
+
 // When we fecth the API, we get a list of UserType
 interface ClerkUserListType{
     userList: UserType[]
@@ -51,8 +58,23 @@ interface CompanyType{
     aeraCoveredByInsurance: string;
 }
 
+
+
 interface ClientTypeSingle{
     client: ClientType;
+}
+
+interface ClientFormValueType{
+    name: string,
+    firstName: string,
+    mail: string,
+    phone: string,
+    road: string,
+    addressNumber: string,
+    postalCode:string,
+    city: string,
+    additionalAddress: string | null,
+    prospectNumber: string | null,
 }
 
 interface CompanyTypeSingle{
@@ -63,6 +85,40 @@ interface CompanyTypeSingle{
 interface CompanyListType{
     companies: CompanyType[]
 }
+
+interface CompanyFormValueType{
+    name: string,
+    type: string,
+    phone:string,
+    email: string,
+    capital: string,
+    rcs: string,
+    siret: string,
+    ape: string,
+    intraCommunityVat: string,
+    addressNumber: string,
+    road: string,
+    additionnalAddress: string | null,
+    postalCode: string,
+    city: string,
+    insuranceName: string,
+    insuranceContractNumber: string,
+    insuranceCoveredZone: string,
+}
+
+interface WorkSiteCreationType{
+    title: string,
+    description: string,
+    beginsThe: string,
+    status:string,
+    road: string,
+    addressNumber: string,
+    postalCode: string,
+    city: string,
+    additionnalAddress: string | null,
+    clientId: string | null,
+}
+
 
 interface WorkSiteType{
     id: string;
@@ -462,6 +518,8 @@ interface FormValuesUpdateNotDraftQuote{
 
 interface SuggestionsResponse<T> {
     suggestions: T[];
-  }
+}
   
-
+interface UpdatedDraftQuoteResponse{
+    updatedQuote: QuoteType;
+}
