@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from "react";
 import { Field,Input, Select } from '@headlessui/react';
 import { useRouter } from "next/navigation";
+import { fetchEmployee, updateUser } from "@/services/api/userService";
 // import toast, { Toaster } from 'react-hot-toast';
 // import { useRouter } from "next/navigation";
 
@@ -15,18 +16,22 @@ const ModifyEmployee = ({ params }: { params: Promise<{ employeeSlug: string }>}
 
     
     useEffect(() => {
-          async function fetchEmployee() {
+        async function loadEmployee() {
             // Params is now asynchronous. It's a Promise
             // So we need to await before access its properties
             const resolvedParams = await params;
             const employeeSlug = resolvedParams.employeeSlug;
-      
-            const response = await fetch(`/api/users/${employeeSlug}`);
-            const data = await response.json();
-            setEmployee(data.employee);
-          }
-      
-          fetchEmployee();
+                    
+            try{
+                const data = await fetchEmployee(employeeSlug)
+                setEmployee(data);
+
+            }catch (error) {
+                console.error("Impossible to load the employee :", error);
+            }
+        }
+                
+        loadEmployee();
     }, [params]);
       
     if (!employee) return <div>Chargement des détails de l'employé...</div>;
@@ -51,37 +56,30 @@ const ModifyEmployee = ({ params }: { params: Promise<{ employeeSlug: string }>}
     };
 
 
-    const handleSubmit = async () => {
+    const handleUsertUpdate = async () => { 
+                
         try{
-
-            const response = await fetch(`/api/users/${employee.slug}`, {
-              method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(employee),
-            });
-            if (response.ok) {
-                const data = await response.json();
-                console.log("data renvoyés : "+data)
-                const updatedEmployee = data.updatedEmployee;
-                setEmployee(updatedEmployee);
-                console.log("updated employé :"+updatedEmployee.slug)
-                // toast.success("Recipe updated successfully !");
-                try {
-                    // We redirect because it's possible the slug has changed. So we have to point to the right URL.
-                    router.push(`/director/employees/${updatedEmployee.slug}/update`);
-                } catch (err) {
-                    console.error("Redirection failed :", err);
-                }
+        
+            const data = await updateUser(employee)
+            const updatedEmployee = data;
+            setEmployee(updatedEmployee);
+            console.log("essai de lecture des données : "+data)
+            console.log("updated employee :"+updatedEmployee.slug)
+            
+            // toast.success("L'utilisateur a été modifié avec succès !");
+            try {
+                // We redirect because it's possible the slug has changed. So we have to point to the right URL.
+                router.push(`/director/employees/${updatedEmployee.slug}/update`);
+            } catch (err) {
+                console.error("Redirection failed :", err);
             }
+    
+                        
         }catch (error) {
-            console.error("Erreur lors de la modification de l'employé :", error);
-            // toast.error("There was a problem with updating your recipe. Please try again!");
+            console.error("Erreur lors de la mise à jour de l'utilisateur :", error);
         }
-
+            
     };
-
 
     return (
         <>
@@ -91,7 +89,7 @@ const ModifyEmployee = ({ params }: { params: Promise<{ employeeSlug: string }>}
             <form 
                 onSubmit={(e) => {
                     e.preventDefault();
-                    handleSubmit();
+                    handleUsertUpdate();
                 }}
             >
                 {/* lastName */}

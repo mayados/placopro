@@ -3,9 +3,10 @@
 import { useEffect, useState, use } from "react";
 import { Field,Input, Select } from '@headlessui/react';
 import { useRouter } from "next/navigation";
+import { createEmployee } from "@/services/api/userService";
 // import toast, { Toaster } from 'react-hot-toast';
 
-const createEmployee = () => {
+const employeeCreation = () => {
 
     const [employee, setEmployee] = useState({
         firstName: "",
@@ -29,34 +30,22 @@ const createEmployee = () => {
     };
 
 
-    const handleSubmit = async () => {
+    const handleUserCreation = async () => {
         try{
-            console.log("Nom de l employé : "+employee.lastName)
-            console.log("prénom de l employé : "+employee.firstName)
-            console.log("mail de l employé : "+employee.email)
-            console.log("role de l employé : "+employee.role)
-            const response = await fetch(`/api/users`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(employee),
-            });
-            if (response.ok) {
-                try {
-                    // We redirect to the employees' list
-                    router.push(`/director/employees`);
-                } catch (err) {
-                    console.error("Redirection failed :", err);
-                }
+
+            const newEmployee = await createEmployee(employee);
+
+            try {
+                router.push(`/director/employees/${newEmployee.slug}`);
+            } catch (err) {
+                console.error("Redirection failed :", err);
             }
         }catch (error) {
-            console.error("Erreur lors de la modification de l'employé :", error);
-            // toast.error("There was a problem with updating your recipe. Please try again!");
+            console.error("Erreur lors de la création de l'utilisateur :", error);
+            // toast.error("There was a problem with updating the client. Please try again!");
         }
 
     };
-
 
     return (
         <>
@@ -66,7 +55,7 @@ const createEmployee = () => {
             <form 
                 onSubmit={(e) => {
                     e.preventDefault();
-                    handleSubmit();
+                    handleUserCreation();
                 }}
             >
                 {/* lastName */}
@@ -123,4 +112,4 @@ const createEmployee = () => {
     );
 };
 
-export default createEmployee;
+export default employeeCreation;

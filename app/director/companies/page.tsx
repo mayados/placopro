@@ -7,6 +7,7 @@ import Button from "@/components/Button";
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
 import {Input} from '@headlessui/react';
 import Link from "next/link";
+import { deleteCompany, fetchCompanies } from "@/services/api/companyService";
 
 const Companies = () =>{
 
@@ -15,33 +16,31 @@ const Companies = () =>{
     const [isOpen, setIsOpen] = useState(false);
 
     useEffect(() => {
-        const fetchCompanies = async () => {
-          const response = await fetch(`/api/companies`)
-          const data: any =  await response.json()
-          console.log("données reçues après le fetch : "+data)
-          setCompanies(data.companies)
-    
+        const loadCompanies = async () => {
+            try{
+                const data = await fetchCompanies();
+                console.log("données reçues après le fetch : "+data)
+                setCompanies(data.companies)                
+            }catch(error){
+                console.error("Impossible to load companies :", error);
+            }
         }
     
-        fetchCompanies()
+        loadCompanies()
     },[]);
 
-    const deleteCompany = async (companyId: string) => {
-        try {
-            const response = await fetch(`/api/companies/${companyId}`, {
-                method: "DELETE",
-            });
-            if (response.ok) {
+        // Delete a company
+        const handleDeleteCompany = async (companyId: string) => {
+            try {
+                await deleteCompany(companyId);
                 setIsOpen(false);  
                 // toast.success('Entreprise supprimée avec succès');                 
-                setCompanies(prevCompanies => prevCompanies.filter(company => company.id !== companyId));
+                setCompanies(prevCompanies => prevCompanies.filter(company => company.id !== companyId));  
+            } catch (error) {
+                console.error("Erreur avec la suppression du devis", error);
             }
-        } catch (error) {
-            // console.error("Error with company deletion :", error);
-            // toast.error("Quelque chose s'est mal passé lors de la suppression de l'entreprise. Veuillez réessayer !");                 
-        }
-    }
-
+        };
+    
     const openDeleteDialog = (companyId: string) => {
         setCompanyToDelete(companyId);
         setIsOpen(true);  
@@ -105,7 +104,7 @@ const Companies = () =>{
             <Description>Cette action est irréversible</Description>
             <p>Etes-vous sûr de vouloir supprimer cette entreprise ? Toutes ses données seront supprimées de façon permanente. Cette action est irréversible.</p>
                 <div className="flex justify-between mt-4">
-                    <button onClick={() => deleteCompany(companyToDelete)} className="bg-red-600 text-white px-4 py-2 rounded-md">Delete</button>
+                    <button onClick={() => handleDeleteCompany(companyToDelete)} className="bg-red-600 text-white px-4 py-2 rounded-md">Delete</button>
                     <button onClick={closeDeleteDialog} className="bg-gray-300 text-black px-4 py-2 rounded-md">Cancel</button>
                 </div>
             </DialogPanel>

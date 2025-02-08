@@ -113,7 +113,7 @@ export async function PUT(req: NextRequest) {
             include: { client: true },
           });
 
-        return NextResponse.json({updatedworkSite: updatedworkSite }, { status: 200 });
+        return NextResponse.json({updatedworkSite }, { status: 200 });
 
     }
 

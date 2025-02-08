@@ -68,7 +68,7 @@ export async function GET(req: NextRequest) {
         })
 
 
-        //Counting number of recipes
+        //Counting number of workSites
         const totalWorkSites: number = await db.workSite.count();
         
         const totalCommingWorkSites: number = await db.workSite.count({ 

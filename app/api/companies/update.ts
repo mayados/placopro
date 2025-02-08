@@ -107,7 +107,7 @@ export async function PUT(req: NextRequest) {
             },
           });
 
-        return NextResponse.json({updatedCompany: updatedCompany }, { status: 200 });
+        return NextResponse.json({updatedCompany }, { status: 200 });
 
     }
 

@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from "react";
 import { Field,Input, Select } from '@headlessui/react';
 import { useRouter } from "next/navigation";
+import { fetchClient, updateClient } from "@/services/api/clientService";
 // import toast, { Toaster } from 'react-hot-toast';
 
 const modifyClient = ({ params }: { params: Promise<{ clientSlug: string }>}) => {
@@ -13,19 +14,22 @@ const modifyClient = ({ params }: { params: Promise<{ clientSlug: string }>}) =>
       
 
     useEffect(() => {
-        async function fetchClient() {
-          // Params is now asynchronous. It's a Promise
-          // So we need to await before access its properties
-          const resolvedParams = await params;
-          const clientSlug = resolvedParams.clientSlug;
-    
-          const response = await fetch(`/api/clients/${clientSlug}`);
-          const data: ClientTypeSingle = await response.json();
-          setClient(data.client);
+        async function loadClient() {
+            // Params is now asynchronous. It's a Promise
+            // So we need to await before access its properties
+            const resolvedParams = await params;
+            const clientSlug = resolvedParams.clientSlug;
+          
+            try{
+            const data = await fetchClient(clientSlug)
+            setClient(data.client);
+            }catch (error) {
+                console.error("Impossible to load the client :", error);
+            }
         }
     
-        fetchClient();
-  }, [params]);
+        loadClient();
+    }, [params]);
     
   if (!client) return <div>Chargement des détails du client...</div>;
 
@@ -35,7 +39,7 @@ const modifyClient = ({ params }: { params: Promise<{ clientSlug: string }>}) =>
           
         setClient((prev) => {
             if (!prev) {
-                // Prevent state updates if company is null
+                // Prevent state updates if client is null
                 return null;
             }
           
@@ -49,42 +53,30 @@ const modifyClient = ({ params }: { params: Promise<{ clientSlug: string }>}) =>
           
     };
 
-
-    const handleSubmit = async () => {
-        try{
-            console.log("Nom du client : "+client.name)
-
-            const response = await fetch(`/api/director/clients/update/${client.slug}`, {
-              method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(client),
-            });
-            if (response.ok) {
-                const data = await response.json();
-                console.log("data renvoyés : "+data)
-                const updatedClient = data.updatedClient;
-                setClient(updatedClient);
-                console.log("essai de lecture des données : "+data)
-                console.log("updated client :"+updatedClient.slug)
-                // toast.success("Recipe updated successfully !");
-                try {
-                    // We redirect because it's possible the slug has changed. So we have to point to the right URL.
-                    router.push(`/director/clients/${updatedClient.slug}/update`);
-                } catch (err) {
-                    console.log('le fetch ne se fait pas')
-                    console.error("Redirection failed :", err);
-                }
-            }
-        }catch (error) {
-            // console.error("Erreur lors de la modification du client :", error);
-            console.log(error)
-            // toast.error("There was a problem with updating your recipe. Please try again!");
+const handleClientUpdate = async () => { 
+            
+    try{
+    
+        const data = await updateClient(client)
+        const updatedClient = data;
+        setClient(updatedClient);
+        console.log("essai de lecture des données : "+data)
+        console.log("updated client :"+updatedClient.slug)
+        // toast.success("Recipe updated successfully !");
+        try {
+            // We redirect because it's possible the slug has changed. So we have to point to the right URL.
+            router.push(`/director/clients/${updatedClient.slug}/update`);
+        } catch (err) {
+            console.log('le fetch ne se fait pas')
+            console.error("Redirection failed :", err);
         }
 
-    };
-
+                    
+    }catch (error) {
+        console.error("Erreur lors de la mise à jour du devis :", error);
+    }
+        
+};
 
     return (
         <>
@@ -94,7 +86,7 @@ const modifyClient = ({ params }: { params: Promise<{ clientSlug: string }>}) =>
             <form 
                 onSubmit={(e) => {
                     e.preventDefault();
-                    handleSubmit();
+                    handleClientUpdate();
                 }}
             >
                 {/* name */}

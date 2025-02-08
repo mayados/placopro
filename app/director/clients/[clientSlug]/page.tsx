@@ -1,5 +1,6 @@
 "use client";
 
+import { fetchClient } from "@/services/api/clientService";
 import { useEffect, useState, use } from "react";
 // import toast, { Toaster } from 'react-hot-toast';
 // import { useRouter } from "next/navigation";
@@ -10,18 +11,21 @@ const Client = ({ params }: { params: Promise<{ clientSlug: string }>}) => {
 
     
         useEffect(() => {
-          async function fetchClient() {
-            // Params is now asynchronous. It's a Promise
-            // So we need to await before access its properties
-            const resolvedParams = await params;
-            const clientSlug = resolvedParams.clientSlug;
+            async function loadClient() {
+                // Params is now asynchronous. It's a Promise
+                // So we need to await before access its properties
+                const resolvedParams = await params;
+                const clientSlug = resolvedParams.clientSlug;
+          
+                try{
+                const data = await fetchClient(clientSlug)
+                setClient(data.client);
+                }catch (error) {
+                    console.error("Impossible to load the client :", error);
+                }
+            }
       
-            const response = await fetch(`/api/clients/${clientSlug}`);
-            const data: ClientTypeSingle = await response.json();
-            setClient(data.client);
-          }
-      
-          fetchClient();
+          loadClient();
         }, [params]);
       
         // if (!employee) return <div>Loading...</div>;

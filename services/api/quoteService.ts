@@ -68,3 +68,55 @@ export const createQuote = async (quote: QuoteFormValueType): Promise<QuoteType>
       throw error; 
   }
 };
+
+// Update draft quote
+export const updateDraftQuote = async (quoteNumber: string, updatedQuoteWithStatus: UpdatedQuoteFormValueType): Promise<QuoteType> => {
+  try {
+      const response = await fetch(`/api/quote/${quoteNumber}`, {
+          method: "PUT",
+          headers: {
+              "Content-Type": "application/json",
+              "X-Update-Type": "draft",
+
+          },
+          body: JSON.stringify(updatedQuoteWithStatus),
+      });
+
+      if (!response.ok) {
+          throw new Error(`Erreur HTTP: ${response.status}`);
+      }
+
+      const data: QuoteType = await response.json();
+      console.log("Created quote :", data);
+
+      return data; 
+  } catch (error) {
+      console.error("Erreur with quote update :", error);
+      throw error; 
+  }
+};
+
+// Update classic quote
+export const updateClassicQuote = async (quoteNumber: string, formValues: FormValuesUpdateNotDraftQuote): Promise<QuoteType> => {
+  try {
+      const response = await fetch(`/api/quote/${quoteNumber}`, {
+          method: "PUT",
+          headers: {
+              "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formValues),
+      });
+
+      if (!response.ok) {
+          throw new Error(`Erreur HTTP: ${response.status}`);
+      }
+
+      const data: QuoteType = await response.json();
+      console.log("Created quote :", data);
+
+      return data; 
+  } catch (error) {
+      console.error("Erreur with quote update :", error);
+      throw error; 
+  }
+};

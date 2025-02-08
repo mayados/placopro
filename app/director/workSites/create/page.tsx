@@ -3,11 +3,13 @@
 import { useEffect, useState, use } from "react";
 import { Field,Input, Select, Textarea } from '@headlessui/react';
 import { useRouter } from "next/navigation";
+import { fetchSuggestions } from "@/services/api/suggestionService";
+import { createWorkSite } from "@/services/api/workSiteService";
 // import toast, { Toaster } from 'react-hot-toast';
 
 const CreateWorkSite = () => {
 
-    const [workSite, setWorkSite] = useState({
+    const [workSite, setWorkSite] = useState<WorkSiteCreationType>({
         title: "",
         description: "",
         beginsThe: "",
@@ -57,10 +59,14 @@ const CreateWorkSite = () => {
 
         try {
             console.log("value :"+value)
-            const response = await fetch(`/api/clients?search=${value}`);
-            const data = await response.json();
-            if (response.ok) {
-                setSuggestions(data.suggestions); 
+            const data = await fetchSuggestions("client", value);
+            if (Array.isArray(data.suggestions) && data.suggestions.length > 0) {
+                setSuggestions(data.suggestions as ClientSuggestionType[]); 
+                console.log("Les datas reçues sont supérieures à 0")
+            } else {
+                setSuggestions([]); 
+                console.log("Pas de datas reçues")
+
             }
         } catch (error) {
             console.log("Erreur lors de la récupération des suggestions :", error);
@@ -85,41 +91,34 @@ const CreateWorkSite = () => {
         setSuggestions(null); // Fermez la liste des suggestions
     };
 
-    const handleSubmit = async () => {
-        try{
-            console.log("Titre du chantier : "+workSite.title)
-            console.log("Description : "+workSite.description)
-            console.log("Commence le : "+workSite.beginsThe)
-            console.log("Statut : "+workSite.status)
-            console.log("Route : "+workSite.road)
-            console.log("Numéro d'adresse : "+workSite.addressNumber)
-            console.log("Code postal : "+workSite.postalCode)
-            console.log("Ville : "+workSite.city)
-            console.log("complément d'adresse : "+workSite.additionnalAddress)
-            console.log("ClientId : "+workSite.clientId)
-
-            const response = await fetch(`/api/workSites`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(workSite),
-            });
-            if (response.ok) {
+    const handleWorkSiteCreation = async () => {
+            try{
+                console.log("Titre du chantier : "+workSite.title)
+                console.log("Description : "+workSite.description)
+                console.log("Commence le : "+workSite.beginsThe)
+                console.log("Statut : "+workSite.status)
+                console.log("Route : "+workSite.road)
+                console.log("Numéro d'adresse : "+workSite.addressNumber)
+                console.log("Code postal : "+workSite.postalCode)
+                console.log("Ville : "+workSite.city)
+                console.log("complément d'adresse : "+workSite.additionnalAddress)
+                console.log("ClientId : "+workSite.clientId)
+    
+                const newWorkSite = await createWorkSite(workSite);
+  
                 try {
-                    // We redirect to the companies' list
-                    router.push(`/director/workSites`);
+                    router.push(`/director/workSites/${newWorkSite.slug}`);
                 } catch (err) {
                     console.error("Redirection failed :", err);
                 }
+
+            }catch (error) {
+                console.error("Erreur lors de la création du chantier :", error);
+                // toast.error("There was a problem with updating the client. Please try again!");
             }
-        }catch (error) {
-            console.error("Erreur lors de la création du chantier :", error);
-            // toast.error("There was a problem with updating your recipe. Please try again!");
-        }
-
+    
     };
-
+    
 
     return (
         <>
@@ -129,7 +128,7 @@ const CreateWorkSite = () => {
             <form 
                 onSubmit={(e) => {
                     e.preventDefault();
-                    handleSubmit();
+                    handleWorkSiteCreation();
                 }}
             >
                 {/* WorkSite title */}

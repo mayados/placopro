@@ -8,7 +8,6 @@ import { CirclePlus, CircleX } from "lucide-react";
 import { capitalizeFirstLetter } from "@/lib/utils";
 import { fetchVatRates } from "@/services/api/vatRateService";
 import { fetchUnits } from "@/services/api/unitService";
-import { fetchServiceSuggestions } from "@/services/api/serviceService";
 import { createQuote } from "@/services/api/quoteService";
 import { fetchSuggestions } from "@/services/api/suggestionService";
 // import toast, { Toaster } from 'react-hot-toast';
@@ -258,9 +257,9 @@ const CreateQuote = () => {
     const loadServiceSuggestions = async (value: string) => {
         if (value.length < 2) return; 
         try{
-            const data = await fetchServiceSuggestions(value);
+            const data = await fetchSuggestions("service",value);
             if (Array.isArray(data.suggestions) && data.suggestions.length > 0) {
-                setServiceSuggestions(data.suggestions); 
+                setServiceSuggestions(data.suggestions as ServiceSuggestionType[]); 
                 console.log("Les datas reçues sont supérieures à 0")
             } else {
                 setServiceSuggestions([]); 

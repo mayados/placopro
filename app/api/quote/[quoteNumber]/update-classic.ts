@@ -56,7 +56,7 @@ export async function PUT(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ updatedQuote: updatedQuote }, { status: 200 });
+    return NextResponse.json({ updatedQuote }, { status: 200 });
   } catch (error) {
     console.error("Error with quote's update:", error);
     return new NextResponse("Internal error", { status: 500 });

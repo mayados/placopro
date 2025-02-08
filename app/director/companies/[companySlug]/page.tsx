@@ -1,5 +1,6 @@
 "use client";
 
+import { fetchCompany } from "@/services/api/companyService";
 import { useEffect, useState, use } from "react";
 // import toast, { Toaster } from 'react-hot-toast';
 // import { useRouter } from "next/navigation";
@@ -10,18 +11,21 @@ const Company = ({ params }: { params: Promise<{ companySlug: string }>}) => {
 
     
         useEffect(() => {
-          async function fetchCompany() {
-            // Params is now asynchronous. It's a Promise
-            // So we need to await before access its properties
-            const resolvedParams = await params;
-            const companySlug = resolvedParams.companySlug;
-      
-            const response = await fetch(`/api//companies/${companySlug}`);
-            const data: CompanyTypeSingle = await response.json();
-            setCompany(data.company);
-          }
-      
-          fetchCompany();
+            async function loadCompany() {
+                // Params is now asynchronous. It's a Promise
+                // So we need to await before access its properties
+                const resolvedParams = await params;
+                const companySlug = resolvedParams.companySlug;
+                    
+                try{
+                const data = await fetchCompany(companySlug)
+                setCompany(data.company);
+                }catch (error) {
+                    console.error("Impossible to load the company :", error);
+                }
+            }
+                
+          loadCompany();
         }, [params]);
       
         // if (!company) return <div>Loading...</div>;

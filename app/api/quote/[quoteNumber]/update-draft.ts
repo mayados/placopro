@@ -242,7 +242,7 @@ const createNewService = async (
         },
       });
 
-      return NextResponse.json({ updatedQuote: fullUpdatedQuote }, { status: 200 });
+      return NextResponse.json({fullUpdatedQuote }, { status: 200 });
 
     } catch (error) {
       console.error("Erreur détaillée :", error instanceof Error ? error.message : error);

@@ -7,6 +7,7 @@ import React, { useEffect, useState } from 'react'
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
 import Button from '@/components/Button';
 import { Trash2 } from 'lucide-react';
+import { deleteEmployee, fetchEmployees } from '@/services/api/userService';
 
 
 const Employees = () =>  {
@@ -18,33 +19,33 @@ const Employees = () =>  {
 
 
   useEffect(() => {
-    const fetchEmployees = async () => {
-      const response = await fetch(`/api/users`)
-      const data: ClerkUserListType =  await response.json()
-
-      setEmployees(data.userList)
-    }
-
-    fetchEmployees()
+    const loadEmployees = async () => {
+        try{
+            const data = await fetchEmployees();
+            console.log("données reçues après le fetch : "+data)
+            setEmployees(data.userList)             
+        }catch(error){
+            console.error("Impossible to load employees :", error);
+        }
+      }
+    
+        loadEmployees()
   },[]);
 
   console.log("les employes : "+employees)
 
-  const deleteEmployee = async (employeeId: string) => {
-    try {
-        const response = await fetch(`/api/users/${employeeId}`, {
-            method: "DELETE",
-        });
-        if (response.ok) {
-            setIsOpen(false);  
-            // toast.success('Category deleted with success');                 
-            setEmployees(prevEmployees => prevEmployees.filter(employee => employee.id !== employeeId));
-        }
-    } catch (error) {
-        console.error("Error with employee deletion :", error);
-        // toast.error('Something went wrong with deleting the category. Please try again !');                 
-    }
-  }
+  
+  // Delete an employee
+  const handleDeleteEmployee = async (employeeId: string) => {
+      try {
+          await deleteEmployee(employeeId);
+          setIsOpen(false);  
+          // toast.success('Category deleted with success');                 
+          setEmployees(prevEmployees => prevEmployees.filter(employee => employee.id !== employeeId));  
+      } catch (error) {
+          console.error("Erreur avec la suppression de l'employé", error);
+      }
+  };
 
   const openDeleteDialog = (employeeId: string) => {
     setEmployeeToDelete(employeeId);
@@ -111,7 +112,7 @@ const Employees = () =>  {
                 <Description>Cette action est irréversible</Description>
                 <p>Etes-vous sûr de vouloir supprimer l'utilisateur ? Toutes ses données seront supprimées de façon permanente. Cette action est irréversible.</p>
                     <div className="flex justify-between mt-4">
-                        <button onClick={() => deleteEmployee(employeeToDelete)} className="bg-red-600 text-white px-4 py-2 rounded-md">Supprimer</button>
+                        <button onClick={() => handleDeleteEmployee(employeeToDelete)} className="bg-red-600 text-white px-4 py-2 rounded-md">Supprimer</button>
                         <button onClick={closeDeleteDialog} className="bg-gray-300 text-black px-4 py-2 rounded-md">Annuler</button>
                     </div>
                 </DialogPanel>
