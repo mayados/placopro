@@ -4,7 +4,7 @@ import { useEffect, useState, use } from "react";
 import { formatDate } from '@/lib/utils'
 import DownloadPDF from "@/components/DownloadPDF";
 import { Field, Input, Label, Legend, Radio, RadioGroup, Select } from "@headlessui/react";
-import { fetchQuote } from "@/services/api/quoteService";
+import { fetchQuote, updateClassicQuote } from "@/services/api/quoteService";
 import { fetchCompany } from "@/services/api/companyService";
 
 // import toast, { Toaster } from 'react-hot-toast';
@@ -83,23 +83,19 @@ const Quote = ({ params }: { params: Promise<{ quoteNumber: string }>}) => {
             }));
           };
 
-        const handleSubmit = async () => {
-        try{
-    
-            const response = await fetch(`/api/quote/${quote?.number}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(formValues),
-            });
-            if (response.ok) {
-                const data = await response.json();
-                console.log("data renvoyés : "+data.updatedQuote)
-                const updatedQuote = data.updatedQuote;
+        const handleQuoteUpdateClassic = async () => {
+
+            if(!quote?.number){
+                return
+            }        
+        
+            try{
+
+                const data = await updateClassicQuote(quote.number,formValues)
+                const updatedQuote = data;
                 console.log("voici le devis mis à jour : "+updatedQuote.number)
                 setQuote(updatedQuote)
-            }
+                
             }catch (error) {
                 console.error("Erreur lors de la mise à jour du devis :", error);
             }
@@ -128,7 +124,7 @@ const Quote = ({ params }: { params: Promise<{ quoteNumber: string }>}) => {
                             autoComplete="off"
                             onSubmit={(e) => {
                                 e.preventDefault();
-                                handleSubmit();
+                                handleQuoteUpdateClassic();
                             }}
                         >
                             <div>

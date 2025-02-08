@@ -8,7 +8,7 @@ import { CirclePlus, CircleX } from "lucide-react";
 import { capitalizeFirstLetter } from "@/lib/utils";
 import { formatDateForInput } from '@/lib/utils'
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
-import { fetchQuote } from "@/services/api/quoteService";
+import { fetchQuote, updateDraftQuote } from "@/services/api/quoteService";
 import { fetchVatRates } from "@/services/api/vatRateService";
 import { fetchUnits } from "@/services/api/unitService";
 import { fetchSuggestions } from "@/services/api/suggestionService";
@@ -245,7 +245,7 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
         setServiceSuggestions([]);
       };
 
-    const updateDraftQuote = async (statusReady?: string) => {
+    const handleDraftQuoteUpdate = async (statusReady?: string) => {
         console.log("Le quote final à update : "+JSON.stringify(updatedQuoteFormValues.servicesToUnlink))
         console.log("Le quote intial : "+JSON.stringify(quote?.services))
         console.log("update du champ de termes de paiement lors d'un changement : "+updatedQuoteFormValues.paymentTerms)
@@ -261,60 +261,81 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                 quoteId,
             };
 
-        }catch(error){
+            if(!quote?.number){
+                return
+            }
 
+            const data = await updateDraftQuote(quote?.number, updatedQuoteWithStatus)
+            console.log("data renvoyés : "+data)
+            const updatedQuote = data;
+            console.log("voici le devis updaté : "+updatedQuote.number)
+            console.log("status du devis updaté "+updatedQuote.status)
+            try {
+                if(updatedQuote.status === "Draft"){
+                    // Redirect to the updated Quote
+                    router.push(`/director/quotes/${updatedQuote.number}/update`);                        
+                }else{
+                    router.push(`/director/quotes/${updatedQuote.number}`);                        
+                }
+
+            } catch (err) {
+                console.error("Redirection failed :", err);
+            }
+
+        }catch(error){
+            console.error("Impossible to update the quote :", error);
         }
     }
 
 
-    const handleSubmit = async (statusReady?: string) => {
-        console.log("Le quote final à update : "+JSON.stringify(updatedQuoteFormValues.servicesToUnlink))
-        console.log("Le quote intial : "+JSON.stringify(quote?.services))
-        console.log("update du champ de termes de paiement lors d'un changement : "+updatedQuoteFormValues.paymentTerms)
-        console.log("lors du submit, le status est : "+statusReady)
+    // const handleSubmit = async (statusReady?: string) => {
+    //     console.log("Le quote final à update : "+JSON.stringify(updatedQuoteFormValues.servicesToUnlink))
+    //     console.log("Le quote intial : "+JSON.stringify(quote?.services))
+    //     console.log("update du champ de termes de paiement lors d'un changement : "+updatedQuoteFormValues.paymentTerms)
+    //     console.log("lors du submit, le status est : "+statusReady)
 
-        const status = statusReady ? "Ready": "Draft"
-        const quoteId = quote?.id
-        try{
+    //     const status = statusReady ? "Ready": "Draft"
+    //     const quoteId = quote?.id
+    //     try{
             
-            const updatedQuoteWithStatus = {
-                ...updatedQuoteFormValues,
-                status,
-                quoteId,
-            };
-            console.log("ce qui est envoyé à la route de modification : "+JSON.stringify(updatedQuoteWithStatus))
-            console.log("valeur envoyée de saveMode : "+status)
-            const response = await fetch(`/api/quote/${quote?.number}`, {
-              method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-                "X-Update-Type": "draft",
-              },
-              body: JSON.stringify(updatedQuoteWithStatus),
-            });
-            if (response.ok) {
-                const data = await response.json();
-                console.log("data renvoyés : "+data)
-                const updatedQuote = data.updatedQuote;
-                console.log("voici le devis updaté : "+updatedQuote.number)
-                console.log("status du devis updaté "+updatedQuote.status)
-                try {
-                    if(updatedQuote.status === "Draft"){
-                        // Redirect to the updated Quote
-                        router.push(`/director/quotes/${updatedQuote.number}/update`);                        
-                    }else{
-                        router.push(`/director/quotes/${updatedQuote.number}`);                        
-                    }
+    //         const updatedQuoteWithStatus = {
+    //             ...updatedQuoteFormValues,
+    //             status,
+    //             quoteId,
+    //         };
+    //         console.log("ce qui est envoyé à la route de modification : "+JSON.stringify(updatedQuoteWithStatus))
+    //         console.log("valeur envoyée de saveMode : "+status)
+    //         const response = await fetch(`/api/quote/${quote?.number}`, {
+    //           method: "PUT",
+    //           headers: {
+    //             "Content-Type": "application/json",
+    //             "X-Update-Type": "draft",
+    //           },
+    //           body: JSON.stringify(updatedQuoteWithStatus),
+    //         });
+    //         if (response.ok) {
+    //             const data = await response.json();
+    //             console.log("data renvoyés : "+data)
+    //             const updatedQuote = data.updatedQuote;
+    //             console.log("voici le devis updaté : "+updatedQuote.number)
+    //             console.log("status du devis updaté "+updatedQuote.status)
+    //             try {
+    //                 if(updatedQuote.status === "Draft"){
+    //                     // Redirect to the updated Quote
+    //                     router.push(`/director/quotes/${updatedQuote.number}/update`);                        
+    //                 }else{
+    //                     router.push(`/director/quotes/${updatedQuote.number}`);                        
+    //                 }
 
-                } catch (err) {
-                    console.error("Redirection failed :", err);
-                }
-            }
-        }catch (error) {
-            console.error("Erreur lors de la création du devis :", error);
-        }
+    //             } catch (err) {
+    //                 console.error("Redirection failed :", err);
+    //             }
+    //         }
+    //     }catch (error) {
+    //         console.error("Erreur lors de la création du devis :", error);
+    //     }
 
-    };
+    // };
 
     const openChoiceDialog = () => {
         setIsOpen(true);  
@@ -385,15 +406,16 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
 
     // We search services suggestions with the letters the user submit (= the query)
     // We don't search if the query is less than 2 characters
+ 
+ 
     const fetchServiceSuggestions = async (value: string) => {
         if (value.length < 2) return; 
         try {
-            const response = await fetch(`/api/service/${value}`);
-            const data = await response.json();
+            const data = await fetchSuggestions("service", value);
             console.log("API response data for services :", data); 
             console.log("Longueur des datas du tableau de datas de services : "+data.suggestions.length)
             if (Array.isArray(data.suggestions) && data.suggestions.length > 0) {
-                setServiceSuggestions(data.suggestions); 
+                setServiceSuggestions(data.suggestions as ServiceSuggestionType[]); 
                 console.log("Les datas reçues sont supérieures à 0")
             } else {
                 setServiceSuggestions([]); 
@@ -404,6 +426,28 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
             console.error("Erreur lors de la récupération des suggestions de services :", error);
         }
     };
+ 
+ 
+ 
+    // const fetchServiceSuggestions = async (value: string) => {
+    //     if (value.length < 2) return; 
+    //     try {
+    //         const response = await fetch(`/api/service/${value}`);
+    //         const data = await response.json();
+    //         console.log("API response data for services :", data); 
+    //         console.log("Longueur des datas du tableau de datas de services : "+data.suggestions.length)
+    //         if (Array.isArray(data.suggestions) && data.suggestions.length > 0) {
+    //             setServiceSuggestions(data.suggestions); 
+    //             console.log("Les datas reçues sont supérieures à 0")
+    //         } else {
+    //             setServiceSuggestions([]); 
+    //             console.log("Pas de datas reçues")
+
+    //         }
+    //     } catch (error) {
+    //         console.error("Erreur lors de la récupération des suggestions de services :", error);
+    //     }
+    // };
 
 
 // Fonction pour gérer les changements sur les champs autres que le label
@@ -449,7 +493,7 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                 autoComplete="off"
                 onSubmit={(e) => {
                     e.preventDefault();
-                    handleSubmit();
+                    handleDraftQuoteUpdate();
                 }}
             >
                 {/* Client of the quote */}
@@ -893,7 +937,7 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                     className="bg-red-400"
                     type="submit"
                     onClick={() => {
-                        handleSubmit(); 
+                        handleDraftQuoteUpdate(); 
                     }}
                     >Modifier et enregistrer à l'état de brouillon
                 </button>
@@ -918,7 +962,7 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                         <button
                         // choice to to finalize quote
                             onClick={() => {
-                                handleSubmit("Ready"); 
+                                handleDraftQuoteUpdate("Ready"); 
                                 closeChoiceDialog(); 
                             }}
                             className="bg-green-600 text-white px-4 py-2 rounded-md"

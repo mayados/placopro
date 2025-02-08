@@ -6,6 +6,7 @@ import Button from "@/components/Button";
 // import toast, { Toaster } from 'react-hot-toast';
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
 import Link from "next/link";
+import { deleteClient, fetchClients } from "@/services/api/clientService";
 
 const Clients = () =>{
 
@@ -14,30 +15,27 @@ const Clients = () =>{
     const [isOpen, setIsOpen] = useState(false);
 
     useEffect(() => {
-        const fetchClients = async () => {
-          const response = await fetch(`/api/clients`)
-          const data: ClientTypeList =  await response.json()
-          console.log("données reçues après le fetch : "+data)
-          setClients(data.clients)
-    
+        const loadClients = async () => {
+            try{
+                const data = await fetchClients();
+                console.log("données reçues après le fetch : "+data)
+                setClients(data.clients)                
+            }catch(error){
+                console.error("Impossible to load clients :", error);
+            }
         }
     
-        fetchClients()
+        loadClients()
     },[]);
 
-    const deleteClient = async (clientId: string) => {
+    const handleClientDeletion = async (clientId: string) => {
         try {
-            const response = await fetch(`/api/clients/${clientId}`, {
-                method: "DELETE",
-            });
-            if (response.ok) {
-                setIsOpen(false);  
-                // toast.success('Client deleted with success');                 
-                setClients(prevClients => prevClients.filter(client => client.id !== clientId));
-            }
+            const data = await deleteClient(clientId);
+            setIsOpen(false);  
+            // toast.success('Client deleted with success');                 
+            setClients(prevClients => prevClients.filter(client => client.id !== clientId));
         } catch (error) {
-            // console.error("Error with client deletion :", error);
-            // toast.error("Quelque chose s'est mal passé lors de la suppression du client. Veuillez réessayer !");                 
+            console.error("Impossible to delete client :", error);               
         }
     }
 
@@ -108,7 +106,7 @@ const Clients = () =>{
             <Description>Cette action est irréversible</Description>
             <p>Etes-vous sûr de vouloir supprimer ce client ? Toutes ses données seront supprimées de façon permanente. Cette action est irréversible.</p>
                 <div className="flex justify-between mt-4">
-                    <button onClick={() => deleteClient(clientToDelete)} className="bg-red-600 text-white px-4 py-2 rounded-md">Delete</button>
+                    <button onClick={() => handleClientDeletion(clientToDelete)} className="bg-red-600 text-white px-4 py-2 rounded-md">Delete</button>
                     <button onClick={closeDeleteDialog} className="bg-gray-300 text-black px-4 py-2 rounded-md">Cancel</button>
                 </div>
             </DialogPanel>

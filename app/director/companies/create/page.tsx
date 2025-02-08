@@ -3,11 +3,12 @@
 import { useEffect, useState, use } from "react";
 import { Field,Input, Select } from '@headlessui/react';
 import { useRouter } from "next/navigation";
+import { createCompany } from "@/services/api/companyService";
 // import toast, { Toaster } from 'react-hot-toast';
 
-const createCompany = () => {
+const companyCreation = () => {
 
-    const [company, setCompany] = useState({
+    const [company, setCompany] = useState<CompanyFormValueType>({
         name: "",
         type: "",
         phone:"",
@@ -41,33 +42,24 @@ const createCompany = () => {
           
     };
 
+        const handleCompanyCreation = async () => {
+            try{
 
-    const handleSubmit = async () => {
-        try{
-            console.log("Nom de l entreprise : "+company.name)
-
-            const response = await fetch(`/api//companies`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(company),
-            });
-            if (response.ok) {
+    
+                const newCompany = await createCompany(company);
+    
                 try {
                     // We redirect to the companies' list
-                    router.push(`/director/companies`);
+                    router.push(`/director/companies/${newCompany.slug}`);
                 } catch (err) {
                     console.error("Redirection failed :", err);
                 }
+            }catch (error) {
+                console.error("Erreur lors de la création de l'entreprise :", error);
+                // toast.error("There was a problem with updating the client. Please try again!");
             }
-        }catch (error) {
-            console.error("Erreur lors de la création de l'entreprise :", error);
-            // toast.error("There was a problem with updating your recipe. Please try again!");
-        }
-
-    };
-
+    
+        };
 
     return (
         <>
@@ -77,7 +69,7 @@ const createCompany = () => {
             <form 
                 onSubmit={(e) => {
                     e.preventDefault();
-                    handleSubmit();
+                    handleCompanyCreation();
                 }}
             >
                 {/* Company name */}
@@ -261,4 +253,4 @@ const createCompany = () => {
     );
 };
 
-export default createCompany;
+export default companyCreation;

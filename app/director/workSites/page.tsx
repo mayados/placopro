@@ -7,6 +7,7 @@ import { formatDate } from '@/lib/utils'
 // import toast, { Toaster } from 'react-hot-toast';
 import { Dialog, DialogTitle, DialogPanel, Description, Tab, TabGroup ,TabList, TabPanel, TabPanels } from '@headlessui/react';
 import Link from "next/link";
+import { deleteWorkSite, fetchWorkSites } from "@/services/api/workSiteService";
 
 const WorkSites = () =>{
 
@@ -26,42 +27,42 @@ const WorkSites = () =>{
     const [isOpen, setIsOpen] = useState(false);
 
     useEffect(() => {
-        const fetchWorkSites = async () => {
-          const response = await fetch(`/api/workSites`)
-          const data: WorkSiteWithTotalsAndStatus =  await response.json()
-          console.log("données reçues après le fetch : "+data)
-          console.log("exemple d'un worksite reçu : "+data['workSites'][0])
-          // We hydrate each const with the datas
-          setWorkSites(data['workSites'])
-          setCommingWorkSites(data['commingWorkSites'])
-          setInProgressWorkSites(data['inProgressWorkSites'])
-          setCompletedWorkSites(data['completedWorkSites'])
-    
-          setTotalWorkSites(data['totalWorkSites'] || 0)
-          setTotalCommingWorkSites(data['totalCommingWorkSites'] || 0)
-          setTotalInProgressWorkSites(data['totalInProgressWorkSites'] || 0)
-          setTotalCompletedWorkSites(data['totalCompletedWorkSites'] || 0)
-    
+        const loadWorkSites = async () => {
+            try{
+                const data = await fetchWorkSites();
+                console.log("données reçues après le fetch : "+data)
+                console.log("exemple d'un worksite reçu : "+data['workSites'][0])
+                // We hydrate each const with the datas
+                setWorkSites(data['workSites'])
+                setCommingWorkSites(data['commingWorkSites'])
+                setInProgressWorkSites(data['inProgressWorkSites'])
+                setCompletedWorkSites(data['completedWorkSites'])
+                  
+                setTotalWorkSites(data['totalWorkSites'] || 0)
+                setTotalCommingWorkSites(data['totalCommingWorkSites'] || 0)
+                setTotalInProgressWorkSites(data['totalInProgressWorkSites'] || 0)
+                setTotalCompletedWorkSites(data['totalCompletedWorkSites'] || 0)               
+            }catch(error){
+                console.error("Impossible to load companies :", error);
+            }
         }
-    
-        fetchWorkSites()
+            
+        loadWorkSites()
     },[]);
 
-    const deleteWorkSite = async (workSiteId: string) => {
+    // Delete a workSite
+    const handleWorkSiteDeletion = async (workSiteId: string) => {
         try {
-            const response = await fetch(`/api/workSites/${workSiteId}`, {
-                method: "DELETE",
-            });
-            if (response.ok) {
-                setIsOpen(false);  
-                // toast.success('Chantier supprimé avec succès');                 
-                setWorkSites(prevWorkSites => prevWorkSites.filter(workSite => workSite.id !== workSiteId));
-            }
+            await deleteWorkSite(workSiteId);
+            setIsOpen(false);  
+            // toast.success('Entreprise supprimée avec succès');                 
+            setWorkSites(prevWorkSites => prevWorkSites.filter(workSite => workSite.id !== workSiteId));
+
         } catch (error) {
-            // console.error("Error with workSite deletion :", error);
-            // toast.error("Quelque chose s'est mal passé lors de la suppression du chantier. Veuillez réessayer !");                 
+            console.error("Erreur avec la suppression du chantier", error);
         }
-    }
+    };
+
 
     const openDeleteDialog = (workSiteId: string) => {
         setWorkSiteToDelete(workSiteId);
@@ -268,7 +269,7 @@ const WorkSites = () =>{
             <Description>Cette action est irréversible</Description>
             <p>Etes-vous sûr de vouloir supprimer ce chantier ? Toutes ses données seront supprimées de façon permanente. Cette action est irréversible.</p>
                 <div className="flex justify-between mt-4">
-                    <button onClick={() => deleteWorkSite(workSiteToDelete)} className="bg-red-600 text-white px-4 py-2 rounded-md">Delete</button>
+                    <button onClick={() => handleWorkSiteDeletion(workSiteToDelete)} className="bg-red-600 text-white px-4 py-2 rounded-md">Delete</button>
                     <button onClick={closeDeleteDialog} className="bg-gray-300 text-black px-4 py-2 rounded-md">Cancel</button>
                 </div>
             </DialogPanel>

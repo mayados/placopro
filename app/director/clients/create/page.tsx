@@ -3,11 +3,12 @@
 import { useEffect, useState, use } from "react";
 import { Field,Input } from '@headlessui/react';
 import { useRouter } from "next/navigation";
+import { createClient } from "@/services/api/clientService";
 // import toast, { Toaster } from 'react-hot-toast';
 
-const createClient = () => {
+const clientCreation = () => {
 
-    const [client, setClient] = useState({
+    const [client, setClient] = useState<ClientFormValueType>({
         name: "",
         firstName: "",
         mail: "",
@@ -33,7 +34,7 @@ const createClient = () => {
     };
 
 
-    const handleSubmit = async () => {
+    const handleClientCreation = async () => {
         try{
             console.log("Nom du client : "+client.name)
             console.log("Prénom du client : "+client.firstName)
@@ -46,21 +47,13 @@ const createClient = () => {
             console.log("Complément d'adresse du client : "+client.additionalAddress)
             console.log("Numéro de prospect : "+client.prospectNumber)
 
+            const newClient = await createClient(client);
 
-            const response = await fetch(`/api/clients`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(client),
-            });
-            if (response.ok) {
                 try {
                     // We redirect to the clients' list
-                    router.push(`/director/clients`);
+                    router.push(`/director/clients/${newClient.slug}`);
                 } catch (err) {
                     console.error("Redirection failed :", err);
-                }
             }
         }catch (error) {
             console.error("Erreur lors de la création du client :", error);
@@ -78,7 +71,7 @@ const createClient = () => {
             <form 
                 onSubmit={(e) => {
                     e.preventDefault();
-                    handleSubmit();
+                    handleClientCreation();
                 }}
             >
                 {/* lastName */}
@@ -187,4 +180,4 @@ const createClient = () => {
     );
 };
 
-export default createClient;
+export default clientCreation;

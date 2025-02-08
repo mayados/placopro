@@ -4,6 +4,8 @@ import { useEffect, useState, use } from "react";
 import { Field,Input, Select, Textarea } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import { formatDateToInput } from '@/lib/utils'
+import { fetchWorkSite, updateWorkSite } from "@/services/api/workSiteService";
+import { fetchSuggestions } from "@/services/api/suggestionService";
 // import toast, { Toaster } from 'react-hot-toast';
 
 const modifyWorkSite = ({ params }: { params: Promise<{ workSiteSlug: string }>}) => {
@@ -18,17 +20,22 @@ const modifyWorkSite = ({ params }: { params: Promise<{ workSiteSlug: string }>}
 
 
     useEffect(() => {
-        async function fetchWorkSite() {
+        async function loadWorkSite() {
+            // Params is now asynchronous. It's a Promise
+            // So we need to await before access its properties
             const resolvedParams = await params;
             const workSiteSlug = resolvedParams.workSiteSlug;
-            const response = await fetch(`/api/workSites/${workSiteSlug}`);
-            const data: WorkSiteTypeSingle = await response.json();
+          
+        try{
+            const data = await fetchWorkSite(workSiteSlug)
             setWorkSite(data.workSite);
-            if (data.workSite.client) {
-                setClientInput(`${data.workSite.client.name} ${data.workSite.client.firstName} ${data.workSite.client.clientNumber}`);
+
+        }catch (error) {
+                console.error("Impossible to load the workSite :", error);
             }
         }
-        fetchWorkSite();
+      
+        loadWorkSite();
     }, [params]);
     
     
@@ -57,10 +64,15 @@ const modifyWorkSite = ({ params }: { params: Promise<{ workSiteSlug: string }>}
     
         // Fetch suggestions for non-empty input
         try {
-            const response = await fetch(`/api/clients?search=${value}`);
-            if (response.ok) {
-                const data = await response.json();
-                setSuggestions(data.suggestions);
+            console.log("value :"+value)
+            const data = await fetchSuggestions("client", value);
+            if (Array.isArray(data.suggestions) && data.suggestions.length > 0) {
+                setSuggestions(data.suggestions as ClientSuggestionType[]); 
+                console.log("Les datas reçues sont supérieures à 0")
+            } else {
+                setSuggestions([]); 
+                console.log("Pas de datas reçues")
+
             }
         } catch (error) {
             console.error("Erreur lors de la récupération des suggestions :", error);
@@ -74,50 +86,28 @@ const modifyWorkSite = ({ params }: { params: Promise<{ workSiteSlug: string }>}
         setSuggestions(null);
     };
     
-
-    const handleSubmit = async () => {
+    const handleWorkSitetUpdate = async () => { 
+                
         try{
-            console.log("Titre du chantier : "+workSite.title)
-            console.log("Description : "+workSite.description)
-            console.log("Commence le : "+workSite.beginsThe)
-            console.log("Statut : "+workSite.status)
-            console.log("Route : "+workSite.road)
-            console.log("Numéro d'adresse : "+workSite.addressNumber)
-            console.log("Code postal : "+workSite.postalCode)
-            console.log("Ville : "+workSite.city)
-            console.log("complément d'adresse : "+workSite.additionnalAddress)
-            console.log("ClientId : "+workSite.client.id)
-            console.log("slug : "+workSite.slug)
-
-            const response = await fetch(`/api/workSites/${workSite.slug}`, {
-              method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(workSite),
-            });
-            if (response.ok) {
-                const data = await response.json();
-                console.log("data renvoyés : "+data)
-                const updatedWorkSite = data.updatedworkSite;
-                setWorkSite(updatedWorkSite);
-                console.log("updated worksite :"+updatedWorkSite.slug)
-                // toast.success("Recipe updated successfully !");
-                try {
-                    // We redirect because it's possible the slug has changed. So we have to point to the right URL.
-                    router.push(`/director/workSites/${updatedWorkSite.slug}/update`);
-                } catch (err) {
-                    console.error("Redirection failed :", err);
-                }
-
+        
+            const data = await updateWorkSite(workSite)
+            const updatedWorkSite = data;
+            setWorkSite(updatedWorkSite);
+            console.log("updated worksite :"+updatedWorkSite.slug)
+            // toast.success("Recipe updated successfully !");
+            try {
+                // We redirect because it's possible the slug has changed. So we have to point to the right URL.
+                router.push(`/director/workSites/${updatedWorkSite.slug}/update`);
+            } catch (err) {
+                console.error("Redirection failed :", err);
             }
+    
+                        
         }catch (error) {
-            console.error("Erreur lors de la modification du chantier :", error);
-            // toast.error("There was a problem with updating your recipe. Please try again!");
+            console.error("Erreur lors de la mise à jour du devis :", error);
         }
-
+            
     };
-
 
     return (
         <>
@@ -127,7 +117,7 @@ const modifyWorkSite = ({ params }: { params: Promise<{ workSiteSlug: string }>}
             <form 
                 onSubmit={(e) => {
                     e.preventDefault();
-                    handleSubmit();
+                    handleWorkSitetUpdate();
                 }}
             >
                 {/* WorkSite title */}

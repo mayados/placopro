@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from "react";
 import { Field,Input, Select } from '@headlessui/react';
 import { useRouter } from "next/navigation";
+import { fetchCompany, updateCompany } from "@/services/api/companyService";
 // import toast, { Toaster } from 'react-hot-toast';
 
 const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) => {
@@ -14,18 +15,21 @@ const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) 
       
 
     useEffect(() => {
-        async function fetchCompany() {
-          // Params is now asynchronous. It's a Promise
-          // So we need to await before access its properties
-          const resolvedParams = await params;
-          const companySlug = resolvedParams.companySlug;
-    
-          const response = await fetch(`/api/companies/${companySlug}`);
-          const data: CompanyTypeSingle = await response.json();
-          setCompany(data.company);
+        async function loadCompany() {
+            // Params is now asynchronous. It's a Promise
+            // So we need to await before access its properties
+            const resolvedParams = await params;
+            const companySlug = resolvedParams.companySlug;
+                    
+            try{
+            const data = await fetchCompany(companySlug)
+            setCompany(data.company);
+            }catch (error) {
+                console.error("Impossible to load the company :", error);
+            }
         }
-    
-        fetchCompany();
+                
+          loadCompany();
   }, [params]);
     
   if (!company) return <div>Chargement des détails de l'entreprise...</div>;
@@ -50,39 +54,26 @@ const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) 
           
     };
 
+  const handleCompanyUpdate = async () => {
 
-    const handleSubmit = async () => {
         try{
-            console.log("Nom de l entreprise : "+company.name)
 
-            const response = await fetch(`/api//companies/${company.slug}`, {
-              method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(company),
-            });
-            if (response.ok) {
-                const data = await response.json();
-                console.log("data renvoyés : "+data)
-                const updatedCompany = data.updatedCompany;
-                setCompany(updatedCompany);
-                console.log("updated entreprise :"+updatedCompany.slug)
-                // toast.success("Recipe updated successfully !");
-                try {
-                    // We redirect because it's possible the slug has changed. So we have to point to the right URL.
-                    router.push(`/director/companies/${updatedCompany.slug}/update`);
-                } catch (err) {
-                    console.error("Redirection failed :", err);
-                }
+            const data = await updateCompany(company)
+            const updatedCompany = data;
+            setCompany(updatedCompany);
+            console.log("updated company :"+updatedCompany.slug)
+            // toast.success("Recipe updated successfully !");
+            try {
+                // We redirect because it's possible the slug has changed. So we have to point to the right URL.
+                router.push(`/director/companies/${updatedCompany.slug}/update`);
+            } catch (err) {
+                console.error("Redirection failed :", err);
             }
-        }catch (error) {
-            console.error("Erreur lors de la modification de l'entreprise :", error);
-            // toast.error("There was a problem with updating your recipe. Please try again!");
+
+        }catch(error){
+            console.error("Impossible to update the company :", error);
         }
-
-    };
-
+    }
 
     return (
         <>
@@ -92,7 +83,7 @@ const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) 
             <form 
                 onSubmit={(e) => {
                     e.preventDefault();
-                    handleSubmit();
+                    handleCompanyUpdate();
                 }}
             >
                 {/* Company name */}

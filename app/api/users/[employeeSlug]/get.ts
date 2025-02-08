@@ -33,7 +33,7 @@ export async function GET(req: NextRequest, {params}: {params: {employeeSlug: st
 
 
         return NextResponse.json({
-            employee: employee
+            employee
         })
 
     } catch (error) {

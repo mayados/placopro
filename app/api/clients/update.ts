@@ -184,7 +184,7 @@ if ((prospectNumber !== null)&&(prospectNumber !== undefined)) {
 
         return NextResponse.json({
                 success: true, 
-                updatedClient: updatedClient,
+                updatedClient,
                 status: 200,
 
             });

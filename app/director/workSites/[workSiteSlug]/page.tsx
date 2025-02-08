@@ -2,6 +2,7 @@
 
 import { useEffect, useState, use } from "react";
 import { formatDate } from '@/lib/utils'
+import { fetchWorkSite } from "@/services/api/workSiteService";
 // import toast, { Toaster } from 'react-hot-toast';
 // import { useRouter } from "next/navigation";
 
@@ -11,18 +12,23 @@ const WorkSite = ({ params }: { params: Promise<{ workSiteSlug: string }>}) => {
 
     
         useEffect(() => {
-          async function fetchWorkSite() {
-            // Params is now asynchronous. It's a Promise
-            // So we need to await before access its properties
-            const resolvedParams = await params;
-            const workSiteSlug = resolvedParams.workSiteSlug;
+            async function loadWorkSite() {
+                // Params is now asynchronous. It's a Promise
+                // So we need to await before access its properties
+                const resolvedParams = await params;
+                const workSiteSlug = resolvedParams.workSiteSlug;
+          
+            try{
+                const data = await fetchWorkSite(workSiteSlug)
+                setWorkSite(data.workSite);
+
+            }catch (error) {
+                    console.error("Impossible to load the workSite :", error);
+                }
+            }
       
-            const response = await fetch(`/api/workSites/${workSiteSlug}`);
-            const data: WorkSiteTypeSingle = await response.json();
-            setWorkSite(data.workSite);
-          }
-      
-          fetchWorkSite();
+          loadWorkSite();
+
         }, [params]);
       
         if (!workSite) return <div>Loading...</div>;
