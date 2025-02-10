@@ -8,7 +8,6 @@ model Bill{
     vatAmount Float
     issueDate DateTime
     dueDate DateTime
-    isPaid Boolean
     paymentDate DateTime?
 
 	// Bill is created by a User
