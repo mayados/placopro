@@ -1,6 +1,12 @@
 model BillService{
     id String @id @default(auto()) @map("_id") @db.ObjectId
-
+    quantity Float
+    totalHT Float
+    vatAmount Float
+    totalTTC Float
+    detailsService String
+    discount String
+    discountType String
 	// BillService is linked to a Bill
     billId String @db.ObjectId
     bill Bill @relation(fields: [billId], references: [id], onUpdate: Cascade, onDelete: Cascade)
