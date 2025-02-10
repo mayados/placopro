@@ -215,11 +215,47 @@ interface BillType{
     vatAmount: number;
     issueDate: Date;
     dueDate: Date;
-    isPaid: boolean;
+    status: string;
     paymentDate?: Date;
     author: UserType;
     client: ClientType;
     services: BillServiceType[];
+}
+
+interface BillForListType{
+    id: string;
+    number: string;
+    client: ClientType;
+    issueDate: Date;
+    dueDate: Date;
+    status: string;
+}
+
+interface BillTypeSingle{
+    bill: BillType;
+}
+
+interface UpdatedBillFormValueType{
+    id: string | null;
+    number: number| null;
+    natureOfWork: string | null;
+    description: string | null;
+    totalHt: number | null;
+    totalTtc: number | null;
+    vatAmount: number | null;
+    issueDate: Date | null;
+    dueDate: Date | null;
+    paymentDate?: Date | null;
+    status: string | null,
+    author: string | null;
+    client: string | null;
+    services: BillServiceType[];
+}
+
+interface FormValuesUpdateNotDraftBill{
+    id: string | null,
+    status: string | null,
+    paymentDate: Date | null,
 }
 
 interface QuoteType{
@@ -342,8 +378,56 @@ interface QuotesWithTotalsAndStatus{
     totalRefusedQuotes : number,
 }
 
+interface BillsWithTotalsAndStatus{
+    success: boolean,
+    bills: BillForListType[],
+    draftBills: BillForListType[],
+    readyToBeSentBills: BillForListType[],
+    sentBills: BillForListType[],
+    canceledBills: BillForListType[],
+    totalBills : number,
+    totalDraftBills : number,
+    totalReadyToBeSentBills : number,
+    totalSentBills : number,
+    totalAcceptedBills : number,
+    totalCanceledBills : number,
+}
+
+interface BillFormValueType{
+    validityEndDate: string,
+    natureOfWork: string,
+    description: string,
+    workStartDate: string,
+    estimatedWorkEndDate: string,
+    estimatedWorkDuration: string,
+    vatAmount: number,
+    isQuoteFree: string,
+    hasRightOfWithdrawal: string,
+    priceTTC: number,
+    priceHT: number,
+    travelCosts: number,
+    hourlyLaborRate: number,
+    paymentTerms: string,
+    paymentDelay: number,
+    latePaymentPenalities: number,
+    recoveryFees: number,
+    withdrawalPeriod: number,
+    quoteCost: number,
+    clientId: string | null,
+    workSiteId: string | null,
+    services: ServiceFormQuoteType[],
+    serviceType: string,
+}
+
 interface BillServiceType{
     id: string;
+    quantity: number,
+    totalHT: number,
+    vatAmount: number,
+    totalTTC: number,
+    detailsService: string,
+    discount: ,
+    discountType: ,
 }
 
 interface ServiceType{
