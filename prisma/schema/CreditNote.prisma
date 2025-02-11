@@ -1,0 +1,19 @@
+// "avoir" in french
+model CreditNote {
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+    number Int @unique
+    issueDate DateTime 
+    // mistake, return..
+    reason String 
+    // amount (positive if refund)
+    amount Float
+    // Indicates if the creditNote has been refunded
+    isRefunded Boolean @default(false) 
+
+    // Linked to a Bill (mandatory)
+    billId String @db.ObjectId
+    bill Bill @relation(fields: [billId], references: [id], onDelete: Cascade)
+
+
+    @@index([billId])
+}

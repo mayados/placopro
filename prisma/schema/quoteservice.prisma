@@ -7,6 +7,10 @@ model QuoteService{
     unit String
     vatRate String
     detailsService String
+    discountReason String?
+    discountAmount Float @default(0)  
+    discountPercentage Float? 
+
 	// QuoteService is linked to 1 Quote
     quoteId String @db.ObjectId
     quote Quote @relation(fields: [quoteId], references: [id], onUpdate: Cascade, onDelete: Cascade)

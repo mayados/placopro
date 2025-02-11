@@ -9,6 +9,13 @@ model Bill{
     issueDate DateTime
     dueDate DateTime
     paymentDate DateTime?
+    discountReason String?
+    // global discount (HT amount)
+    discountAmount Float @default(0) 
+    // Optionnal : discount in %
+    discountPercentage Float? 
+    // To know if the discount comes from the Quote
+    isDiscountFromQuote Boolean @default(false) 
 
 	// Bill is created by a User
     userId String @db.ObjectId
@@ -18,6 +25,8 @@ model Bill{
     client Client @relation(fields: [clientId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
 	services BillService[]
+    creditNotes CreditNote[]
+
     @@index([userId])
     @@index([clientId])
 }
