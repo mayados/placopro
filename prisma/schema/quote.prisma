@@ -53,6 +53,11 @@ model Quote{
     // Délai de rétractation (en jours)
     withdrawalPeriod Int? 
     userId String
+    discountReason String?
+    // global discount HT amount
+    discountAmount Float @default(0) 
+    // in % 
+    discountPercentage Float? 
 
 	// Quote is created by a User
 

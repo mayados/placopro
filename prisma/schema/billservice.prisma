@@ -5,8 +5,12 @@ model BillService{
     vatAmount Float
     totalTTC Float
     detailsService String
-    discount String
-    discountType String
+    // For fidelity, special discount ..
+    discountReason String?
+    // HT discount for this service
+    discountAmount Float @default(0)  
+    discountPercentage Float?
+
 	// BillService is linked to a Bill
     billId String @db.ObjectId
     bill Bill @relation(fields: [billId], references: [id], onUpdate: Cascade, onDelete: Cascade)
