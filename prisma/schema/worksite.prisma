@@ -21,7 +21,7 @@ model WorkSite{
 
     quotes Quote[]
     plannings Planning[]
-
+    bills Bill[]  
 
         @@index([clientId])	
 } 
