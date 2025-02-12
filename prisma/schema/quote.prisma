@@ -70,6 +70,8 @@ model Quote{
     workSiteId String @db.ObjectId
     workSite WorkSite @relation(fields: [workSiteId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
+    // Bills generated from the Quote
+    bills Bill[]
 	services QuoteService[]
     // @@index([userId])
     @@index([clientId])
