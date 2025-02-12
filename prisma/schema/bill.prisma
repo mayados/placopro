@@ -9,6 +9,9 @@ model Bill{
     issueDate DateTime
     dueDate DateTime
     paymentDate DateTime?
+    canceledAt DateTime?
+    status String @default("draft")
+    paymentMethod String?
     discountReason String?
     // global discount (HT amount)
     discountAmount Float @default(0) 
@@ -23,6 +26,14 @@ model Bill{
 	// One Bill is linked to 1 Client
     clientId String @db.ObjectId
     client Client @relation(fields: [clientId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+    // In all cases, a Bill is linked to a WorkSite
+    workSiteId String @db.ObjectId
+    workSite WorkSite @relation(fields: [workSiteId], references: [id])
+
+    // in the case where the Bill comes from a Quote
+    quoteId String? @db.ObjectId
+    quote Quote? @relation(fields: [quoteId], references: [id], onUpdate: Cascade, onDelete: SetNull)
 
 	services BillService[]
     creditNotes CreditNote[]
