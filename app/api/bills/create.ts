@@ -9,19 +9,21 @@ export async function POST(req: NextRequest) {
     console.log("Données reçues dans la requête :", data);
 
     const { 
-            Number,
-            natureOfWork,
-            Description,
-            totalHt,
-            totalTtc,
-            vatAmount,
-            issueDate,
-            dueDate,
-            paymentDate,
-            status,
-            author,
-            Client,
-            services,
+          number,
+          dueDate,
+          natureOfWork,
+          description,
+          issueDate,
+          vatAmount,
+          totalTtc,
+          totalHt,
+          serviceType,
+          workSiteId,
+          quoteId,
+          clientId,
+          services,
+          servicesToUnlink,
+          status
         } = data;
             // currentUser() is a founction from Clerk which allows to retrieve the current User
             const user = await currentUser()
@@ -40,18 +42,19 @@ export async function POST(req: NextRequest) {
 
       const sanitizedData = {
         ...data,
-        Number,
+        number,
         natureOfWork,
-        Description,
+        description,
         totalHt: parseFloat(data.totalHt) || 0,
         totalTtc: parseFloat(data.totalTtc) || 0,
-        vatAmount: parseFloat(data.vatAmount) || 0,,
+        vatAmount: parseFloat(data.vatAmount) || 0,
         issueDate: data.issueDate ? new Date(data.issueDate).toISOString() : null,
         dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : null,
         paymentDate: data.paymentDate ? new Date(data.paymentDate).toISOString() : null,
         status,
-        author,
-        Client,
+        clientId,
+        workSiteId,
+        quoteId,
         services,
     };
 
@@ -101,7 +104,7 @@ export async function POST(req: NextRequest) {
               });
             }
           
-            // Generate quote's number (for example : DEV-2025-3 for the third quote of 2025)
+            // Generate bill's number (for example : DEV-2025-3 for the third quote of 2025)
             const formattedNumber = `${"FAC"}-${currentYear}-${nextNumber}`;
           
             return formattedNumber;
@@ -207,48 +210,34 @@ export async function POST(req: NextRequest) {
       );
       
     
-        // We create the quote thanks to te datas retrieved
-        const quote = await db.quote.create({
+        // We create the bill thanks to te datas retrieved
+        const bill = await db.bill.create({
             data: {
-                number: quoteNumber,
+                number: billNumber,
                 issueDate : new Date().toISOString(), 
-                validityEndDate: sanitizedData.validityEndDate, 
+                dueDate: sanitizedData.validityEndDate, 
                 natureOfWork: sanitizedData.natureOfWork, 
                 description: sanitizedData.description, 
-                workStartDate: sanitizedData.workStartDate, 
-                estimatedWorkEndDate: sanitizedData.estimatedWorkEndDate, 
-                estimatedWorkDuration: sanitizedData.estimatedWorkDuration, 
-                isQuoteFree: sanitizedData.isQuoteFree, 
-                quoteCost: sanitizedData.quoteCost, 
-                status: "Ready to be send", 
+                status: status, 
                 vatAmount: 0,  
-                priceTTC: 0, 
-                priceHT: 0, 
-                travelCosts: sanitizedData.travelCosts, 
-                hourlyLaborRate: sanitizedData.hourlyLaborRate, 
-                paymentDelay: sanitizedData.paymentDelay,
-                paymentTerms: sanitizedData.paymentTerms,
-                latePaymentPenalties: sanitizedData.latePaymentPenalities,
-                recoveryFee: sanitizedData.recoveryFees,
-                isSignedByClient: false,
-                signatureDate: null,
-                hasRightOfWithdrawal: sanitizedData.hasRightOfWithdrawal,
-                withdrawalPeriod: sanitizedData.withdrawalPeriod,
+                totalTtc: 0, 
+                totalHt: 0, 
                 clientId: clientId,
                 workSiteId: workSiteId,
                 userId: user.id,
+                quoteId: quoteId
 
             },
         });
 
       // global variables to use later in the code for Quote update
-      let totalHtQuote = 0;
-      let vatAmountQuote = 0;
-      let totalTTCQuote = 0;
+      let totalHtBill = 0;
+      let vatAmountBill = 0;
+      let totalTTCBill = 0;
 
 
       // now we know each service is in the database, and the quote is created we can make operations on it
-      const quoteServices = await Promise.all(
+      const billServices = await Promise.all(
         data.services.map(async (service: ServiceAndQuoteServiceType) => {
           // First, we retrieve the id of the service, because now, all services have an ID. We can retrieve it thanks to its unique label. 
           const serviceRetrieved = await db.service.findUnique({
@@ -279,14 +268,13 @@ export async function POST(req: NextRequest) {
 
             console.log("les premieres variables de  calculs ont été effectués")
             // Each service count for the total of the Quote
-            totalHtQuote += totalHTService;
-            vatAmountQuote += vatAmountService;
-            totalTTCQuote += totalTTCService
-            console.log("dans les services, affichage ttc du devis  : "+totalTTCQuote)
+            totalHtBill += totalHTService;
+            vatAmountBill += vatAmountService;
+            totalTTCBill += totalTTCService
+            console.log("dans les services, affichage ttc du devis  : "+totalTTCBill)
             console.log("les calculs de la premiere version ont été effectués")
-            // Create QuoteService
-
-  
+            
+            // Create BillService
             const billService = await db.billService.create({
               data: {
                 vatRate: service.vatRate,
@@ -296,7 +284,7 @@ export async function POST(req: NextRequest) {
                 vatAmount: vatAmountService,
                 totalTTC: totalTTCService,
                 detailsService: service.detailsService,
-                quoteId: quote.id,
+                billId: bill.id,
                 serviceId: serviceRetrieved.id,
               },
             });  
@@ -307,30 +295,19 @@ export async function POST(req: NextRequest) {
         })
       )
 
-      // add travelCosts to totalHtQuote (which contains services costs HT)
-      totalHtQuote += parseFloat(travelCosts)
-      // Count vatAmount for travelCosts and add the result to vatAmountQuote
-      const vatAmountForTravelCosts = travelCosts * (20 / 100);
-      console.log("montant tva pour les trajets : "+vatAmountForTravelCosts)
-      vatAmountQuote += vatAmountForTravelCosts
-      console.log("montant tva du devis : "+vatAmountQuote)
-      // add totalTTC travelCosts to totalTTCQuote
-      totalTTCQuote += parseFloat(travelCosts) + Number(vatAmountForTravelCosts)
-      console.log("total du prix du devis : "+totalTTCQuote)
-
-        //update Quote
-        const newQuote = await db.quote.update({
-              where: { id: quote.id },
+        //update Bill
+        const newBill = await db.bill.update({
+              where: { id: bill.id },
               data: {
-                vatAmount: vatAmountQuote,
-                priceHT: Number(totalHtQuote),
-                priceTTC: totalTTCQuote,
+                vatAmount: vatAmountBill,
+                totalHt: Number(totalHtBill),
+                totalTtc: totalTTCBill,
               }
         })
 
-        console.log("Quote created with success.");
+        console.log("Bill created with success.");
         
-        return NextResponse.json({ success: true, data: newQuote });
+        return NextResponse.json({ success: true, data: newBill });
 
 
     } catch (error) {

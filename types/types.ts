@@ -222,6 +222,24 @@ interface BillType{
     services: BillServiceType[];
 }
 
+interface CreateBillFormValueType{
+    number: string | null;
+    dueDate: string | null;
+    natureOfWork: string | null,
+    description: string | null,
+    issueDate: string | null,
+    vatAmount: number | null,
+    totalTtc: number | null,
+    totalHt: number | null;
+    serviceType: string | null;
+    workSiteId: string | null;
+    quoteId:  string | null | undefined,
+    clientId:  string | null,
+    services: ServiceFormQuoteType[] | [];
+    servicesToUnlink: ServiceFormQuoteType[] | [];
+    status: string | null;
+}
+
 interface BillForListType{
     id: string;
     number: string;
@@ -421,13 +439,16 @@ interface BillFormValueType{
 
 interface BillServiceType{
     id: string;
+    label: string,
+    type: string,
+    vatRate: string,
+    unit: string, 
     quantity: number,
-    totalHT: number,
-    vatAmount: number,
-    totalTTC: number,
     detailsService: string,
-    discount: ,
-    discountType: ,
+    service: ServiceType,
+    vatAmount: number,
+    totalHT: number,
+    totalTTC: number,
 }
 
 interface ServiceType{

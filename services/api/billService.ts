@@ -45,7 +45,7 @@ export const deleteBill = async (billId: string): Promise<void> => {
 };
 
 // Create bill
-export const createBill = async (bill: BillFormValueType): Promise<BillType> => {
+export const createBillFromQuote = async (bill: CreateBillFormValueType): Promise<BillType> => {
     try {
         const response = await fetch(`/api/bills`, {
             method: "POST",

@@ -3,6 +3,8 @@ model BillService{
     quantity Float
     totalHT Float
     vatAmount Float
+    unit String
+    vatRate String
     totalTTC Float
     detailsService String
     // For fidelity, special discount ..
@@ -10,6 +12,7 @@ model BillService{
     // HT discount for this service
     discountAmount Float @default(0)  
     discountPercentage Float?
+
 
 	// BillService is linked to a Bill
     billId String @db.ObjectId

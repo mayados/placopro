@@ -12,6 +12,7 @@ import { fetchQuote, updateDraftQuote } from "@/services/api/quoteService";
 import { fetchVatRates } from "@/services/api/vatRateService";
 import { fetchUnits } from "@/services/api/unitService";
 import { fetchSuggestions } from "@/services/api/suggestionService";
+import { createBillFromQuote } from "@/services/api/billService";
 
 // import toast, { Toaster } from 'react-hot-toast';
 
@@ -30,14 +31,14 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
         services: [],
         servicesToUnlink: [],
         serviceType: null,
-        workSite: null,
-        client: null,
+        workSiteId: null,
+        // client: null,
         quoteId: null as string | null,
+        status: null,
+        number: null,
     })
     // Define options for select for services
     const serviceTypeChoices = ["plâtrerie","Peinture"];
-    // Define options for select for payment method
-    const paymentMethodTypeChoices = ["Espèces","Chèque","Virement"];
     const [vatRateChoices, setVatRateChoices] = useState<VatRateChoiceType[]>([])
     const [unitChoices, setUnitChoices] = useState<UnitChoiceType[]>([])
     // Allows to know if a bill is registered as a draft or ready (to be send)
@@ -58,6 +59,7 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
 
 
     useEffect(() => {
+        console.log("Mon composant est monté !");
 
         // The Bill here is generated from a Quote, so we need to get the Quote
         async function loadQuote() {
@@ -71,6 +73,11 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
                     setCreateBillFormValues({
                         ...createBillFormValues,
                         number: data.quote.number,
+                        totalTtc: data.quote.priceHT,
+                        totalHt: data.quote.priceTTC,
+                        clientId: data.quote.client.id,
+                        workSiteId: data.quote.workSite.id,
+                        quoteId: data.quote.id
                     });
                       setQuote(data.quote);
 
@@ -102,11 +109,7 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
         loadQuote();
         loadVatRates();
         loadUnits();
-    },[]);
-
-        quote?.services.map((service, index) => (
-            console.log("Un des services récupérés du devis en database : " +service)
-        ))
+    },[params]);
 
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -124,6 +127,7 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
         }else if(name === "vatRate"){
             setVatRateInput(value)
         }
+    }
 
     //   Retrieve datas from the radio buttons. Because they are in a RadioGroup, we can't retrieve the value just thanks to an event, we have to get the name (of the group) + the value selected
     const handleRadioChange = (name: string, value: string) => {
@@ -180,7 +184,7 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
                 return
             }
 
-            const data = await createBillFromQuote(quote?.number, createBillWithStatus)
+            const data = await createBillFromQuote(createBillWithStatus)
             console.log("data renvoyés : "+data)
             const createdBill = data;
             console.log("voici la bill crééé : "+createdBill.number)
@@ -344,22 +348,19 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
                     <label htmlFor="client">Client</label>
                     <Field className="w-full">
                         <Input type="text" name="client" 
-                            value={createBillFormValues.client !== null
-                                ? createBillFormValues.client
-                                : quote?.client.name || ""}
+                            value={quote.client.name+" "+quote.client.firstName}
                             className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             readOnly
                         >
                         </Input>
                     </Field>                
                 </div>
-                <h2>Chantier</h2>
                 {/* WorkSite of the quote */}
                 <div>
                     <label htmlFor="workSite">Chantier</label>
                     <Field className="w-full">
                         <Input type="text" name="workSite" 
-                            value={quote?.workSite.addressNumber+" "+ quote?.workSite.road+" "+quote?.workSite.additionnalAddress+" "+quote?.workSite.postalCode+" "+quote?.workSite.city}
+                            value={`${quote?.workSite.addressNumber} ${quote?.workSite.road} ${quote?.workSite.additionnalAddress ? quote?.workSite.additionnalAddress + " " : ""}${quote?.workSite.postalCode} ${quote?.workSite.city}`}
                             className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             readOnly
                         >
@@ -390,28 +391,6 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
                             onChange={handleInputChange}
                         >
                         </Textarea>
-                    </Field>
-                </div>
-                {/* Work start date */}
-                <div>
-                    <label htmlFor="workStartDate">Date prévue de début des travaux</label>
-                    <Field className="w-full">
-                        <Input type="date" name="workStartDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={formatDateForInput(quote.workSite.beginsThe)}
-                            onChange={handleInputChange}
-                        >
-                        </Input>
-                    </Field>
-                </div>
-                {/* Estimated work end date */}
-                <div>
-                    <label htmlFor="estimatedWorkEndDate">Date prévue de fin des travaux</label>
-                    <Field className="w-full">
-                        <Input type="date" name="estimatedWorkEndDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={formatDateForInput(quote.workSite.completionDate)}
-                            readOnly
-                        >
-                        </Input>
                     </Field>
                 </div>
             <h2>Services</h2>
@@ -588,26 +567,11 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
                     <label htmlFor="dueDate">Date limite de paiement</label>
                     <Field className="w-full">
                         <Input type="date" name="dueDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={formatDateForInput(quote.validityEndDate)}
+                            value={formatDateForInput(createBillFormValues.dueDate)}
                             onChange={handleInputChange}
                         >
                         </Input>
                     </Field>
-                </div>
-                {/* payment Method */}
-                <div>
-                    <label htmlFor="paymentMethod">Termes de paiement</label>
-                    <Select
-                        name="type"
-                        value={paymentMethod.type || ""}
-                        disabled
-                        className="w-full rounded-md bg-gray-700 text-white pl-3"
-                    >
-                    <option value="">Type de service</option>
-                        {paymentMethodTypeChoices.map((type) => (
-                            <option key={type} value={type}>{type}</option>
-                        ))}
-                    </Select>
                 </div>
                 <button 
                     className="bg-red-400"
@@ -615,7 +579,7 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
                     onClick={() => {
                         handleBillCreation(); 
                     }}
-                    >Modifier et enregistrer à l'état de brouillon
+                    >Enregistrer à l'état de brouillon
                 </button>
                 <button
                     // type="button" avoid the form to be automatically submitted
@@ -657,4 +621,7 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
 };
 
 
+
 export default CreationBillFromQuote;
+
+
