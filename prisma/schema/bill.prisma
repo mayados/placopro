@@ -1,6 +1,6 @@
 model Bill{
     id String @id @default(auto()) @map("_id") @db.ObjectId
-    number Int @unique
+    number String @unique
     natureOfWork String
     description String
     totalHt Float
