@@ -237,6 +237,7 @@ interface CreateBillFormValueType{
     clientId:  string | null,
     services: ServiceFormQuoteType[] | [];
     servicesToUnlink: ServiceFormQuoteType[] | [];
+    servicesAdded: ServiceFormQuoteType[] | [];
     status: string | null;
 }
 

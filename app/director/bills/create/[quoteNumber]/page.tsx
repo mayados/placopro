@@ -30,6 +30,7 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
         clientId: null as string | null,
         services: [],
         servicesToUnlink: [],
+        servicesAdded: [],
         serviceType: null,
         workSiteId: null,
         // client: null,
@@ -42,7 +43,7 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
     const [vatRateChoices, setVatRateChoices] = useState<VatRateChoiceType[]>([])
     const [unitChoices, setUnitChoices] = useState<UnitChoiceType[]>([])
     // Allows to know if a bill is registered as a draft or ready (to be send)
-    // const [status, setStatus] = useState<"Draft" | "Ready">("Draft");
+    const [status, setStatus] = useState<"Draft" | "Ready">("Draft");
     const [isOpen, setIsOpen] = useState(false);
 
 
@@ -77,7 +78,10 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
                         totalHt: data.quote.priceTTC,
                         clientId: data.quote.client.id,
                         workSiteId: data.quote.workSite.id,
-                        quoteId: data.quote.id
+                        quoteId: data.quote.id,
+                        vatAmount: data.quote.vatAmount,
+                        natureOfWork: data.quote.natureOfWork,
+                        description: data.quote.description
                     });
                       setQuote(data.quote);
 
@@ -234,6 +238,20 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
               detailsService: "",
             },
           ],
+          servicesAdded: [
+            ...createBillFormValues.servicesAdded,
+            {
+                id : null,
+              label: "",
+              unitPriceHT: "",
+              type: "",
+              unit: "",
+              vatRate: "",
+              selectedFromSuggestions: false,
+              quantity: 0,
+              detailsService: "",
+            },
+          ]
         });
       };
 
@@ -567,7 +585,6 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
                     <label htmlFor="dueDate">Date limite de paiement</label>
                     <Field className="w-full">
                         <Input type="date" name="dueDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={formatDateForInput(createBillFormValues.dueDate)}
                             onChange={handleInputChange}
                         >
                         </Input>

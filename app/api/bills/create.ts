@@ -23,10 +23,12 @@ export async function POST(req: NextRequest) {
           clientId,
           services,
           servicesToUnlink,
+          servicesAdded,
           status
         } = data;
             // currentUser() is a founction from Clerk which allows to retrieve the current User
             const user = await currentUser()
+            console.log("le user actuel : "+user)
     if (!data) {
         return NextResponse.json({ success: false, message: "Aucune donnée reçue." }, { status: 400 });
     }
@@ -58,78 +60,142 @@ export async function POST(req: NextRequest) {
         services,
     };
 
+    let newBill;
 
-      // Generate an unique and chronological bill's number
-      const generateBillNumber = async (type = "bill") => {
-            const currentYear = new Date().getFullYear();
-          
-            // Get the counter for current year for quote
-            let counter = await db.documentCounter.findFirst({
-              where: {
-                year: currentYear,
-                type: type, 
-              },
-            });
-          
-            // Default value if there is no existing counter
-            let nextNumber = 1; 
-          
-            if (!counter) {
-              // If the counter doesn't exist, define a counter base on fixed values
-              // It's the case if quotes were created this year, before the release of the application. Because they won't be put in the application
-              if (type === "bill" && currentYear === 2025) {
-                // Begin at 3 if 2 quotes were already created
-                nextNumber = 3; 
-              }
-              else {
-                // For the other cases, begin at 1
-                nextNumber = 1; 
-              }
-                        // Create a new counter
-              await db.documentCounter.create({
-                data: {
-                  year: currentYear,
-                  type: type,
-                  current_number: nextNumber,
-                },
-              });
-            } else {
-              // If a coounter exists, increment the number
-              nextNumber = counter.current_number + 1;
-          
-              // update the counter in the database
-              await db.documentCounter.update({
-                where: { id: counter.id },
-                data: { current_number: nextNumber },
-              });
-            }
-          
-            // Generate bill's number (for example : DEV-2025-3 for the third quote of 2025)
-            const formattedNumber = `${"FAC"}-${currentYear}-${nextNumber}`;
-          
-            return formattedNumber;
-      };
 
+    const generateBillNumber = async (type = "bill") => {
+      const currentYear = new Date().getFullYear();
+  
+      // Vérifier si le compteur existe déjà
+      let counter = await db.documentCounter.findFirst({
+          where: { year: currentYear, type },
+      });
+  
+      // Si le compteur n'existe pas, le créer avec une valeur spécifique
+      if (!counter) {
+          let startValue = 1; // Valeur par défaut
+  
+          // Appliquer des valeurs fixes selon l'année et le type de document
+          if (type === "bill" && currentYear === 2025) {
+              startValue = 3; // Commencer à 3 pour les bills en 2025
+          }
+  
+          counter = await db.documentCounter.create({
+              data: { year: currentYear, type, current_number: startValue },
+          });
+      } else {
+          // Sinon, on l'incrémente directement
+          counter = await db.documentCounter.update({
+              where: { id: counter.id },
+              data: { current_number: { increment: 1 } },
+          });
+      }
+  
+      // Générer le numéro de facture (ex: FAC-2025-3)
+      return `FAC-${currentYear}-${counter.current_number}`;
+  };
+  
       const billNumber =  await generateBillNumber();
-      
-      // for each data.services : see if it already exists. If it's the case, it has an id. In the other case, the Id is null.
-      // we wait for all the promises to be resolved before to continue
-      const servicesManaged = await Promise.all(
-        data.services.map(async (service: ServiceType) => {
-          // Retrieve unit from database for each service : already existing because we have a list of it when creating the quote
-          const serviceUnit = await db.unit.findUnique({
-            where: { label: service.unit },
-          });
-      
-          // Retrieve vatRate from database for each service : already existing because we have a list of it when creating the quote
-          const serviceVatRate = await db.vatRate.findUnique({
-            where: { rate: parseFloat(service.vatRate) },
-          });
-      
-          // If the service has an id = already exists. We retrieve it from the database
-          if (service.id) {
-            console.log("je rentre dans le cas où l'id du service existe");
-      
+
+      // Verify if servicesToUnlink and servicesAdded both = 0 
+      if(servicesToUnlink.length === 0 && servicesAdded.length === 0){
+          // We create the bill thanks to te datas retrieved. No counts to make because everything is the same than in the quote.
+          const newBill = await db.bill.create({
+            data: {
+                number: billNumber,
+                issueDate : new Date().toISOString(), 
+                dueDate: sanitizedData.dueDate, 
+                natureOfWork: natureOfWork, 
+                description: sanitizedData.description, 
+                status: status, 
+                vatAmount: vatAmount,  
+                totalTtc: totalTtc, 
+                totalHt: totalHt, 
+                userId: user.id,
+                // clientId: clientId,
+                client: {
+                  connect: { id: clientId }
+              },
+              workSite: {
+                  connect: { id: workSiteId }
+              },
+              quote: quoteId ? {
+                  connect: { id: quoteId }
+              } : undefined
+            },
+        });
+
+        console.log("Bill created with success.");
+
+      }
+
+      // verify if there is change in servicesToUnlink and / or servicesAdded 
+      if((servicesToUnlink.length > 0 && servicesAdded.length > 0) || (servicesToUnlink.length > 0 && servicesAdded.length === 0) || (servicesToUnlink.length === 0 && servicesAdded.length > 0)){
+
+        let newTotalHt = totalHt
+        let newTotalTtc = totalTtc
+        let newVatAmount = vatAmount
+        const updateData: Record<string, string | number | boolean> = {};
+
+
+        // In all the case we create the Bill, then we will update it
+        const bill = await db.bill.create({
+          data: {
+              number: billNumber,
+              issueDate : new Date().toISOString(), 
+              dueDate: sanitizedData.dueDate, 
+              natureOfWork: sanitizedData.natureOfWork, 
+               description: sanitizedData.description, 
+              status: status, 
+              vatAmount: vatAmount,  
+              totalTtc: totalTtc, 
+              totalHt: totalHt, 
+              clientId: clientId,
+              workSiteId: workSiteId,
+              userId: user.id,
+              quoteId: quoteId
+    
+          },
+      });
+
+        // If services unlinked => for each service, delete the associated billService, count and minus it to the quote's total
+        if(servicesToUnlink.length > 0){
+          for (const service of servicesToUnlink) {
+            const totalHTService = service.unitPriceHT * service.quantity;
+            const vatRateService = parseFloat(service.vatRate);
+            const vatAmountService = service.vatAmount * (vatRateService/100)
+            const totalTTCService = totalHTService + vatAmountService
+  
+            newTotalHt -= totalHTService;
+            newTotalTtc -= totalTTCService;
+            newVatAmount -= vatAmountService;
+
+            Object.assign(updateData, {
+              totalHtHT: Math.max(0, newTotalHt),
+              vatAmount: Math.max(0, newVatAmount),
+              totalTtc: Math.max(0, newTotalTtc)
+            });
+  
+            await db.billService.delete({
+              where: { id: service.id },
+            });
+          }
+        }
+
+        // If services added => for each service,verify if it already exists in database, create a billService, count and add it to the quote's total
+        if(servicesAdded.length > 0){
+          for (const service of servicesAdded) {
+
+            const totalHTService = service.unitPriceHT * service.quantity;
+            const vatRateService = parseFloat(service.vatRate);
+            const vatAmountService = service.vatAmount * (vatRateService/100)
+            const totalTTCService = totalHTService + vatAmountService
+  
+            newTotalHt += totalHTService;
+            newTotalTtc += totalTTCService;
+            newVatAmount += vatAmountService;
+
+            // verify if the service already exists
             const existingService = await db.service.findUnique({
               where: { id: service.id },
               include: {
@@ -137,177 +203,86 @@ export async function POST(req: NextRequest) {
                 vatRates: true,
               },
             });
-      
-            if (!existingService) {
-              console.error("Le service avec cet ID n'existe pas :", service.id);
-              return null;
-            }
-      
-            // if the unit isn't contained in the list of the units of the service, we create it (entity ServiceUnint)
-            if (serviceUnit && !existingService.units.some(unit => unit.id === serviceUnit.id)) {
-              await db.serviceUnit.create({
+
+            
+            if(existingService){
+              // create a billService
+              const billService = await db.billService.create({
                 data: {
-                  unitId: serviceUnit.id,
-                  serviceId: existingService.id,
+                  vatRate: service.vatRate,
+                  unit: service.unit,
+                  quantity: Number(service.quantity),
+                  totalHT: service.totalHt,
+                  vatAmount: service.vatAmount,
+                  totalTTC: service.totalTTC,
+                  detailsService: service.detailsService,
+                  billId: bill.id,
+                  serviceId: service.id,
                 },
-              });
+              });  
             }
-      
-            // if the vatRate isn't contained in the list of the vatRates of the service, we create it (entity ServiceVatRate)
-            if (serviceVatRate && !existingService.vatRates.some(vatRate => vatRate.id === serviceVatRate.id)) {
-              await db.serviceVatRate.create({
-                data: {
-                  vatRateId: serviceVatRate.id,
-                  serviceId: existingService.id,
-                },
-              });
-            }
-      
-            console.log("VatRate added to the list of vatRates of the service (new serviceVatRate created):", service.id);
-            return existingService;
-      
-          } else {
-            //  If the service doesn't have an ID, we create it but also create : ServiceUnit, ServiceVatRate,
-            console.log("je rentre dans le cas où l'id du service est null ou undefined");
-      
-            try {
-              await db.$transaction(async (tx) => {
-                const createdService = await tx.service.create({
+            // If the service doesn't exists, create it, then create a billService
+            if(!existingService){
+              const createNewService = async (
+                service: ServiceAndQuoteServiceType,
+                quoteId: string,
+                updateData: Record<string, string | number | boolean>
+              ) => {
+                const serviceUnit = await db.unit.findUnique({
+                  where: { label: service.unit },
+                });
+              
+                const serviceVatRate = await db.vatRate.findUnique({
+                  where: { rate: parseFloat(service.vatRate) },
+                });
+              
+                const createdService = await db.service.create({
                   data: {
                     label: service.label,
-                    unitPriceHT: parseFloat(service.unitPriceHT),
+                    unitPriceHT: parseFloat(service.unitPriceHT.toString()),
                     type: service.type,
                   },
                 });
-      
-                const serviceId = createdService.id;
-      
+              
                 if (serviceUnit) {
-                  await tx.serviceUnit.create({
+                  await db.serviceUnit.create({
                     data: {
                       unitId: serviceUnit.id,
-                      serviceId,
+                      serviceId: createdService.id,
                     },
                   });
                 }
-      
+              
                 if (serviceVatRate) {
-                  await tx.serviceVatRate.create({
+                  await db.serviceVatRate.create({
                     data: {
                       vatRateId: serviceVatRate.id,
-                      serviceId,
+                      serviceId: createdService.id,
                     },
                   });
                 }
-      
-                console.log("Toutes les entités ont été créées avec succès pour le service :", service.label);
-              });
-            } catch (error) {
-              console.error("Erreur lors de la création du service :", error);
-            }
-          }
-        })
-      );
-      
-    
-        // We create the bill thanks to te datas retrieved
-        const bill = await db.bill.create({
-            data: {
-                number: billNumber,
-                issueDate : new Date().toISOString(), 
-                dueDate: sanitizedData.validityEndDate, 
-                natureOfWork: sanitizedData.natureOfWork, 
-                description: sanitizedData.description, 
-                status: status, 
-                vatAmount: 0,  
-                totalTtc: 0, 
-                totalHt: 0, 
-                clientId: clientId,
-                workSiteId: workSiteId,
-                userId: user.id,
-                quoteId: quoteId
-
-            },
-        });
-
-      // global variables to use later in the code for Quote update
-      let totalHtBill = 0;
-      let vatAmountBill = 0;
-      let totalTTCBill = 0;
-
-
-      // now we know each service is in the database, and the quote is created we can make operations on it
-      const billServices = await Promise.all(
-        data.services.map(async (service: ServiceAndQuoteServiceType) => {
-          // First, we retrieve the id of the service, because now, all services have an ID. We can retrieve it thanks to its unique label. 
-          const serviceRetrieved = await db.service.findUnique({
-            where: {
-              label:service.label
-            },
-            select : {
-              id: true,
-            }
-          })
-
-          if(serviceRetrieved){
-
-            console.log("le service "+service)
-            console.log("prix unitaire "+service.unitPriceHT)
-            // Calculs for each service to put datas in quoteService
-            console.log("type de données de unitPriceHt du service : "+typeof(service.unitPriceHT))
-            console.log("Type de quantity :", typeof service.quantity, "Valeur :", service.quantity);
-
-            let totalHTService = service.unitPriceHT * service.quantity;
-            console.log("total HT pour le service "+service.label+" : "+totalHTService+" €")
-            let vatRateService = parseFloat(service.vatRate);
-            let vatAmountService = totalHTService * (vatRateService / 100);
-            console.log("total montant de la TVA pour le service "+service.label+" : "+vatAmountService+" €")
-            let totalTTCService = totalHTService+vatAmountService; 
-            console.log("total TTC pour le service "+service.label+" : "+totalTTCService+" €")
-
-
-            console.log("les premieres variables de  calculs ont été effectués")
-            // Each service count for the total of the Quote
-            totalHtBill += totalHTService;
-            vatAmountBill += vatAmountService;
-            totalTTCBill += totalTTCService
-            console.log("dans les services, affichage ttc du devis  : "+totalTTCBill)
-            console.log("les calculs de la premiere version ont été effectués")
             
-            // Create BillService
-            const billService = await db.billService.create({
-              data: {
-                vatRate: service.vatRate,
-                unit: service.unit,
-                quantity: Number(service.quantity),
-                totalHT: totalHTService,
-                vatAmount: vatAmountService,
-                totalTTC: totalTTCService,
-                detailsService: service.detailsService,
-                billId: bill.id,
-                serviceId: serviceRetrieved.id,
-              },
-            });  
-            
+              };
+            }
+            Object.assign(updateData, {
+              totalHtHT: Math.max(0, newTotalHt),
+              vatAmount: Math.max(0, newVatAmount),
+              totalTtc: Math.max(0, newTotalTtc)
+            });
           }
 
-        
-        })
-      )
+          //update bill
 
-        //update Bill
-        const newBill = await db.bill.update({
-              where: { id: bill.id },
-              data: {
-                vatAmount: vatAmountBill,
-                totalHt: Number(totalHtBill),
-                totalTtc: totalTTCBill,
-              }
-        })
+          const newBill = await db.bill.update({
+            where: { number: bill.id },
+            data: updateData,
+          });
+        }
 
-        console.log("Bill created with success.");
-        
-        return NextResponse.json({ success: true, data: newBill });
+      }
+
+              
+      return NextResponse.json({ success: true, data: newBill });
 
 
     } catch (error) {
