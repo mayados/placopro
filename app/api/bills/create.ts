@@ -33,9 +33,9 @@ export async function POST(req: NextRequest) {
             status
         } = data;
 
-        // Exécuter toutes les opérations dans une transaction
+        // Execute all operations in one transaction for integrity
         const result = await db.$transaction(async (prisma) => {
-            // Génération du numéro de facture
+            // Generate bill number
             const currentYear = new Date().getFullYear();
             const counter = await prisma.documentCounter.upsert({
                 where: {
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
             });
             const billNumber = `FAC-${currentYear}-${counter.current_number}`;
 
-            // Création de la facture
+            // Bill creation
             const bill = await prisma.bill.create({
                 data: {
                     number: billNumber,
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
 
             if (servicesToUnlink.length === 0 && servicesAdded.length === 0) {
                 console.log("aucune modif, je crée tous les billServices");
-                // Cas 1: Aucune modification - traiter tous les services
+                // Case 1: No modification - treat all services
                 for (const service of services) {
                     await prisma.billService.create({
                         data: {
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
                     });
                 }
             } else {
-                // Cas 2: Il y a des modifications
+                // Case 2 : There are modifications
                 let newTotalHt = parseFloat(totalHt) || 0;
                 let newTotalTtc = parseFloat(totalTtc) || 0;
                 let newVatAmount = parseFloat(vatAmount) || 0;
