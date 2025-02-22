@@ -20,6 +20,7 @@ export async function GET(req: NextRequest)
             }            
         })
 
+        console.log("suggestions retrouvées dans l'api : "+JSON.stringify(suggestions))
 
         return NextResponse.json({ 
             success: true, 

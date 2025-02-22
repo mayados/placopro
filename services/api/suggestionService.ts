@@ -13,7 +13,7 @@ export const fetchSuggestions = async (
     } else if (type === "workSite") {
       endpoint = `/api/workSites?search=${search}`;
     } else if (type === "service") {
-      endpoint = `/api/service?search=${search}}`;
+      endpoint = `/api/service?search=${search}`;
     }
 
     const response = await fetch(endpoint);

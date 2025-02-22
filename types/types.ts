@@ -494,6 +494,24 @@ interface ServiceFormQuoteType{
     detailsService?: string,
 }
 
+interface ServiceFormBillType{
+    id: string | null,
+    label: string,
+    unitPriceHT?: string,
+    type?: string;
+    vatRate?: string;
+    unit?: string,
+    selectedFromSuggestions?: boolean,
+    quantity?: number,
+    detailsService?: string,
+    service?: { // Ajout du sous-objet service
+        id: string;
+        label: string;
+        unitPriceHT?: number;
+        type?: string;
+    };
+}
+
 
 interface ServiceSuggestionType{
     id: string,
