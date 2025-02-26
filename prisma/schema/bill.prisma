@@ -15,12 +15,19 @@ model Bill{
     status String @default("draft")
     paymentMethod String?
     discountReason String?
+    billType String
     // global discount (HT amount)
     discountAmount Float @default(0) 
     // Optionnal : discount in %
     discountPercentage Float? 
     // To know if the discount comes from the Quote
     isDiscountFromQuote Boolean @default(false) 
+    // Frais de déplacement
+    travelCosts Float
+    // Type de frais de déplacement (forfait unique / journalier...)
+    travelCostsType String
+      // Conditions de paiement
+    paymentTerms String
 
 	// Bill is created by a User
     // userId String? @db.ObjectId

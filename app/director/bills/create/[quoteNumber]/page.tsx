@@ -22,6 +22,9 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
     const [createBillFormValues, setCreateBillFormValues] = useState<CreateBillFormValueType>({
         dueDate: null,
         natureOfWork: null,
+        paymentTerms: "Le paiement doit être effectué dans les 30 jours suivant la réception de la facture.",
+        travelCosts: null,
+        travelCostsType: null,
         description: null,
         issueDate: null,
         vatAmount: null,
@@ -74,11 +77,13 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
                     setCreateBillFormValues({
                         ...createBillFormValues,
                         number: data.quote.number,
-                        totalTtc: data.quote.priceHT,
-                        totalHt: data.quote.priceTTC,
+                        totalTtc: data.quote.priceTTC,
+                        totalHt: data.quote.priceHT,
                         clientId: data.quote.client.id,
                         workSiteId: data.quote.workSite.id,
                         quoteId: data.quote.id,
+                        travelCosts: data.quote.travelCosts,
+                        travelCostsType: data.quote.travelCostsType,
                         vatAmount: data.quote.vatAmount,
                         natureOfWork: data.quote.natureOfWork,
                         description: data.quote.description,
@@ -153,81 +158,6 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
         });
     }
 
-    // const handleClickServiceSuggestion = (
-    //     index: number,
-    //     suggestion: ServiceSuggestionType
-    //   ) => {
-    //     console.log("suggestion sur laquelle j'ai cliqué : "+JSON.stringify(suggestion))
-    //     const newServices = [...createBillFormValues.services];
-    //     newServices[index] = {
-    //       ...newServices[index],
-    //       id: suggestion.id,
-    //       label: suggestion.label,
-    //       // Fil unitPriceHT and type fields with the values of the suggestion
-    //       unitPriceHT: suggestion.unitPriceHT, 
-    //       type: suggestion.type,
-    //       // Allows to know if a service comes from a suggestion to manage automatic fill fields
-    //       selectedFromSuggestions: true, 
-    //     };
-      
-        
-    //     console.log("le type de la suggestion est "+suggestion.type)
-
-    //     setCreateBillFormValues({
-    //       ...createBillFormValues,
-    //       services: newServices,
-    //     });
-
-
-    //     // Delete suggestions after the clic
-    //     setServiceSuggestions([]);
-    //   };
-
-    // const handleClickServiceSuggestion = (index: number, suggestion: ServiceSuggestionType) => {
-    //     console.log("Suggestion cliquée :", JSON.stringify(suggestion));
-      
-    //     const newServices = [...createBillFormValues.services];
-    //     newServices[index] = {
-    //       ...newServices[index],
-    //       id: suggestion.id,
-    //       label: suggestion.label,
-    //       unitPriceHT: suggestion.unitPriceHT,
-    //       type: suggestion.type,
-    //       selectedFromSuggestions: true,
-    //     };
-      
-    //     // Vérifier si l'index existe déjà dans servicesAdded
-    //     const servicesToAdd = [...createBillFormValues.servicesAdded];
-        
-    //     if (index < servicesToAdd.length) {
-    //       servicesToAdd[index] = {
-    //         ...servicesToAdd[index],
-    //         id: suggestion.id,
-    //         label: suggestion.label,
-    //         unitPriceHT: suggestion.unitPriceHT,
-    //         type: suggestion.type,
-    //         selectedFromSuggestions: true,
-    //       };
-    //     } else {
-    //       // Ajouter l'élément à la fin s'il n'existe pas
-    //       servicesToAdd.push({
-    //         id: suggestion.id,
-    //         label: suggestion.label,
-    //         unitPriceHT: suggestion.unitPriceHT,
-    //         type: suggestion.type,
-    //         selectedFromSuggestions: true,
-    //       });
-    //     }
-      
-    //     setCreateBillFormValues({
-    //       ...createBillFormValues,
-    //       services: newServices,
-    //       servicesAdded: servicesToAdd,
-    //     });
-      
-    //     setServiceSuggestions([]); // Supprimer les suggestions après la sélection
-    //   };
-      
 
     const handleBillCreation = async (statusReady?: string) => {
         console.log("La facture crééé : "+JSON.stringify(createBillFormValues.servicesToUnlink))
@@ -285,62 +215,6 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
         setIsOpen(false);  
     };
 
-    // const addService = () => {
-    //     setCreateBillFormValues({
-    //       ...createBillFormValues,
-    //       services: [
-    //         ...createBillFormValues.services,
-    //         {
-    //             id : null,
-    //           label: "",
-    //           unitPriceHT: "",
-    //           type: "",
-    //           unit: "",
-    //           vatRate: "",
-    //           selectedFromSuggestions: false,
-    //           quantity: 0,
-    //           detailsService: "",
-              
-    //         },
-    //       ],
-    //       servicesAdded: [
-    //         ...createBillFormValues.servicesAdded,
-    //         {
-    //             id : null,
-    //           label: "",
-    //           unitPriceHT: "",
-    //           type: "",
-    //           unit: "",
-    //           vatRate: "",
-    //           selectedFromSuggestions: false,
-    //           quantity: 0,
-    //           detailsService: "",
-    //         },
-    //       ]
-    //     });
-    //   };
-
-    // const addService = () => {
-    //     setCreateBillFormValues((prevValues) => ({
-    //       ...prevValues,
-    //       services: [
-    //         ...prevValues.services,
-    //         {
-    //           id: null,
-    //           label: "",
-    //           unitPriceHT: "",
-    //           type: "",
-    //           unit: "",
-    //           vatRate: "",
-    //           selectedFromSuggestions: false,
-    //           quantity: 0,
-    //           detailsService: "",
-    //         },
-    //       ],
-    //       servicesAdded: prevValues.servicesAdded, // Ne rien ajouter à servicesAdded ici
-    //     }));
-    //   };
-      
 
     const addServiceToUnlink = (billService: ServiceFormQuoteType, index: number) => {
         console.log("Le service à unlink : "+JSON.stringify(billService))
@@ -723,6 +597,17 @@ const addService = () => {
   action={() => addService()}
   specifyBackground="text-green-500"
 />
+                {/* payment Terms */}
+                <div>
+                    <label htmlFor="paymentTerms">Conditions de paiement</label>
+                    <Field className="w-full">
+                        <Textarea name="paymentTerms" 
+                            defaultValue={"Le paiement doit être effectué dans les 30 jours suivant la réception de la facture."} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                            onChange={handleInputChange}
+                        >
+                        </Textarea>
+                    </Field>
+                </div>
 
 
 

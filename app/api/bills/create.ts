@@ -57,18 +57,42 @@ export async function POST(req: NextRequest) {
             });
             const billNumber = `FAC-${currentYear}-${counter.current_number}`;
 
+            // Count deposit to reduce it later
+            // Retrieve quote to count, because totalHT and totalHT of the Bill are possibly note the same than in the quote if there were modifications
+            const quote = await prisma.quote.findUnique({
+                where: { id: quoteId },
+            });
+
+            if (!quote) {
+                throw new Error("Devis introuvable");
+            }
+
+            // Retrieve all deposit bills linked to this quote
+            const depositBills = await prisma.bill.findMany({
+                where: { quoteId: quote.id, billType: "DEPOSIT" },
+            });
+
+            // Count deposit already paid
+            const totalPaidDeposit = depositBills.reduce((acc, bill) => acc + bill.totalTtc, 0);
+
+            // Count what's left to pay on the bill
+            const remainingAmountTTC = totalTtc - totalPaidDeposit;
+            const remainingAmountHT = totalHt - (totalPaidDeposit * (totalHt / totalTtc));
+
+
             // Bill creation
             const bill = await prisma.bill.create({
                 data: {
                     number: billNumber,
                     issueDate: new Date().toISOString(),
+                    billType: "INVOICE",
                     dueDate: dueDate ? new Date(dueDate).toISOString() : null,
                     natureOfWork,
                     description,
                     status,
                     vatAmount: parseFloat(vatAmount) || 0,
-                    totalTtc: parseFloat(totalTtc) || 0,
-                    totalHt: parseFloat(totalHt) || 0,
+                    totalTtc: Number(remainingAmountTTC) || 0,
+                    totalHt: Number(remainingAmountHT) || 0,
                     userId: user.id,
                     client: { connect: { id: clientId } },
                     workSite: { connect: { id: workSiteId } },
@@ -76,24 +100,45 @@ export async function POST(req: NextRequest) {
                 },
             });
 
+
+            // The case where everything is identitcal to the Quote
             if (servicesToUnlink.length === 0 && servicesAdded.length === 0) {
                 console.log("aucune modif, je crée tous les billServices");
+
                 // Case 1: No modification - treat all services
                 for (const service of services) {
+                    // I create the billService thanks to the quoteService which it comes from
+                    const quoteService = await prisma.quoteService.findUnique({
+                        where: { id: service.id },
+                        include: {
+                            service: true
+                        }
+                    });
+
+                    if (!quoteService) {
+                        throw new Error(`QuoteService not found for id: ${service.id}`);
+                    }
+
+                    // Calculer les montants à partir des données du quoteService
+                    const totalHTService = Number(quoteService.totalHT);
+                    const vatAmountService = Number(quoteService.vatAmount);
+                    const totalTTCService = Number(quoteService.totalTTC)
+
+
                     await prisma.billService.create({
                         data: {
                             vatRate: service.vatRate,
                             unit: service.unit,
                             quantity: Number(service.quantity),
-                            totalHT: Number(service.totalHT),
-                            vatAmount: Number(service.vatAmount),
-                            totalTTC: Number(service.totalTTC),
+                            totalHT: Number(totalHTService),
+                            vatAmount: Number(vatAmountService),
+                            totalTTC: Number(totalTTCService),
                             detailsService: service.detailsService,
                             bill: {
                                 connect: { id: bill.id }
                             },
                             service: {
-                                connect: { id: service.id }
+                                connect: { id: quoteService.serviceId }
                             }
                         },
                     });
@@ -162,6 +207,24 @@ export async function POST(req: NextRequest) {
                         }
                     }
 
+                    newTotalHt += totalHTService;
+                    newTotalTtc += totalTTCService;
+                    newVatAmount += vatAmountService;  
+                    
+                    newTotalTtc = newTotalTtc - totalPaidDeposit;
+                    newTotalHt = newTotalHt - (totalPaidDeposit * (newTotalHt / newTotalTtc));
+
+                    await prisma.bill.update({
+                      where: { id: bill.id },
+                      data: {
+                          totalHt: Math.max(0, newTotalHt),
+                          vatAmount: Math.max(0, newVatAmount),
+                          totalTtc: Math.max(0, newTotalTtc)
+                      },
+                    });
+
+
+
                     await prisma.billService.create({
                         data: {
                             vatRate: service.vatRate,
@@ -178,6 +241,10 @@ export async function POST(req: NextRequest) {
                 }
 
                 if (servicesToUnlink.length > 0) {
+                             
+                    newTotalTtc = newTotalTtc - totalPaidDeposit;
+                    newTotalHt = newTotalHt - (totalPaidDeposit * (newTotalHt / newTotalTtc));
+
                     await prisma.bill.update({
                         where: { id: bill.id },
                         data: {

@@ -239,6 +239,9 @@ interface CreateBillFormValueType{
     servicesToUnlink: ServiceFormQuoteType[] | [];
     servicesAdded: ServiceFormQuoteType[] | [];
     status: string | null;
+    paymentTerms: string,
+    travelCosts: number | null,
+    travelCostsType: string | null,
 }
 
 interface BillForListType{
@@ -292,7 +295,8 @@ interface QuoteType{
     vatAmount: number;
     priceTTC: number;
     priceHT: number;
-    travelCosts?: number;
+    travelCosts: number;
+    travelCostsType: string;
     depositAmount?: number;
     hourlyLaborRate?: number;
     paymentTerms: string;
