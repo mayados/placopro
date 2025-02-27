@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
             });
             const billNumber = `FAC-${currentYear}-${counter.current_number}`;
 
-            // Count deposit to reduce it later
+            // Count deposit to reduce it later = rest to pay
             // Retrieve quote to count, because totalHT and totalHT of the Bill are possibly note the same than in the quote if there were modifications
             const quote = await prisma.quote.findUnique({
                 where: { id: quoteId },
