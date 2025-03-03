@@ -19,7 +19,7 @@ model Bill{
     // global discount (HT amount)
     discountAmount Float @default(0) 
     // Optionnal : discount in %
-    discountPercentage Float? 
+    // discountPercentage Float? 
     // To know if the discount comes from the Quote
     isDiscountFromQuote Boolean @default(false) 
     // Frais de déplacement

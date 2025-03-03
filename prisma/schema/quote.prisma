@@ -57,7 +57,7 @@ model Quote{
     // global discount HT amount
     discountAmount Float @default(0) 
     // in % 
-    discountPercentage Float? 
+    // discountPercentage Float? 
 
 	// Quote is created by a User
 

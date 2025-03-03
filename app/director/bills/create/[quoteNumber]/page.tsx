@@ -43,6 +43,8 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
     })
     // Define options for select for services
     const serviceTypeChoices = ["plâtrerie","Peinture"];
+    const travelCostsTypeChoices = ["forfait unique","forfait journalier"];
+    const discountReasonChoices = ["fidélité","offre spéciale"];
     const [vatRateChoices, setVatRateChoices] = useState<VatRateChoiceType[]>([])
     const [unitChoices, setUnitChoices] = useState<UnitChoiceType[]>([])
     // Allows to know if a bill is registered as a draft or ready (to be send)
@@ -470,6 +472,31 @@ const addService = () => {
                             onChange={handleInputChange}
                         >
                         </Textarea>
+                    </Field>
+                </div>
+                {/* Sélection du type de frais de déplacements */}
+                <Select
+                name="travelCostsType"
+                value={createBillFormValues.travelCostsType || ""}
+                className="w-full rounded-md bg-gray-700 text-white pl-3"
+                disabled
+                >
+                <option value="">Type de frais de déplacement</option>
+                {travelCostsTypeChoices.map((type) => (
+                    <option key={type} value={type}>{type}</option>
+                ))}
+                </Select>
+                {/* travelCosts */}
+                <div>
+                    <label htmlFor="travelCosts">Frais de déplacement</label>
+                    <Field className="w-full">
+                        <Input type="text" name="travelCosts" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                            value={createBillFormValues.travelCosts !== null
+                                ? createBillFormValues.travelCosts
+                                : quote.travelCosts ?? ""} 
+                            readOnly
+                        >
+                        </Input>
                     </Field>
                 </div>
             <h2>Services</h2>
