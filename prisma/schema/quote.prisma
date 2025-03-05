@@ -22,8 +22,8 @@ model Quote{
     quoteCost Float?
     // Brouillon, envoyé, signé, etc.
     status String 
-    // Montant (%) de l'accompte demandé
-    depositAmount Int?
+    // Montant (€) de l'accompte demandé
+    depositAmount Float
     // Montant TVA
     vatAmount Float 
     // Prix TTC

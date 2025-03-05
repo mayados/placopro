@@ -24,9 +24,13 @@ const CreateQuote = () => {
         vatAmount: 0,
         priceTTC: 0,
         priceHT: 0,
+        depositAmount: 0,
+        discountAmount: 0,
+        discountReason: "",
         isQuoteFree: "",
         hasRightOfWithdrawal: "",
         travelCosts: 0,
+        travelCostsType: "",
         hourlyLaborRate: 0,
         paymentTerms: "Le paiement doit être effectué dans les 30 jours suivant la réception de la facture.",
         paymentDelay: 0,
@@ -39,6 +43,8 @@ const CreateQuote = () => {
         services: [],
         serviceType: "",
     })
+    const discountReasonChoices = ["Fidelité","Remise exceptionnelle"];
+    const travelCostsTypeChoices = ["Forfait unique","Forfait journalier"];
     // Define options for select for services
     const serviceTypeChoices = ["plâtrerie","Peinture"];
     const [vatRateChoices, setVatRateChoices] = useState<VatRateChoiceType[]>([])
@@ -411,6 +417,16 @@ const CreateQuote = () => {
                         </Input>
                     </Field>
                 </div>
+                {/* Deposit amount */}
+                <div>
+                    <label htmlFor="depositAmount">Accompte demandé (en €)</label>
+                    <Field className="w-full">
+                        <Input type="number" name="depositAmount" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                            onChange={handleInputChange}
+                        >
+                        </Input>
+                    </Field>
+                </div>
             <h2>Services</h2>
             {quote.services.map((service, index) => (
             <div key={index}>
@@ -515,33 +531,26 @@ const CreateQuote = () => {
                         </Input>
                     </Field>
                 </div>
-                {/* Is the quote free ? */}
-                <Field>
-                    <Legend>Le devis est-il gratuit ?</Legend>
-                    <RadioGroup 
-                        name="isQuoteFree"
-                        onChange={(value)=> handleRadioChange("isQuoteFree",value)}
-
-                    >
-                        {isQuoteFreeChoices.map((choice) => (
-                            <Field key={choice} className="flex gap-2 items-center">
-                                <Radio value={choice} className="group flex size-5 items-center justify-center rounded-full border bg-white data-[checked]:bg-pink-600" />
-                                <Label>{choice}</Label>
-                            </Field>
-                        ))}
-                    </RadioGroup>
-                </Field>
-
-                {/* If the quote isn't free display an other form field : quoteCost */}
                 <div>
-                    <label htmlFor="quoteCost">Coût de création du devis (HT), en €</label>
+                    <label htmlFor="discountAmount">Montant de la remise, en €</label>
                     <Field className="w-full">
-                        <Input type="number" name="quoteCost" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="number" name="discountAmount" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
                         >
                         </Input>
                     </Field>
                 </div>
+                <Select
+                    name="discountReason"
+                    onChange={handleInputChange}
+                    value={quote.discountReason || ""}
+                    className="w-full rounded-md bg-gray-700 text-white pl-3"
+                >
+                <option value="">Raison de la remise</option>
+                    {discountReasonChoices.map((discountReasonChoices) => (
+                        <option key={discountReasonChoices} value={discountReasonChoices}>{discountReasonChoices}</option>
+                    ))}
+                </Select>
                 {/* payment Terms */}
                 <div>
                     <label htmlFor="paymentTerms">Conditions de paiement</label>
@@ -578,16 +587,6 @@ const CreateQuote = () => {
                     <label htmlFor="travelCosts">Frais de déplacement (HT), en €</label>
                     <Field className="w-full">
                         <Input type="number" name="travelCosts" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            onChange={handleInputChange}
-                        >
-                        </Input>
-                    </Field>
-                </div>
-                {/* hourly labor rate */}
-                <div>
-                    <label htmlFor="hourlyLaborRate">Taux horaire main d'oeuvre (HT), en €</label>
-                    <Field className="w-full">
-                        <Input type="number" name="hourlyLaborRate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
                         >
                         </Input>

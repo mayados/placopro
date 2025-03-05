@@ -30,6 +30,9 @@ export async function POST(req: NextRequest) {
             clientId,
             workSiteId,
             services,
+            discountAmount,
+            depositAmount,
+            discountReason
         } = data;
             // currentUser() is a founction from Clerk which allows to retrieve the current User
             const user = await currentUser()
@@ -64,6 +67,8 @@ export async function POST(req: NextRequest) {
         recoveryFees: parseFloat(data.recoveryFees) || 0,
         withdrawalPeriod: parseInt(data.withdrawalPeriod, 10) || 0,
         quoteCost: parseFloat(data.quoteCost) || 0,
+        discountAmount: parseFloat(data.discountAmount) || 0,
+        discountReason: data.discountReason || null,
     };
 
 
@@ -231,10 +236,13 @@ export async function POST(req: NextRequest) {
                 estimatedWorkDuration: sanitizedData.estimatedWorkDuration, 
                 isQuoteFree: sanitizedData.isQuoteFree, 
                 quoteCost: sanitizedData.quoteCost, 
-                status: "Ready to be send", 
+                status: "Ready", 
                 vatAmount: 0,  
                 priceTTC: 0, 
                 priceHT: 0, 
+                depositAmount: depositAmount,
+                discountAmount: discountAmount,
+                discountReason: discountReason,
                 travelCosts: sanitizedData.travelCosts, 
                 hourlyLaborRate: sanitizedData.hourlyLaborRate, 
                 paymentDelay: sanitizedData.paymentDelay,
@@ -320,6 +328,7 @@ export async function POST(req: NextRequest) {
 
       // add travelCosts to totalHtQuote (which contains services costs HT)
       totalHtQuote += parseFloat(travelCosts)
+      totalHtQuote-= discountAmount
       // Count vatAmount for travelCosts and add the result to vatAmountQuote
       const vatAmountForTravelCosts = travelCosts * (20 / 100);
       console.log("montant tva pour les trajets : "+vatAmountForTravelCosts)
