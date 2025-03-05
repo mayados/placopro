@@ -8,6 +8,9 @@ model Bill{
     vatAmount Float
     issueDate DateTime
     dueDate DateTime
+    workStartDate DateTime
+    workEndDate DateTime
+    workDuration Int
     paymentDate DateTime?
     // We have the user in Clerk, so we can't make a relation
     userId String?
