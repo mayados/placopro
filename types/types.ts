@@ -221,7 +221,7 @@ interface BillType{
     client: ClientType;
     services: BillServiceType[];
 }
-
+//
 interface CreateBillFormValueType{
     number: string | null;
     dueDate: string | null;
@@ -331,6 +331,10 @@ interface QuoteFormValueType{
     priceTTC: number,
     priceHT: number,
     travelCosts: number,
+    travelCostsType: string,
+    depositAmount: number,
+    discountAmount: number,
+    discountReason: string,
     hourlyLaborRate: number,
     paymentTerms: string,
     paymentDelay: number,
