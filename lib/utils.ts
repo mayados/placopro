@@ -1,8 +1,25 @@
 import { format } from "date-fns";
 
 // Display date on french format, without hours
-export function formatDate(date: Date): string{
-    return format(new Date(date), "dd/MM/yyyy") ?? "Date non disponible";
+// export function formatDate(date: Date): string{
+//     return format(new Date(date), "dd/MM/yyyy") ?? "Date non disponible";
+// }
+export function formatDate(date: Date | string | null | undefined): string {
+  
+  console.log("Type:", typeof date, "Value:", date);
+
+
+  if (!date) return "Date non disponible";
+  
+  // Si c'est déjà un objet Date, utilisez-le directement
+  const dateObj = date instanceof Date ? date : new Date(date);
+  
+  // Vérifiez si la date est valide
+  if (isNaN(dateObj.getTime())) {
+    return "Date non disponible";
+  }
+  
+  return format(dateObj, "dd/MM/yyyy");
 }
 
 // Format date for <input type="date">
