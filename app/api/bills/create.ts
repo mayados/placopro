@@ -30,7 +30,15 @@ export async function POST(req: NextRequest) {
             services,
             servicesToUnlink,
             servicesAdded,
-            status
+            status,
+            workStartDate,
+            workEndDate,
+            workDuration,
+            discountAmount,
+            discountReason,
+            travelCosts,
+            travelCostsType,
+            paymentTerms
         } = data;
 
         // Execute all operations in one transaction for integrity
@@ -72,12 +80,25 @@ export async function POST(req: NextRequest) {
                 where: { quoteId: quote.id, billType: "DEPOSIT" },
             });
 
-            // Count deposit already paid
-            const totalPaidDeposit = depositBills.reduce((acc, bill) => acc + bill.totalTtc, 0);
+            // // Count deposit already paid
+            // const totalPaidDeposit = depositBills.reduce((acc, bill) => acc + bill.totalTtc, 0);
 
-            // Count what's left to pay on the bill
-            const remainingAmountTTC = totalTtc - totalPaidDeposit;
-            const remainingAmountHT = totalHt - (totalPaidDeposit * (totalHt / totalTtc));
+
+            // Calculer les totaux des acomptes avec arrondi à 2 décimales
+            const totalPaidDepositTTC = parseFloat(depositBills.reduce((acc, bill) => acc + bill.totalTtc, 0).toFixed(2));
+            const totalPaidDepositHT = parseFloat(depositBills.reduce((acc, bill) => acc + bill.totalHt, 0).toFixed(2));
+            const totalPaidDepositVAT = parseFloat(depositBills.reduce((acc, bill) => acc + bill.vatAmount, 0).toFixed(2));
+
+            // Appliquer la remise sur le montant HT avec arrondi
+            const htAfterDiscount = parseFloat((totalHt - discountAmount).toFixed(2));
+
+            // Calculer le nouveau montant TTC après remise
+            const ttcAfterDiscount = parseFloat((htAfterDiscount + vatAmount).toFixed(2));
+
+            // Calculer les montants restants à payer avec arrondi
+            const remainingAmountTTC = parseFloat((ttcAfterDiscount - totalPaidDepositTTC).toFixed(2));
+            const remainingAmountHT = parseFloat((htAfterDiscount - totalPaidDepositHT).toFixed(2));
+            const remainingVatAmount = parseFloat((vatAmount - totalPaidDepositVAT).toFixed(2));
 
 
             // Bill creation
@@ -87,9 +108,17 @@ export async function POST(req: NextRequest) {
                     issueDate: new Date().toISOString(),
                     billType: "INVOICE",
                     dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+                    workStartDate: workStartDate ? new Date(dueDate).toISOString() : null,
+                    workEndDate: workEndDate ? new Date(dueDate).toISOString() : null,
+                    workDuration: parseInt(workDuration),
                     natureOfWork,
                     description,
+                    paymentTerms,
                     status,
+                    discountAmount: parseFloat(discountAmount) || 0,
+                    travelCosts,
+                    travelCostsType,
+                    discountReason,
                     vatAmount: parseFloat(vatAmount) || 0,
                     totalTtc: Number(remainingAmountTTC) || 0,
                     totalHt: Number(remainingAmountHT) || 0,
@@ -211,8 +240,20 @@ export async function POST(req: NextRequest) {
                     newTotalTtc += totalTTCService;
                     newVatAmount += vatAmountService;  
                     
-                    newTotalTtc = newTotalTtc - totalPaidDeposit;
-                    newTotalHt = newTotalHt - (totalPaidDeposit * (newTotalHt / newTotalTtc));
+                    // newTotalTtc = newTotalTtc - totalPaidDeposit;
+                    // newTotalHt = newTotalHt - (totalPaidDeposit * (newTotalHt / newTotalTtc)) - discountAmount;
+
+                    // D'abord appliquer la remise sur le HT
+                    const htAfterDiscount = parseFloat((newTotalHt - discountAmount).toFixed(2));
+
+                    // Recalculer le TTC après remise
+                    const ttcAfterDiscount = htAfterDiscount + newVatAmount 
+                    ;
+
+                    // Ensuite soustraire les acomptes
+                    newTotalTtc = ttcAfterDiscount - totalPaidDepositTTC;
+                    newTotalHt = htAfterDiscount - totalPaidDepositHT;
+                    newVatAmount = newTotalTtc - newTotalHt;
 
                     await prisma.bill.update({
                       where: { id: bill.id },
@@ -242,8 +283,8 @@ export async function POST(req: NextRequest) {
 
                 if (servicesToUnlink.length > 0) {
                              
-                    newTotalTtc = newTotalTtc - totalPaidDeposit;
-                    newTotalHt = newTotalHt - (totalPaidDeposit * (newTotalHt / newTotalTtc));
+                    newTotalTtc = newTotalTtc - totalPaidDepositTTC;
+                    newTotalHt = newTotalHt - totalPaidDepositHT - discountAmount;
 
                     await prisma.bill.update({
                         where: { id: bill.id },

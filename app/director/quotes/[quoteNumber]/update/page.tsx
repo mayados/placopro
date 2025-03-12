@@ -28,9 +28,13 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
         vatAmount: null,
         priceTTC: null,
         priceHT: null,
+        depositAmount: null,
+        discountAmount: null,
+        discountReason: null,
         isQuoteFree: null,
         hasRightOfWithdrawal: null,
         travelCosts: null,
+        travelCostsType: null,
         hourlyLaborRate: null,
         paymentTerms: null,
         paymentDelay: null,
@@ -61,6 +65,8 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
     const [clientSuggestions, setClientSuggestions] = useState<ClientSuggestionType[] | null>(null)
     const [workSiteSuggestions, setWorkSiteSuggestions] = useState<WorkSiteSuggestionType[] | null>(null)
     const [servicesSuggestions, setServiceSuggestions] = useState<ServiceSuggestionType[] | null>(null)
+    const discountReasonChoices = ["Fidelité","Remise exceptionnelle"];
+    const travelCostsTypeChoices = ["forfait unique","forfait journalier"];
     // text visible in the client field
     const [clientInput, setClientInput] = useState(""); 
     const [workSiteInput, setWorkSiteInput] = useState(""); 
@@ -117,6 +123,7 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
         loadVatRates();
         loadUnits();
     },[]);
+
 
         console.log("name du client retrieved de la database "+quote?.client.name)
         console.log("title du worksite retrieved de la database "+quote?.workSite.title)
@@ -523,7 +530,6 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                         </ul>
                     )}               
                 </div>
-                <h2>Chantier</h2>
                 {/* WorkSite of the quote */}
                 <div>
                     <label htmlFor="workSite">Chantier</label>
@@ -613,6 +619,47 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                         </Input>
                     </Field>
                 </div>
+                {/* Deposit amount */}
+                <div>
+                    <label htmlFor="depositAmount">Accompte demandé (en €)</label>
+                    <Field className="w-full">
+                        <Input type="number" name="depositAmount" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                            // Display quote.depositAmount only if it exists 
+                            value={updatedQuoteFormValues.depositAmount !== null
+                            ? updatedQuoteFormValues.depositAmount
+                            : quote.depositAmount ?? ""} 
+                            onChange={handleInputChange}
+                        >
+                        </Input>
+                    </Field>
+                </div>
+                <div>
+                    <label htmlFor="discountAmount">Montant de la remise, en €</label>
+                    <Field className="w-full">
+                        <Input type="number" name="discountAmount" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                            // Display quote.discountAmount only if it exists 
+                            value={updatedQuoteFormValues.discountAmount !== null
+                                ? updatedQuoteFormValues.discountAmount
+                                : quote.discountAmount ?? ""} 
+                            onChange={handleInputChange}
+                        >
+                        </Input>
+                    </Field>
+                </div>
+                <Select
+                    name="discountReason"
+                    onChange={handleInputChange}
+                    // Display quote.discountReason only if it exists 
+                    value={updatedQuoteFormValues.discountReason !== null
+                        ? updatedQuoteFormValues.discountReason
+                        : quote.discountReason ?? ""} 
+                    className="w-full rounded-md bg-gray-700 text-white pl-3"
+                >
+                <option value="">Raison de la remise</option>
+                    {discountReasonChoices.map((discountReasonChoices) => (
+                        <option key={discountReasonChoices} value={discountReasonChoices}>{discountReasonChoices}</option>
+                    ))}
+                </Select>
             <h2>Services</h2>
             {/* Services retrieved form database (can't be updated, just unlinked from this quote) */}
             {quote.services.map((service, index) => (
@@ -793,37 +840,6 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                         </Input>
                     </Field>
                 </div>
-                {/* Is the quote free ? */}
-                <Field>
-                    <Legend>Le devis est-il gratuit ?</Legend>
-                    <RadioGroup 
-                        name="isQuoteFree"
-                        value={quote.isQuoteFree ? "Oui": "Non"}
-                        onChange={(value)=> handleRadioChange("isQuoteFree",value)}
-
-                    >
-                        {isQuoteFreeChoices.map((choice) => (
-                            <Field key={choice} className="flex gap-2 items-center">
-                                <Radio value={choice} className="group flex size-5 items-center justify-center rounded-full border bg-white data-[checked]:bg-pink-600" />
-                                <Label>{choice}</Label>
-                            </Field>
-                        ))}
-                    </RadioGroup>
-                </Field>
-
-                {/* If the quote isn't free display an other form field : quoteCost */}
-                <div>
-                    <label htmlFor="quoteCost">Coût de création du devis (HT), en €</label>
-                    <Field className="w-full">
-                        <Input type="number" name="quoteCost" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={updatedQuoteFormValues.quoteCost !== null
-                                ? updatedQuoteFormValues.quoteCost
-                                : quote.quoteCost ?? ""} 
-                            onChange={handleInputChange}
-                        >
-                        </Input>
-                    </Field>
-                </div>
                 {/* payment Terms */}
                 <div>
                     <label htmlFor="paymentTerms">Termes de paiement</label>
@@ -876,19 +892,19 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                         </Input>
                     </Field>
                 </div>
-                {/* hourly labor rate */}
-                <div>
-                    <label htmlFor="hourlyLaborRate">Taux horaire main d'oeuvre (HT), en €</label>
-                    <Field className="w-full">
-                        <Input type="number" name="hourlyLaborRate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={updatedQuoteFormValues.hourlyLaborRate !== null
-                                ? updatedQuoteFormValues.hourlyLaborRate
-                                : quote.hourlyLaborRate ?? ""} 
-                            onChange={handleInputChange}
-                        >
-                        </Input>
-                    </Field>
-                </div>
+                <Select
+                    name="travelCostsType"
+                    onChange={handleInputChange}
+                    value={updatedQuoteFormValues.travelCostsType !== null
+                        ? updatedQuoteFormValues.travelCostsType
+                        : quote.travelCostsType ?? ""} 
+                    className="w-full rounded-md bg-gray-700 text-white pl-3"
+                >
+                <option value="">Type de frais de déplacement</option>
+                    {travelCostsTypeChoices.map((travelCostsTypeChoices) => (
+                        <option key={travelCostsTypeChoices} value={travelCostsTypeChoices}>{travelCostsTypeChoices}</option>
+                    ))}
+                </Select>
                 {/* recovery fees */}
                 <div>
                     <label htmlFor="recoveryFee">Frais forfaitaires de recouvrement (HT), en €</label>

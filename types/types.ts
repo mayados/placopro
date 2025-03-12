@@ -217,6 +217,9 @@ interface BillType{
     dueDate: Date;
     status: string;
     paymentDate?: Date;
+    paymentTerms: string,
+    discountAmount: number,
+    discountReason: string,
     author: UserType;
     client: ClientType;
     services: BillServiceType[];
@@ -230,7 +233,9 @@ interface CreateBillFormValueType{
     issueDate: string | null,
     vatAmount: number | null,
     totalTtc: number | null,
-    totalHt: number | null;
+    totalHt: number | null,
+    discountAmount: number | null | undefined;
+    isDiscountFromQuote: boolean,
     serviceType: string | null;
     workSiteId: string | null;
     quoteId:  string | null | undefined,
@@ -242,6 +247,10 @@ interface CreateBillFormValueType{
     paymentTerms: string,
     travelCosts: number | null,
     travelCostsType: string | null,
+    workStartDate: Date | null,
+    workEndDate: Date | null,
+    workDuration: Date | null,
+    discountReason: string | null | undefined
 }
 
 interface BillForListType{
@@ -258,20 +267,33 @@ interface BillTypeSingle{
 }
 
 interface UpdatedBillFormValueType{
-    id: string | null;
-    number: number| null;
+    number?: string | null
     natureOfWork: string | null;
     description: string | null;
     totalHt: number | null;
     totalTtc: number | null;
     vatAmount: number | null;
-    issueDate: Date | null;
+    // issueDate: Date | null;
     dueDate: Date | null;
     paymentDate?: Date | null;
     status: string | null,
-    author: string | null;
-    client: string | null;
+    clientId: string | null;
+    serviceType: string | null,
+    workSiteId: string | null,
+    quoteId: string | null,
+    workStartDate: Date | null,
+    workEndDate: Date | null,
+    workDuration: number | null,
+    isDiscountFromQuote: boolean | null,
     services: BillServiceType[];
+    discountAmount: number | null,
+    discountReason: string | null,
+    travelCosts: number | null,
+    travelCostsType: string | null,
+    paymentTerms: string
+    servicesToUnlink: ServiceFormBillType[] | [],
+    servicesAdded: ServiceFormBillType[] | [],
+
 }
 
 interface FormValuesUpdateNotDraftBill{
@@ -312,6 +334,8 @@ interface QuoteType{
     client: ClientType;
     workSite: WorkSiteType;
     services : QuoteServiceType[];
+    discountAmount?: number;
+    discountReason?: string
 }
 
 interface QuoteTypeSingle{
@@ -362,6 +386,10 @@ interface UpdatedQuoteFormValueType{
     hasRightOfWithdrawal: string | null,
     priceTTC: number | null,
     priceHT: number | null,
+    depositAmount: number | null,
+    discountAmount: number | null,
+    discountReason: string | null,
+    travelCostsType: string | null,
     travelCosts: number | null,
     hourlyLaborRate: number | null,
     paymentTerms: string | null,
@@ -444,7 +472,11 @@ interface BillFormValueType{
     workSiteId: string | null,
     services: ServiceFormQuoteType[],
     serviceType: string,
+    discountAmount: number,
+    discountReason: number,
+    travelCostsType: string,
 }
+
 
 interface BillServiceType{
     id: string;
@@ -458,6 +490,18 @@ interface BillServiceType{
     vatAmount: number,
     totalHT: number,
     totalTTC: number,
+}
+
+interface ServiceAndBillServiceType{
+    id: string;
+    label: string,
+    unitPriceHT: number,
+    type: string,
+    vatRate: string,
+    unit: string, 
+    quantity: number,
+    detailsService: string,
+    serviceId : string,
 }
 
 interface ServiceType{

@@ -113,12 +113,13 @@ const Bills = () =>{
                             {
                                 bills.map((bill) => {
                                     const billId = bill.id;
+                                    console.log("date :"+bill.issueDate)
                                 
                                 return (
                                     <tr key={bill.id}>
                                         <td>{bill.number}</td>
                                         <td>{bill.client.name}</td>
-                                        <td>{formatDate(bill?.issueDate)}</td>
+                                        <td>{formatDate(bill.issueDate)}</td>
                                         <td>{formatDate(bill.dueDate)}</td>
                                         <td>{bill.status}</td>
                                         <td>Afficher</td>

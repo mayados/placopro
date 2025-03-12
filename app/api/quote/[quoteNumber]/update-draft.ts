@@ -31,6 +31,8 @@ export async function PUT(req: NextRequest) {
         servicesToUnlink,
         serviceType,
         status,
+        discountAmount,
+        discountReason
   } = data;
 
   console.log(data)
@@ -151,7 +153,7 @@ const createNewService = async (
         'status', 'number', 'validityEndDate', 'natureOfWork', 'description',
         'workStartDate', 'estimatedWorkEndDate', 'estimatedWorkDuration',
         'paymentTerms', 'paymentDelay', 'latePaymentPenalties', 'recoveryFee',
-        'withdrawalPeriod', 'clientId', 'workSiteId', 'serviceType'
+        'withdrawalPeriod', 'clientId', 'workSiteId', 'serviceType','discountAmount','discountReason'
       ];
 
       // For each simple field, if it's not null, we update it (by placing it into the const updateData)
@@ -218,6 +220,38 @@ const createNewService = async (
           vatAmount: vatAmountQuote
         });
       }
+
+
+    // Before udpate, apply discount
+    let finalTotalHT = totalHTQuote;
+    let finalVatAmount = vatAmountQuote;
+    let finalTotalTTC = totalTTCQuote;
+
+    // Apply discount if it exists
+    let discountAmountValue = 0;
+    if (isNotNull(data.discountAmount)) {
+      discountAmountValue = parseFloat(data.discountAmount.toString());
+      
+      // HT after discount
+      const htAfterDiscount = Math.max(0, finalTotalHT - discountAmountValue);
+      
+      // // Recalculer la TVA sur le montant après remise
+      // finalVatAmount = htAfterDiscount * 0.2; // Supposant une TVA à 20%
+      
+      // Count TTC
+      finalTotalTTC = htAfterDiscount + finalVatAmount;
+    }
+
+    // Final values stored in updateDate
+    Object.assign(updateData, {
+      // We keep BRUT Ht before discount
+      priceHT: finalTotalHT,  
+      vatAmount: finalVatAmount,
+      priceTTC: finalTotalTTC,
+      discountReason: discountReason
+      // discountAmount is already in updateData thanks to fieldsToUpdate
+    });
+
 
       // If updateData is less or equal 2 values, there is nothing to update. (Indeed, in every case we'll alaways have quote's number and saveMode's value)
       if (Object.keys(updateData).length <= 2) {

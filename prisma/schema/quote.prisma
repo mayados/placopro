@@ -23,7 +23,7 @@ model Quote{
     // Brouillon, envoyé, signé, etc.
     status String 
     // Montant (€) de l'accompte demandé
-    depositAmount Float
+    depositAmount Float?
     // Montant TVA
     vatAmount Float 
     // Prix TTC
@@ -55,7 +55,7 @@ model Quote{
     userId String
     discountReason String?
     // global discount HT amount
-    discountAmount Float @default(0) 
+    discountAmount Float? @default(0) 
     // in % 
     // discountPercentage Float? 
 
