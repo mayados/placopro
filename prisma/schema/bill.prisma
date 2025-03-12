@@ -8,9 +8,9 @@ model Bill{
     vatAmount Float
     issueDate DateTime
     dueDate DateTime
-    workStartDate DateTime
-    workEndDate DateTime
-    workDuration Int
+    workStartDate DateTime?
+    workEndDate DateTime?
+    workDuration Int?
     paymentDate DateTime?
     // We have the user in Clerk, so we can't make a relation
     userId String?
@@ -20,7 +20,7 @@ model Bill{
     discountReason String?
     billType String
     // global discount (HT amount)
-    discountAmount Float @default(0) 
+    discountAmount Float? @default(0) 
     // Optionnal : discount in %
     // discountPercentage Float? 
     // To know if the discount comes from the Quote
