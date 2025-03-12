@@ -592,6 +592,17 @@ const CreateQuote = () => {
                         </Input>
                     </Field>
                 </div>
+                <Select
+                    name="travelCostsType"
+                    onChange={handleInputChange}
+                    value={quote.travelCostsType || ""}
+                    className="w-full rounded-md bg-gray-700 text-white pl-3"
+                >
+                <option value="">Type de frais de déplacement</option>
+                    {travelCostsTypeChoices.map((travelCostsTypeChoices) => (
+                        <option key={travelCostsTypeChoices} value={travelCostsTypeChoices}>{travelCostsTypeChoices}</option>
+                    ))}
+                </Select>
                 {/* recovery fees */}
                 <div>
                     <label htmlFor="recoveryFees">Frais forfaitaires de recouvrement (HT), en €</label>

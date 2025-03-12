@@ -40,6 +40,12 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
         quoteId: null as string | null,
         status: null,
         number: null,
+        discountAmount: null,
+        workStartDate: null,
+        workEndDate: null,
+        workDuration: null,
+        isDiscountFromQuote: false,
+        discountReason: null,
     })
     // Define options for select for services
     const serviceTypeChoices = ["plâtrerie","Peinture"];
@@ -76,6 +82,10 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
 
                 try{
                     const data = await fetchQuote(quoteNumber)
+                    let isDiscountFromQuote = false
+                    if(data.quote?.discountAmount !== 0 || data.quote?.discountAmount !== null){
+                        isDiscountFromQuote = true;
+                    }
                     setCreateBillFormValues({
                         ...createBillFormValues,
                         number: data.quote.number,
@@ -84,6 +94,9 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
                         clientId: data.quote.client.id,
                         workSiteId: data.quote.workSite.id,
                         quoteId: data.quote.id,
+                        isDiscountFromQuote: isDiscountFromQuote,
+                        discountReason: data.quote.discountReason,
+                        discountAmount: data.quote.discountAmount,
                         travelCosts: data.quote.travelCosts,
                         travelCostsType: data.quote.travelCostsType,
                         vatAmount: data.quote.vatAmount,
@@ -474,6 +487,36 @@ const addService = () => {
                         </Textarea>
                     </Field>
                 </div>
+                {/* Work start date */}
+                <div>
+                    <label htmlFor="workStartDate">Date de début des travaux</label>
+                    <Field className="w-full">
+                        <Input type="date" name="workStartDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                            onChange={handleInputChange}
+                        >
+                        </Input>
+                    </Field>
+                </div>
+                {/* work end date */}
+                <div>
+                    <label htmlFor="workEndDate">Date de fin des travaux</label>
+                    <Field className="w-full">
+                        <Input type="date" name="workEndDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                            onChange={handleInputChange}
+                        >
+                        </Input>
+                    </Field>
+                </div>
+                {/* work duration */}
+                <div>
+                    <label htmlFor="workDuration">Durée des travaux (en jours)</label>
+                    <Field className="w-full">
+                        <Input type="number" name="workDuration" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                            onChange={handleInputChange}
+                        >
+                        </Input>
+                    </Field>
+                </div>
                 {/* Sélection du type de frais de déplacements */}
                 <Select
                 name="travelCostsType"
@@ -624,6 +667,29 @@ const addService = () => {
   action={() => addService()}
   specifyBackground="text-green-500"
 />
+{/* work duration */}
+    <div>
+        <label htmlFor="discountAmount">Montant remise</label>
+        <Field className="w-full">
+            <Input type="number" name="discountAmount" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                value={createBillFormValues.discountAmount || ""}
+                onChange={handleInputChange}
+            >
+            </Input>
+        </Field>
+    </div>
+    {/* Sélection du type de frais de déplacements */}
+    <Select
+        name="discountReason"
+        value={createBillFormValues.discountReason || ""}
+        onChange={handleInputChange}
+        className="w-full rounded-md bg-gray-700 text-white pl-3"
+        >
+        <option value="">Type de remise</option>
+        {discountReasonChoices.map((type) => (
+            <option key={type} value={type}>{type}</option>
+        ))}
+    </Select>
                 {/* payment Terms */}
                 <div>
                     <label htmlFor="paymentTerms">Conditions de paiement</label>
