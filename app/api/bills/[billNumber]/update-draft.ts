@@ -82,8 +82,34 @@ export async function PUT(req: NextRequest) {
                 totalPaidDepositVAT = parseFloat(depositBills.reduce((acc, bill) => acc + bill.vatAmount, 0).toFixed(2));
             }
 
+            // Generate a unique number when status changes from draft to ready
+            let billNumber = existingBill.number;
+            if (status === 'ready' && existingBill.status === 'draft') {
+                const currentYear = new Date().getFullYear();
+                const counter = await prisma.documentCounter.upsert({
+                    where: {
+                        year_type: {
+                            year: currentYear,
+                            type: "bill"
+                        }
+                    },
+                    update: {
+                        current_number: {
+                            increment: 1
+                        }
+                    },
+                    create: {
+                        year: currentYear,
+                        type: "bill",
+                        current_number: currentYear === 2025 ? 3 : 1
+                    }
+                });
+                billNumber = `FAC-${currentYear}-${counter.current_number}`;
+            }
+
             // Update base's informations of the bill
             const baseUpdateData = {
+                number: billNumber,
                 dueDate: dueDate ? new Date(dueDate) : existingBill.dueDate,
                 workStartDate: workStartDate ? new Date(workStartDate) : existingBill.workStartDate,
                 workEndDate: workEndDate ? new Date(workEndDate) : existingBill.workEndDate,

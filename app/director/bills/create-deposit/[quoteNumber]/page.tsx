@@ -8,35 +8,34 @@ import { CirclePlus, CircleX } from "lucide-react";
 import { capitalizeFirstLetter } from "@/lib/utils";
 import { formatDateForInput } from '@/lib/utils'
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
-// import { fetchbill, updateInvoiceDraftBill } from "@/services/api/bill/Service";
+import { fetchQuote, updateDraftQuote } from "@/services/api/quoteService";
 import { fetchVatRates } from "@/services/api/vatRateService";
 import { fetchUnits } from "@/services/api/unitService";
 import { fetchSuggestions } from "@/services/api/suggestionService";
-import { fetchBill, updateDraftBill } from "@/services/api/billService";
+import { createBillFromQuote, createDepositBillFromQuote } from "@/services/api/billService";
 
 // import toast, { Toaster } from 'react-hot-toast';
 
-const UpdateBill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
+const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: string }>}) => {
 
-    const [bill, setBill] = useState<BillType>();
-    const [updateBillFormValues, setUpdateBillFormValues] = useState<UpdatedBillFormValueType>({
+    const [quote, setQuote] = useState<QuoteType>();
+    const [createBillFormValues, setCreateBillFormValues] = useState<CreateDepositBillFormValueType>({
         dueDate: null,
         natureOfWork: null,
         paymentTerms: "Le paiement doit être effectué dans les 30 jours suivant la réception de la facture.",
         travelCosts: null,
         travelCostsType: null,
         description: null,
+        issueDate: null,
         vatAmount: null,
         totalTtc: null,
         totalHt: null,
         clientId: null as string | null,
         services: [],
-        servicesToUnlink: [],
-        servicesAdded: [],
         serviceType: null,
-        workSiteId: null as string | null,
+        workSiteId: null,
         // client: null,
-        billId: null as string | null,
+        quoteId: null as string | null,
         status: null,
         number: null,
         discountAmount: null,
@@ -44,7 +43,6 @@ const UpdateBill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
         workEndDate: null,
         workDuration: null,
         isDiscountFromQuote: false,
-        quoteId: null,
         discountReason: null,
     })
     // Define options for select for services
@@ -73,35 +71,37 @@ const UpdateBill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
     useEffect(() => {
         console.log("Mon composant est monté !");
 
-        // The Bill here is generated from a bill?, so we need to get the bill?
-        async function loadBill() {
+        // The Bill here is generated from a Quote, so we need to get the Quote
+        async function loadQuote() {
                 // Params is now asynchronous. It's a Promise
                 // So we need to await before access its properties
                 const resolvedParams = await params;
-                const billNumber = resolvedParams.billNumber;
+                const quoteNumber = resolvedParams.quoteNumber;
 
                 try{
-                    const data = await fetchBill(billNumber)
-                    let isDiscountFrombill = false
-                  
-                    setUpdateBillFormValues({
-                        ...updateBillFormValues,
-                        number: data.bill.number,
-                        totalTtc: data.bill.totalTtc,
-                        totalHt: data.bill.totalHt,
-                        clientId: data.bill.client.id,
-                        workSiteId: data.bill.workSite.id,
-                        billId: data.bill.id,
-                        isDiscountFromQuote: data.bill.isDiscountFromQuote,
-                        discountReason: data.bill.discountReason,
-                        discountAmount: data.bill.discountAmount,
-                        travelCosts: data.bill.travelCosts,
-                        travelCostsType: data.bill.travelCostsType,
-                        vatAmount: data.bill.vatAmount,
-                        natureOfWork: data.bill.natureOfWork,
-                        description: data.bill.description,
-                        // services: data.bill.services
-                        services: data.bill.services.map(service => ({
+                    const data = await fetchQuote(quoteNumber)
+                    let isDiscountFromQuote = false
+                    if(data.quote?.discountAmount !== 0 || data.quote?.discountAmount !== null){
+                        isDiscountFromQuote = true;
+                    }
+                    setCreateBillFormValues({
+                        ...createBillFormValues,
+                        number: data.quote.number,
+                        totalTtc: data.quote.priceTTC,
+                        totalHt: data.quote.priceHT,
+                        clientId: data.quote.client.id,
+                        workSiteId: data.quote.workSite.id,
+                        quoteId: data.quote.id,
+                        isDiscountFromQuote: isDiscountFromQuote,
+                        discountReason: data.quote.discountReason,
+                        discountAmount: data.quote.discountAmount,
+                        travelCosts: data.quote.travelCosts,
+                        travelCostsType: data.quote.travelCostsType,
+                        vatAmount: data.quote.vatAmount,
+                        natureOfWork: data.quote.natureOfWork,
+                        description: data.quote.description,
+                        // services: data.quote.services
+                        services: data.quote.services.map(service => ({
                             id: service.id,
                             label: service.service.label, // Accès à `label` à l'intérieur de `service`
                             unitPriceHT: service.service.unitPriceHT?.toString() || "", // Assurer que c'est une string
@@ -111,14 +111,12 @@ const UpdateBill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
                             selectedFromSuggestions: false, // Ajout d'un champ par défaut si nécessaire
                             quantity: service.quantity || 0,
                             detailsService: service.detailsService || "",
-
-    
                         }))
                     });
-                      setBill(data.bill);
+                      setQuote(data.quote);
 
                 }catch (error) {
-                    console.error("Impossible to load the bill :", error);
+                    console.error("Impossible to load the quote :", error);
                 }
         }
 
@@ -142,7 +140,7 @@ const UpdateBill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
                 }     
         };
 
-        loadBill();
+        loadQuote();
         loadVatRates();
         loadUnits();
     },[params]);
@@ -152,8 +150,8 @@ const UpdateBill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
         console.log("évènement reçu : "+e)
         const { name, value } = e.target;
         console.log("select :"+name+" valeur : "+value)
-        setUpdateBillFormValues({
-            ...updateBillFormValues,
+        setCreateBillFormValues({
+            ...createBillFormValues,
             // Allow to delete completely the value contained in the field 
             [name]:value === "" ? "" : value
         });
@@ -167,33 +165,33 @@ const UpdateBill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
 
     //   Retrieve datas from the radio buttons. Because they are in a RadioGroup, we can't retrieve the value just thanks to an event, we have to get the name (of the group) + the value selected
     const handleRadioChange = (name: string, value: string) => {
-        setUpdateBillFormValues({
-            ...updateBillFormValues,
+        setCreateBillFormValues({
+            ...createBillFormValues,
             [name]: value,
         });
     }
 
 
-    const handleBillUpdate = async (statusReady?: string) => {
-        console.log("La facture crééé : "+JSON.stringify(updateBillFormValues.servicesToUnlink))
-        console.log("Le bill? intial : "+JSON.stringify(bill?.services))        
+    const handleBillCreation = async (statusReady?: string) => {
+        console.log("La facture crééé : "+JSON.stringify(createBillFormValues.services))
+        console.log("Le quote intial : "+JSON.stringify(quote?.services))        
         console.log("lors du submit, le status est : "+statusReady)
 
         const status = statusReady ? "Ready": "Draft"
-        const billId = bill?.id
+        const quoteId = quote?.id
 
         try{
-            const updateBillWithStatus = {
-                ...updateBillFormValues,
+            const createBillWithStatus = {
+                ...createBillFormValues,
                 status,
-                billId,
+                quoteId,
             };
 
-            if(!bill?.number){
+            if(!quote?.number){
                 return
             }
 
-            const data = await updateDraftBill(bill.number,updateBillWithStatus)
+            const data = await createDepositBillFromQuote(createBillWithStatus)
             console.log("data renvoyés : "+data)
             const createdBill = data;
             console.log("voici la bill crééé : "+createdBill.number)
@@ -215,9 +213,9 @@ const UpdateBill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
         }
     }
 
-    // console.log("Les services de la facture à créer : "+JSON.stringify(updateBillFormValues.services))
+    // console.log("Les services de la facture à créer : "+JSON.stringify(createBillFormValues.services))
 
-    // console.log("Les services du bill? : "+JSON.stringify(updateBillFormValues.services))
+    // console.log("Les services du quote : "+JSON.stringify(createBillFormValues.services))
 
 
     const openChoiceDialog = () => {
@@ -231,210 +229,22 @@ const UpdateBill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
     };
 
 
-    const addServiceToUnlink = (billService: ServiceFormBillType, index: number) => {
-        console.log("Le service à unlink : "+JSON.stringify(billService))
-        // Like we have to delete bill?Service (=link to bill? and service), we pass the bill?Service Id
-        setUpdateBillFormValues({
-            ...updateBillFormValues,
-            servicesToUnlink: [
-            ...updateBillFormValues.servicesToUnlink,
-            {
-                // Pass the datas from the service
-                id : billService.id,
-                label: billService.label,
-                unitPriceHT: billService.unitPriceHT,
-                type: billService.type,
-                unit: billService.unit,
-                vatRate: billService.vatRate,
-                selectedFromSuggestions: false,
-                quantity: billService.quantity,
-                detailsService: billService.detailsService,
-            },
-            ],
-        });
 
-        removeService(index)
-
-    };
-
-    const removeService = (index: number) => {
-        if(bill){
-            console.log("j'entre dans removeService")
-            const newServices = updateBillFormValues.services.filter((_, i) => i !== index);
-            setUpdateBillFormValues({
-                ...updateBillFormValues,
-                services: newServices,
-            });            
-        }
-
-    };
-
-    // We search services suggestions with the letters the user submit (= the query)
-    // We don't search if the query is less than 2 characters
- 
- 
-    const fetchServiceSuggestions = async (value: string) => {
-        if (value.length < 2) return; 
-        try {
-            console.log("le nombre de caractères dans le champ label est supérieur à 2")
-            const data = await fetchSuggestions("service", value);
-            console.log("API response data for services :", data); 
-            console.log("Longueur des datas du tableau de datas de services : "+data.suggestions.length)
-            if (Array.isArray(data.suggestions) && data.suggestions.length > 0) {
-                setServiceSuggestions(data.suggestions as ServiceSuggestionType[]); 
-                console.log("Les datas reçues sont supérieures à 0 pour les suggestions de services")
-            } else {
-                setServiceSuggestions([]); 
-                console.log("Pas de datas reçues")
-
-            }
-        } catch (error) {
-            console.error("Erreur lors de la récupération des suggestions de services :", error);
-        }
-    };
- 
-
-
-
-  /////////////////////
-  const handleClickServiceSuggestion = (index: number, suggestion: ServiceSuggestionType) => {
-    const newService = {
-        id: suggestion.id,
-        label: suggestion.label,
-        unitPriceHT: suggestion.unitPriceHT,
-        type: suggestion.type,
-        unit: "",
-        vatRate: "",
-        selectedFromSuggestions: true,
-        quantity: 0,
-        detailsService: "",
-    };
-
-    const newServices = [...updateBillFormValues.services];
-    newServices[index] = newService;
-
-    // Nettoyons servicesAdded des services partiels
-    let updatedServicesAdded = [...updateBillFormValues.servicesAdded];
-    // Supprimer tout service partiel à cet index
-    updatedServicesAdded = updatedServicesAdded.filter(service => 
-        service.label !== updateBillFormValues.services[index].label || 
-        service.selectedFromSuggestions
-    );
-    
-    // Ajouter le nouveau service
-    updatedServicesAdded.push(newService);
-
-    setUpdateBillFormValues({
-        ...updateBillFormValues,
-        services: newServices,
-        servicesAdded: updatedServicesAdded,
-    });
-
-    setServiceSuggestions([]);
-};
-
-const handleServiceFieldChange = (
-    index: number,
-    fieldName: string,
-    value: string 
-) => {
-    const newServices = [...updateBillFormValues.services];
-    const currentService = newServices[index];
-    
-    // Update the service with new value
-    newServices[index] = {
-        ...currentService,
-        [fieldName]: value,
-    };
-
-    // Only update servicesAdded if:
-    // 1. It's a new service (no id) AND all required fields are filled
-    // 2. OR it's a service from suggestions that's being modified
-    if (currentService.selectedFromSuggestions || 
-        (!currentService.id && isServiceComplete(newServices[index]))) {
-        let updatedServicesAdded = [...updateBillFormValues.servicesAdded];
-        
-        // Find if this service is already in servicesAdded
-        const existingIndex = updatedServicesAdded.findIndex(
-            s => (s.id === currentService.id) || 
-                 (s.label === currentService.label && !s.id && !currentService.id)
-        );
-
-        if (existingIndex !== -1) {
-            // Update existing service
-            updatedServicesAdded[existingIndex] = {
-                ...updatedServicesAdded[existingIndex],
-                [fieldName]: value,
-            };
-        } else if (isServiceComplete(newServices[index])) {
-            // Add new service only if it's complete
-            updatedServicesAdded.push(newServices[index]);
-        }
-
-        setUpdateBillFormValues({
-            ...updateBillFormValues,
-            services: newServices,
-            servicesAdded: updatedServicesAdded,
-        });
-    } else {
-        // For existing services that aren't from suggestions, just update services array
-        setUpdateBillFormValues({
-            ...updateBillFormValues,
-            services: newServices,
-        });
-    }
-
-    // Handle service suggestions if label is being changed
-    if (fieldName === "label") {
-        fetchServiceSuggestions(value);
-    }
-};
-
-// Fonction utilitaire pour vérifier si un service est complet
-const isServiceComplete = (service: any) => {
-    return service.label &&
-           service.unitPriceHT &&
-           service.type &&
-           service.unit &&
-           service.vatRate &&
-           service.quantity;
-};
-
-const addService = () => {
-    const newService = {
-        id: null,
-        label: "",
-        unitPriceHT: "",
-        type: "",
-        unit: "",
-        vatRate: "",
-        selectedFromSuggestions: false,
-        quantity: 0,
-        detailsService: "",
-    };
-
-    setUpdateBillFormValues(prevValues => ({
-        ...prevValues,
-        services: [...prevValues.services, newService],
-    }));
-};
       
-    if (!bill) return <div>Loading...</div>;
+    if (!quote) return <div>Loading...</div>;
 
-    console.log("Les services contenus dans bill :", JSON.stringify(updateBillFormValues.services));
-    console.log("Les services ajoutés dans bill :", JSON.stringify(updateBillFormValues.servicesAdded));
-    console.log("Les services enlevés de bill :", JSON.stringify(updateBillFormValues.servicesToUnlink));
+    console.log("Les services contenus dans bill :", JSON.stringify(createBillFormValues.services));
 
     return (
         <div className="relative">
             {/* <div><Toaster/></div> */}
-            <h1 className="text-3xl text-white ml-3 text-center">Modification de facture n°{bill?.number}</h1>
+            <h1 className="text-3xl text-white ml-3 text-center">Création de facture d'acompte liée au devis n°{quote.number}</h1>
             {/* <div><Toaster /></div> */}
             <form 
                 autoComplete="off"
                 onSubmit={(e) => {
                     e.preventDefault();
-                    handleBillUpdate();
+                    handleBillCreation();
                 }}
             >
                 {/* Client of the bill */}
@@ -442,19 +252,19 @@ const addService = () => {
                     <label htmlFor="client">Client</label>
                     <Field className="w-full">
                         <Input type="text" name="client" 
-                            value={bill?.client.name+" "+bill?.client.firstName}
+                            value={quote.client.name+" "+quote.client.firstName}
                             className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             readOnly
                         >
                         </Input>
                     </Field>                
                 </div>
-                {/* WorkSite of the bill? */}
+                {/* WorkSite of the quote */}
                 <div>
                     <label htmlFor="workSite">Chantier</label>
                     <Field className="w-full">
                         <Input type="text" name="workSite" 
-                            value={`${bill?.workSite.addressNumber} ${bill?.workSite.road} ${bill?.workSite.additionnalAddress ? bill?.workSite.additionnalAddress + " " : ""}${bill?.workSite.postalCode} ${bill?.workSite.city}`}
+                            value={`${quote?.workSite.addressNumber} ${quote?.workSite.road} ${quote?.workSite.additionnalAddress ? quote?.workSite.additionnalAddress + " " : ""}${quote?.workSite.postalCode} ${quote?.workSite.city}`}
                             className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             readOnly
                         >
@@ -466,9 +276,9 @@ const addService = () => {
                     <label htmlFor="natureOfWork">Nature des travaux</label>
                     <Field className="w-full">
                         <Input type="text" name="natureOfWork" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={updateBillFormValues.natureOfWork !== null
-                                ? updateBillFormValues.natureOfWork
-                                : bill?.natureOfWork ?? ""} 
+                            value={createBillFormValues.natureOfWork !== null
+                                ? createBillFormValues.natureOfWork
+                                : quote.natureOfWork ?? ""} 
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -479,9 +289,9 @@ const addService = () => {
                     <label htmlFor="description">Description</label>
                     <Field className="w-full">
                         <Textarea name="description" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={updateBillFormValues.description !== null
-                                ? updateBillFormValues.description
-                                : bill?.description ?? ""} 
+                            value={createBillFormValues.description !== null
+                                ? createBillFormValues.description
+                                : quote.description ?? ""} 
                             onChange={handleInputChange}
                         >
                         </Textarea>
@@ -520,7 +330,7 @@ const addService = () => {
                 {/* Sélection du type de frais de déplacements */}
                 <Select
                 name="travelCostsType"
-                value={updateBillFormValues.travelCostsType || ""}
+                value={createBillFormValues.travelCostsType || ""}
                 className="w-full rounded-md bg-gray-700 text-white pl-3"
                 disabled
                 >
@@ -534,16 +344,16 @@ const addService = () => {
                     <label htmlFor="travelCosts">Frais de déplacement</label>
                     <Field className="w-full">
                         <Input type="text" name="travelCosts" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={updateBillFormValues.travelCosts !== null
-                                ? updateBillFormValues.travelCosts
-                                : bill?.travelCosts ?? ""} 
+                            value={createBillFormValues.travelCosts !== null
+                                ? createBillFormValues.travelCosts
+                                : quote.travelCosts ?? ""} 
                             readOnly
                         >
                         </Input>
                     </Field>
                 </div>
             <h2>Services</h2>
-            {updateBillFormValues.services.map((service, index) => (
+            {createBillFormValues.services.map((service, index) => (
                 
   <div key={index} className="p-4 border border-gray-600 rounded-md mb-4">
     {/* Label : Lecture seule pour services existants, modifiable pour nouveaux services */}
@@ -552,34 +362,16 @@ const addService = () => {
       name="label"
       placeholder="Label du service"
       value={service.label}
-      onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
       className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
       disabled={!!service.id} // Si le service a un id, le label est en lecture seule
     />
     
-{/* Suggestions de services (uniquement pour les nouveaux services) */}
-{!service.id && Array.isArray(servicesSuggestions) && servicesSuggestions.length > 0 && ( 
-  <ul className="bg-gray-800 text-white rounded-md p-2">
-    {servicesSuggestions.map((suggestion) => (
-      <li
-        key={suggestion.id}
-        onClick={() => handleClickServiceSuggestion(index, suggestion)}
-        className="cursor-pointer hover:text-blue-400"
-      >
-        {suggestion.label}
-      </li>
-    ))}
-  </ul>
-)}
-
-
     {/* Détails du service */}
     <Input
       type="text"
       name="detailsService"
       placeholder="Détails du service"
       value={service.detailsService}
-      onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
       className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
       disabled={!!service.id && !service.selectedFromSuggestions} // Désactivé si c'est un service existant ET qui n'a pas été selectionné des suggestions
     />
@@ -590,7 +382,6 @@ const addService = () => {
       name="unitPriceHT"
       placeholder="Prix unitaire"
       value={service.unitPriceHT || ""}
-      onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
       className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
       disabled={!!service.id || !!service.selectedFromSuggestions} // Désactivé si existant ou sélectionné via suggestion
     />
@@ -598,7 +389,6 @@ const addService = () => {
     {/* Sélection du type */}
     <Select
       name="type"
-      onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
       value={service.type || ""}
       className="w-full rounded-md bg-gray-700 text-white pl-3"
       disabled={!!service.id} // Désactivé si c'est un service existant
@@ -615,7 +405,6 @@ const addService = () => {
       name="quantity"
       placeholder="Quantité"
       value={service.quantity || ""}
-      onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
       className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
       disabled={!!service.id && !service.selectedFromSuggestions} // Désactivé si c'est un service existant ET qui n'a pas été selectionné des suggestions
     />
@@ -623,7 +412,6 @@ const addService = () => {
     {/* Sélection de l'unité */}
     <Select
       name="unit"
-      onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
       value={service.unit || ""}
       className="w-full rounded-md bg-gray-700 text-white pl-3"
       disabled={!!service.id && !service.selectedFromSuggestions} // Désactivé si c'est un service existant ET qui n'a pas été selectionné des suggestions
@@ -637,7 +425,6 @@ const addService = () => {
     {/* Sélection du taux de TVA */}
     <Select
       name="vatRate"
-      onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
       value={service.vatRate || ""}
       className="w-full rounded-md bg-gray-700 text-white pl-3"
       disabled={!!service.id && !service.selectedFromSuggestions} // Désactivé si c'est un service existant ET qui n'a pas été selectionné des suggestions
@@ -647,33 +434,15 @@ const addService = () => {
         <option key={vatRate.id} value={vatRate.rate}>{vatRate.rate}</option>
       ))}
     </Select>
-
-    {/* Bouton de suppression du service */}
-    <Button
-      label="Supprimer le service"
-      icon={CircleX}
-      type="button"
-      action={() => addServiceToUnlink(service, index)}
-      specifyBackground="text-red-500"
-    />
   </div>
 ))}
 
-{/* Bouton d'ajout d'un service */}
-<Button
-  label="Ajouter un service"
-  icon={CirclePlus}
-  type="button"
-  action={() => addService()}
-  specifyBackground="text-green-500"
-/>
-{/* work duration */}
+{/* Montant de remise */}
     <div>
         <label htmlFor="discountAmount">Montant remise</label>
         <Field className="w-full">
             <Input type="number" name="discountAmount" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                value={updateBillFormValues.discountAmount || ""}
-                onChange={handleInputChange}
+                value={createBillFormValues.discountAmount || ""}
             >
             </Input>
         </Field>
@@ -681,8 +450,7 @@ const addService = () => {
     {/* Sélection du type de frais de déplacements */}
     <Select
         name="discountReason"
-        value={updateBillFormValues.discountReason || ""}
-        onChange={handleInputChange}
+        value={createBillFormValues.discountReason || ""}
         className="w-full rounded-md bg-gray-700 text-white pl-3"
         >
         <option value="">Type de remise</option>
@@ -718,7 +486,7 @@ const addService = () => {
                     className="bg-red-400"
                     type="submit"
                     onClick={() => {
-                        handleBillUpdate(); 
+                        handleBillCreation(); 
                     }}
                     >Enregistrer à l'état de brouillon
                 </button>
@@ -736,14 +504,14 @@ const addService = () => {
             {/* {isOpen ?? ( */}
                 <Dialog open={isOpen} onClose={closeChoiceDialog}  className="fixed top-[50%] left-[25%]" >
                     <DialogPanel className="bg-gray-300 p-5 rounded-md shadow-lg text-black">
-                    <DialogTitle>Etes-vous sûr de vouloir enregistrer la facture en version finale ?</DialogTitle>
+                    <DialogTitle>Etes-vous sûr de vouloir enregistrer la facture d'acompte en version finale ?</DialogTitle>
                     <Description>Cette action est irréversible</Description>
                     <p>La facture ne pourra plus être modifiée ultérieurement. </p>
                         <div className="flex justify-between mt-4">
                         <button
-                        // choice to to finalize bill?
+                        // choice to to finalize quote
                             onClick={() => {
-                                handleBillUpdate("Ready"); 
+                                handleBillCreation("Ready"); 
                                 closeChoiceDialog(); 
                             }}
                             className="bg-green-600 text-white px-4 py-2 rounded-md"
@@ -763,6 +531,6 @@ const addService = () => {
 
 
 
-export default UpdateBill;
+export default CreationBillFromQuote;
 
 

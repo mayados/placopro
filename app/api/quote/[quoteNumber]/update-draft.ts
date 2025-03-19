@@ -129,6 +129,63 @@ const createNewService = async (
   }, quoteId, updateData);
 };
 
+// Generate an unique and chronological quote's number if the status is Ready / fictive number if the status is draft
+const generateQuoteNumber = async (type = "quote", isDraft = false) => {
+            
+          // If it was saved as a draft, we generate a fictive number
+          if(isDraft){
+            return `DRAFT-DEV-${Date.now()}`
+          }
+        
+          const currentYear = new Date().getFullYear();
+          
+            // Get the counter for current year for quote
+            let counter = await db.documentCounter.findFirst({
+              where: {
+                year: currentYear,
+                type: type, 
+              },
+            });
+          
+            // Default value if there is no existing counter
+            let nextNumber = 1; 
+          
+            if (!counter) {
+              // If the counter doesn't exist, define a counter base on fixed values
+              // It's the case if quotes were created this year, before the release of the application. Because they won't be put in the application
+              if (type === "quote" && currentYear === 2025) {
+                // Begin at 3 if 2 quotes were already created
+                nextNumber = 3; 
+              }
+              else {
+                // For the other cases, begin at 1
+                nextNumber = 1; 
+              }
+                        // Create a new counter
+              await db.documentCounter.create({
+                data: {
+                  year: currentYear,
+                  type: type,
+                  current_number: nextNumber,
+                },
+              });
+            } else {
+              // If a coounter exists, increment the number
+              nextNumber = counter.current_number + 1;
+          
+              // update the counter in the database
+              await db.documentCounter.update({
+                where: { id: counter.id },
+                data: { current_number: nextNumber },
+              });
+            }
+          
+            // Generate quote's number (for example : DEV-2025-3 for the third quote of 2025)
+            const formattedNumber = `${"DEV"}-${currentYear}-${nextNumber}`;
+          
+            return formattedNumber;
+};
+
   // Update(s)
     try {
       
@@ -147,6 +204,18 @@ const createNewService = async (
       let totalTTCQuote = initialQuote.priceTTC;
 
       const updateData: Record<string, string | number | boolean> = {};
+
+      // Check if we're changing from draft to ready status
+      const isChangingToReady = initialQuote.status === 'draft' && data.status === 'ready';
+      
+      // Generate new number if status is draft and we're creating a new quote or changing to ready
+      if (data.status === 'ready' && (initialQuote.status === 'draft' || !initialQuote.number)) {
+        const newQuoteNumber = await generateQuoteNumber();
+        updateData.number = newQuoteNumber;
+      } else {
+        // Keep the original number for updates that don't change status from draft to ready
+        updateIfNotNull(updateData, 'number', data.number);
+      }
 
       // Update simple fields 
       const fieldsToUpdate = [
@@ -258,13 +327,19 @@ const createNewService = async (
         return new NextResponse("No data to update", { status: 400 });
       }
 
-      const updatedQuote = await db.quote.update({
-        where: { number: data.number },
-        data: updateData,
-      });
+     // Determine where clause based on whether a new number was generated
+     const whereClause = updateData.number 
+     ? { number: updateData.number.toString() } 
+     : { id: data.quoteId };
+
+    // Update the quote
+    const updatedQuote = await db.quote.update({
+      where: whereClause,
+      data: updateData,
+    });
 
       const fullUpdatedQuote = await db.quote.findUnique({
-        where: { number: data.number },
+        where: { id: updatedQuote.id },
         include: {
           client: true,
           workSite: true,

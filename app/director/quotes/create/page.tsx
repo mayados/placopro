@@ -10,6 +10,8 @@ import { fetchVatRates } from "@/services/api/vatRateService";
 import { fetchUnits } from "@/services/api/unitService";
 import { createQuote } from "@/services/api/quoteService";
 import { fetchSuggestions } from "@/services/api/suggestionService";
+import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
+
 // import toast, { Toaster } from 'react-hot-toast';
 
 const CreateQuote = () => {
@@ -65,6 +67,8 @@ const CreateQuote = () => {
     // Choices for boolean properties
     const isQuoteFreeChoices = ["Oui","Non"];
     const hasRightOfWithdrawalChoices = ["Oui","Non"];
+    const [isOpen, setIsOpen] = useState(false);
+    
 
 
 
@@ -213,9 +217,16 @@ const CreateQuote = () => {
         setServiceSuggestions([]);
       };
 
-      const handleQuoteCreation = async () => {
+      const handleQuoteCreation = async (statusReady?: string) => {
+        console.log("lors du submit, le status est : "+statusReady)
+        const status = statusReady ? "Ready": "Draft"
+
         try {
-            const newQuote = await createQuote(quote);
+            const createQuoteWithStatus = {
+                ...quote,
+                status,
+            };
+            const newQuote = await createQuote(createQuoteWithStatus);
     
             console.log("Devis créé avec succès :", newQuote);
     
@@ -306,6 +317,16 @@ const CreateQuote = () => {
         if(fieldName === "label"){
             loadServiceSuggestions(value);
         }
+    };
+
+    const openChoiceDialog = () => {
+        setIsOpen(true);  
+        console.log("la fenetre de dialog devrait être ouverte")
+        
+    };
+
+    const closeChoiceDialog = () => {
+        setIsOpen(false);  
     };
 
     return (
@@ -639,9 +660,47 @@ const CreateQuote = () => {
                         </Input>
                     </Field>
                 </div>
-
-                <button type="submit">Créer</button>
+                <button 
+                    className="bg-red-400"
+                    type="submit"
+                    onClick={() => {
+                        handleQuoteCreation(); 
+                    }}
+                    >Enregistrer à l'état de brouillon
+                </button>
+                <button
+                    // type="button" avoid the form to be automatically submitted
+                    type="button"
+                    onClick={openChoiceDialog}
+                    className="bg-green-600 text-white px-4 py-2 rounded-md"
+                >
+                    Finaliser la facture 
+                </button>
             </form>
+            {/* Dialog to save as final version of bill*/}
+            {/* className=" top-[50%] left-[25%]" */}
+            {/* {isOpen ?? ( */}
+                <Dialog open={isOpen} onClose={closeChoiceDialog}  className="fixed top-[50%] left-[25%]" >
+                    <DialogPanel className="bg-gray-300 p-5 rounded-md shadow-lg text-black">
+                    <DialogTitle>Etes-vous sûr de vouloir enregistrer la facture en version finale ?</DialogTitle>
+                    <Description>Cette action est irréversible</Description>
+                    <p>La facture ne pourra plus être modifiée ultérieurement. </p>
+                        <div className="flex justify-between mt-4">
+                        <button
+                        // choice to to finalize quote
+                            onClick={() => {
+                                handleQuoteCreation("Ready"); 
+                                closeChoiceDialog(); 
+                            }}
+                            className="bg-green-600 text-white px-4 py-2 rounded-md"
+                        >
+                            Finaliser la facture
+                        </button>
+                            <button onClick={closeChoiceDialog} className="bg-gray-300 text-black px-4 py-2 rounded-md">Annuler</button>
+                        </div>
+                    </DialogPanel>
+                </Dialog>
+                {/* <button type="submit">Créer</button> */}
         </>
     );
 };

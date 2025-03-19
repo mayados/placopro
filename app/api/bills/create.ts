@@ -43,27 +43,37 @@ export async function POST(req: NextRequest) {
 
         // Execute all operations in one transaction for integrity
         const result = await db.$transaction(async (prisma) => {
+
+
             // Generate bill number
-            const currentYear = new Date().getFullYear();
-            const counter = await prisma.documentCounter.upsert({
-                where: {
-                    year_type: {
+            let billNumber = "";
+
+            if (status === "ready") {
+                const currentYear = new Date().getFullYear();
+                const counter = await prisma.documentCounter.upsert({
+                    where: {
+                        year_type: {
+                            year: currentYear,
+                            type: "bill"
+                        }
+                    },
+                    update: {
+                        current_number: {
+                            increment: 1
+                        }
+                    },
+                    create: {
                         year: currentYear,
-                        type: "bill"
+                        type: "bill",
+                        current_number: currentYear === 2025 ? 3 : 1
                     }
-                },
-                update: {
-                    current_number: {
-                        increment: 1
-                    }
-                },
-                create: {
-                    year: currentYear,
-                    type: "bill",
-                    current_number: currentYear === 2025 ? 3 : 1
-                }
-            });
-            const billNumber = `FAC-${currentYear}-${counter.current_number}`;
+                });
+                billNumber = `FAC-${currentYear}-${counter.current_number}`;
+            }else {
+                // For draft bills, generate a temporary number
+                const timestamp = Date.now();
+                billNumber = `DRAFT-FAC-${timestamp}`;
+            }
 
             // Count deposit to reduce it later = rest to pay
             // Retrieve quote to count, because totalHT and totalHT of the Bill are possibly note the same than in the quote if there were modifications
