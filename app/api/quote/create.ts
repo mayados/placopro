@@ -32,7 +32,8 @@ export async function POST(req: NextRequest) {
             services,
             discountAmount,
             depositAmount,
-            discountReason
+            discountReason,
+            status
         } = data;
             // currentUser() is a founction from Clerk which allows to retrieve the current User
             const user = await currentUser()
@@ -69,12 +70,19 @@ export async function POST(req: NextRequest) {
         quoteCost: parseFloat(data.quoteCost) || 0,
         discountAmount: parseFloat(data.discountAmount) || 0,
         discountReason: data.discountReason || null,
+        status: data.status || "Ready",
     };
 
 
-      // Generate an unique and chronological quote's number
-      const generateQuoteNumber = async (type = "quote") => {
-            const currentYear = new Date().getFullYear();
+      // Generate an unique and chronological quote's number if the status is Ready / fictive number if the status is draft
+      const generateQuoteNumber = async (type = "quote", isDraft = false) => {
+            
+          // If it was saved as a draft, we generate a fictive number
+          if(isDraft){
+            return `DRAFT-DEV-${Date.now()}`
+          }
+        
+          const currentYear = new Date().getFullYear();
           
             // Get the counter for current year for quote
             let counter = await db.documentCounter.findFirst({
@@ -123,6 +131,8 @@ export async function POST(req: NextRequest) {
             return formattedNumber;
       };
 
+      // We have to know if the quote was saved as a draft
+      const isDraft = sanitizedData.status === "draft";
       const quoteNumber =  await generateQuoteNumber();
       
       // for each data.services : see if it already exists. If it's the case, it has an id. In the other case, the Id is null.
@@ -227,6 +237,7 @@ export async function POST(req: NextRequest) {
         const quote = await db.quote.create({
             data: {
                 number: quoteNumber,
+                status: sanitizedData.status,
                 issueDate : new Date().toISOString(), 
                 validityEndDate: sanitizedData.validityEndDate, 
                 natureOfWork: sanitizedData.natureOfWork, 
@@ -236,7 +247,6 @@ export async function POST(req: NextRequest) {
                 estimatedWorkDuration: sanitizedData.estimatedWorkDuration, 
                 isQuoteFree: sanitizedData.isQuoteFree, 
                 quoteCost: sanitizedData.quoteCost, 
-                status: "Ready", 
                 vatAmount: 0,  
                 priceTTC: 0, 
                 priceHT: 0, 
