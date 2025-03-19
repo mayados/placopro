@@ -8,17 +8,17 @@ import { CirclePlus, CircleX } from "lucide-react";
 import { capitalizeFirstLetter } from "@/lib/utils";
 import { formatDateForInput } from '@/lib/utils'
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
-import { fetchQuote, updateDraftQuote } from "@/services/api/quoteService";
+// import { fetchbill, updateInvoiceDraftBill } from "@/services/api/bill/Service";
 import { fetchVatRates } from "@/services/api/vatRateService";
 import { fetchUnits } from "@/services/api/unitService";
 import { fetchSuggestions } from "@/services/api/suggestionService";
-import { createBillFromQuote } from "@/services/api/billService";
+import { fetchBill, updateDraftBill } from "@/services/api/billService";
 
 // import toast, { Toaster } from 'react-hot-toast';
 
-const UpdateBillFromQuote = ({ params }: { params: Promise<{ billNumber: string }>}) => {
+const UpdateBill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
 
-    const [bill, setBill] = useState<QuoteType>();
+    const [bill, setBill] = useState<BillType>();
     const [updateBillFormValues, setUpdateBillFormValues] = useState<UpdatedBillFormValueType>({
         dueDate: null,
         natureOfWork: null,
@@ -34,9 +34,9 @@ const UpdateBillFromQuote = ({ params }: { params: Promise<{ billNumber: string 
         servicesToUnlink: [],
         servicesAdded: [],
         serviceType: null,
-        workSiteId: null,
+        workSiteId: null as string | null,
         // client: null,
-        quoteId: null as string | null,
+        billId: null as string | null,
         status: null,
         number: null,
         discountAmount: null,
@@ -44,6 +44,7 @@ const UpdateBillFromQuote = ({ params }: { params: Promise<{ billNumber: string 
         workEndDate: null,
         workDuration: null,
         isDiscountFromQuote: false,
+        quoteId: null,
         discountReason: null,
     })
     // Define options for select for services
@@ -72,8 +73,8 @@ const UpdateBillFromQuote = ({ params }: { params: Promise<{ billNumber: string 
     useEffect(() => {
         console.log("Mon composant est monté !");
 
-        // The Bill here is generated from a Quote, so we need to get the Quote
-        async function loadQuote() {
+        // The Bill here is generated from a bill?, so we need to get the bill?
+        async function loadBill() {
                 // Params is now asynchronous. It's a Promise
                 // So we need to await before access its properties
                 const resolvedParams = await params;
@@ -81,17 +82,17 @@ const UpdateBillFromQuote = ({ params }: { params: Promise<{ billNumber: string 
 
                 try{
                     const data = await fetchBill(billNumber)
-                    let isDiscountFromQuote = false
+                    let isDiscountFrombill = false
                   
-                    setCreateBillFormValues({
-                        ...createBillFormValues,
+                    setUpdateBillFormValues({
+                        ...updateBillFormValues,
                         number: data.bill.number,
-                        totalTtc: data.bill.priceTTC,
-                        totalHt: data.bill.priceHT,
+                        totalTtc: data.bill.totalTtc,
+                        totalHt: data.bill.totalHt,
                         clientId: data.bill.client.id,
                         workSiteId: data.bill.workSite.id,
-                        quoteId: data.bill.id,
-                        isDiscountFromQuote: isDiscountFromQuote,
+                        billId: data.bill.id,
+                        isDiscountFromQuote: data.bill.isDiscountFromQuote,
                         discountReason: data.bill.discountReason,
                         discountAmount: data.bill.discountAmount,
                         travelCosts: data.bill.travelCosts,
@@ -110,6 +111,8 @@ const UpdateBillFromQuote = ({ params }: { params: Promise<{ billNumber: string 
                             selectedFromSuggestions: false, // Ajout d'un champ par défaut si nécessaire
                             quantity: service.quantity || 0,
                             detailsService: service.detailsService || "",
+
+    
                         }))
                     });
                       setBill(data.bill);
@@ -139,7 +142,7 @@ const UpdateBillFromQuote = ({ params }: { params: Promise<{ billNumber: string 
                 }     
         };
 
-        loadQuote();
+        loadBill();
         loadVatRates();
         loadUnits();
     },[params]);
@@ -149,8 +152,8 @@ const UpdateBillFromQuote = ({ params }: { params: Promise<{ billNumber: string 
         console.log("évènement reçu : "+e)
         const { name, value } = e.target;
         console.log("select :"+name+" valeur : "+value)
-        setCreateBillFormValues({
-            ...createBillFormValues,
+        setUpdateBillFormValues({
+            ...updateBillFormValues,
             // Allow to delete completely the value contained in the field 
             [name]:value === "" ? "" : value
         });
@@ -164,33 +167,33 @@ const UpdateBillFromQuote = ({ params }: { params: Promise<{ billNumber: string 
 
     //   Retrieve datas from the radio buttons. Because they are in a RadioGroup, we can't retrieve the value just thanks to an event, we have to get the name (of the group) + the value selected
     const handleRadioChange = (name: string, value: string) => {
-        setCreateBillFormValues({
-            ...createBillFormValues,
+        setUpdateBillFormValues({
+            ...updateBillFormValues,
             [name]: value,
         });
     }
 
 
     const handleBillUpdate = async (statusReady?: string) => {
-        console.log("La facture crééé : "+JSON.stringify(createBillFormValues.servicesToUnlink))
-        console.log("Le quote intial : "+JSON.stringify(quote?.services))        
+        console.log("La facture crééé : "+JSON.stringify(updateBillFormValues.servicesToUnlink))
+        console.log("Le bill? intial : "+JSON.stringify(bill?.services))        
         console.log("lors du submit, le status est : "+statusReady)
 
         const status = statusReady ? "Ready": "Draft"
-        const quoteId = bill.quote.id
+        const billId = bill?.id
 
         try{
-            const createBillWithStatus = {
-                ...createBillFormValues,
+            const updateBillWithStatus = {
+                ...updateBillFormValues,
                 status,
-                quoteId,
+                billId,
             };
 
-            if(!quote?.number){
+            if(!bill?.number){
                 return
             }
 
-            const data = await createBillFromQuote(createBillWithStatus)
+            const data = await updateDraftBill(bill.number,updateBillWithStatus)
             console.log("data renvoyés : "+data)
             const createdBill = data;
             console.log("voici la bill crééé : "+createdBill.number)
@@ -212,9 +215,9 @@ const UpdateBillFromQuote = ({ params }: { params: Promise<{ billNumber: string 
         }
     }
 
-    // console.log("Les services de la facture à créer : "+JSON.stringify(createBillFormValues.services))
+    // console.log("Les services de la facture à créer : "+JSON.stringify(updateBillFormValues.services))
 
-    // console.log("Les services du quote : "+JSON.stringify(createBillFormValues.services))
+    // console.log("Les services du bill? : "+JSON.stringify(updateBillFormValues.services))
 
 
     const openChoiceDialog = () => {
@@ -228,13 +231,13 @@ const UpdateBillFromQuote = ({ params }: { params: Promise<{ billNumber: string 
     };
 
 
-    const addServiceToUnlink = (billService: ServiceFormQuoteType, index: number) => {
+    const addServiceToUnlink = (billService: ServiceFormBillType, index: number) => {
         console.log("Le service à unlink : "+JSON.stringify(billService))
-        // Like we have to delete QuoteService (=link to quote and service), we pass the quoteService Id
-        setCreateBillFormValues({
-            ...createBillFormValues,
+        // Like we have to delete bill?Service (=link to bill? and service), we pass the bill?Service Id
+        setUpdateBillFormValues({
+            ...updateBillFormValues,
             servicesToUnlink: [
-            ...createBillFormValues.servicesToUnlink,
+            ...updateBillFormValues.servicesToUnlink,
             {
                 // Pass the datas from the service
                 id : billService.id,
@@ -255,11 +258,11 @@ const UpdateBillFromQuote = ({ params }: { params: Promise<{ billNumber: string 
     };
 
     const removeService = (index: number) => {
-        if(quote){
+        if(bill){
             console.log("j'entre dans removeService")
-            const newServices = createBillFormValues.services.filter((_, i) => i !== index);
-            setCreateBillFormValues({
-                ...createBillFormValues,
+            const newServices = updateBillFormValues.services.filter((_, i) => i !== index);
+            setUpdateBillFormValues({
+                ...updateBillFormValues,
                 services: newServices,
             });            
         }
@@ -307,22 +310,22 @@ const UpdateBillFromQuote = ({ params }: { params: Promise<{ billNumber: string 
         detailsService: "",
     };
 
-    const newServices = [...createBillFormValues.services];
+    const newServices = [...updateBillFormValues.services];
     newServices[index] = newService;
 
     // Nettoyons servicesAdded des services partiels
-    let updatedServicesAdded = [...createBillFormValues.servicesAdded];
+    let updatedServicesAdded = [...updateBillFormValues.servicesAdded];
     // Supprimer tout service partiel à cet index
     updatedServicesAdded = updatedServicesAdded.filter(service => 
-        service.label !== createBillFormValues.services[index].label || 
+        service.label !== updateBillFormValues.services[index].label || 
         service.selectedFromSuggestions
     );
     
     // Ajouter le nouveau service
     updatedServicesAdded.push(newService);
 
-    setCreateBillFormValues({
-        ...createBillFormValues,
+    setUpdateBillFormValues({
+        ...updateBillFormValues,
         services: newServices,
         servicesAdded: updatedServicesAdded,
     });
@@ -335,7 +338,7 @@ const handleServiceFieldChange = (
     fieldName: string,
     value: string 
 ) => {
-    const newServices = [...createBillFormValues.services];
+    const newServices = [...updateBillFormValues.services];
     const currentService = newServices[index];
     
     // Update the service with new value
@@ -349,7 +352,7 @@ const handleServiceFieldChange = (
     // 2. OR it's a service from suggestions that's being modified
     if (currentService.selectedFromSuggestions || 
         (!currentService.id && isServiceComplete(newServices[index]))) {
-        let updatedServicesAdded = [...createBillFormValues.servicesAdded];
+        let updatedServicesAdded = [...updateBillFormValues.servicesAdded];
         
         // Find if this service is already in servicesAdded
         const existingIndex = updatedServicesAdded.findIndex(
@@ -368,15 +371,15 @@ const handleServiceFieldChange = (
             updatedServicesAdded.push(newServices[index]);
         }
 
-        setCreateBillFormValues({
-            ...createBillFormValues,
+        setUpdateBillFormValues({
+            ...updateBillFormValues,
             services: newServices,
             servicesAdded: updatedServicesAdded,
         });
     } else {
         // For existing services that aren't from suggestions, just update services array
-        setCreateBillFormValues({
-            ...createBillFormValues,
+        setUpdateBillFormValues({
+            ...updateBillFormValues,
             services: newServices,
         });
     }
@@ -410,28 +413,28 @@ const addService = () => {
         detailsService: "",
     };
 
-    setCreateBillFormValues(prevValues => ({
+    setUpdateBillFormValues(prevValues => ({
         ...prevValues,
         services: [...prevValues.services, newService],
     }));
 };
       
-    if (!quote) return <div>Loading...</div>;
+    if (!bill) return <div>Loading...</div>;
 
-    console.log("Les services contenus dans bill :", JSON.stringify(createBillFormValues.services));
-    console.log("Les services ajoutés dans bill :", JSON.stringify(createBillFormValues.servicesAdded));
-    console.log("Les services enlevés de bill :", JSON.stringify(createBillFormValues.servicesToUnlink));
+    console.log("Les services contenus dans bill :", JSON.stringify(updateBillFormValues.services));
+    console.log("Les services ajoutés dans bill :", JSON.stringify(updateBillFormValues.servicesAdded));
+    console.log("Les services enlevés de bill :", JSON.stringify(updateBillFormValues.servicesToUnlink));
 
     return (
         <div className="relative">
             {/* <div><Toaster/></div> */}
-            <h1 className="text-3xl text-white ml-3 text-center">Création de facture liée au devis n°{quote.number}</h1>
+            <h1 className="text-3xl text-white ml-3 text-center">Modification de facture n°{bill?.number}</h1>
             {/* <div><Toaster /></div> */}
             <form 
                 autoComplete="off"
                 onSubmit={(e) => {
                     e.preventDefault();
-                    handleBillCreation();
+                    handleBillUpdate();
                 }}
             >
                 {/* Client of the bill */}
@@ -439,19 +442,19 @@ const addService = () => {
                     <label htmlFor="client">Client</label>
                     <Field className="w-full">
                         <Input type="text" name="client" 
-                            value={quote.client.name+" "+quote.client.firstName}
+                            value={bill?.client.name+" "+bill?.client.firstName}
                             className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             readOnly
                         >
                         </Input>
                     </Field>                
                 </div>
-                {/* WorkSite of the quote */}
+                {/* WorkSite of the bill? */}
                 <div>
                     <label htmlFor="workSite">Chantier</label>
                     <Field className="w-full">
                         <Input type="text" name="workSite" 
-                            value={`${quote?.workSite.addressNumber} ${quote?.workSite.road} ${quote?.workSite.additionnalAddress ? quote?.workSite.additionnalAddress + " " : ""}${quote?.workSite.postalCode} ${quote?.workSite.city}`}
+                            value={`${bill?.workSite.addressNumber} ${bill?.workSite.road} ${bill?.workSite.additionnalAddress ? bill?.workSite.additionnalAddress + " " : ""}${bill?.workSite.postalCode} ${bill?.workSite.city}`}
                             className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             readOnly
                         >
@@ -463,9 +466,9 @@ const addService = () => {
                     <label htmlFor="natureOfWork">Nature des travaux</label>
                     <Field className="w-full">
                         <Input type="text" name="natureOfWork" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={createBillFormValues.natureOfWork !== null
-                                ? createBillFormValues.natureOfWork
-                                : quote.natureOfWork ?? ""} 
+                            value={updateBillFormValues.natureOfWork !== null
+                                ? updateBillFormValues.natureOfWork
+                                : bill?.natureOfWork ?? ""} 
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -476,9 +479,9 @@ const addService = () => {
                     <label htmlFor="description">Description</label>
                     <Field className="w-full">
                         <Textarea name="description" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={createBillFormValues.description !== null
-                                ? createBillFormValues.description
-                                : quote.description ?? ""} 
+                            value={updateBillFormValues.description !== null
+                                ? updateBillFormValues.description
+                                : bill?.description ?? ""} 
                             onChange={handleInputChange}
                         >
                         </Textarea>
@@ -517,7 +520,7 @@ const addService = () => {
                 {/* Sélection du type de frais de déplacements */}
                 <Select
                 name="travelCostsType"
-                value={createBillFormValues.travelCostsType || ""}
+                value={updateBillFormValues.travelCostsType || ""}
                 className="w-full rounded-md bg-gray-700 text-white pl-3"
                 disabled
                 >
@@ -531,16 +534,16 @@ const addService = () => {
                     <label htmlFor="travelCosts">Frais de déplacement</label>
                     <Field className="w-full">
                         <Input type="text" name="travelCosts" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={createBillFormValues.travelCosts !== null
-                                ? createBillFormValues.travelCosts
-                                : quote.travelCosts ?? ""} 
+                            value={updateBillFormValues.travelCosts !== null
+                                ? updateBillFormValues.travelCosts
+                                : bill?.travelCosts ?? ""} 
                             readOnly
                         >
                         </Input>
                     </Field>
                 </div>
             <h2>Services</h2>
-            {createBillFormValues.services.map((service, index) => (
+            {updateBillFormValues.services.map((service, index) => (
                 
   <div key={index} className="p-4 border border-gray-600 rounded-md mb-4">
     {/* Label : Lecture seule pour services existants, modifiable pour nouveaux services */}
@@ -669,7 +672,7 @@ const addService = () => {
         <label htmlFor="discountAmount">Montant remise</label>
         <Field className="w-full">
             <Input type="number" name="discountAmount" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                value={createBillFormValues.discountAmount || ""}
+                value={updateBillFormValues.discountAmount || ""}
                 onChange={handleInputChange}
             >
             </Input>
@@ -678,7 +681,7 @@ const addService = () => {
     {/* Sélection du type de frais de déplacements */}
     <Select
         name="discountReason"
-        value={createBillFormValues.discountReason || ""}
+        value={updateBillFormValues.discountReason || ""}
         onChange={handleInputChange}
         className="w-full rounded-md bg-gray-700 text-white pl-3"
         >
@@ -738,7 +741,7 @@ const addService = () => {
                     <p>La facture ne pourra plus être modifiée ultérieurement. </p>
                         <div className="flex justify-between mt-4">
                         <button
-                        // choice to to finalize quote
+                        // choice to to finalize bill?
                             onClick={() => {
                                 handleBillUpdate("Ready"); 
                                 closeChoiceDialog(); 
@@ -760,6 +763,6 @@ const addService = () => {
 
 
 
-export default UpdateBillFromQuote;
+export default UpdateBill;
 
 
