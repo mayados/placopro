@@ -207,7 +207,7 @@ interface PlanningType{
 
 interface BillType{
     id: string;
-    number: number;
+    number: string;
     natureOfWork: string;
     description: string;
     totalHt: number;
@@ -223,6 +223,14 @@ interface BillType{
     author: UserType;
     client: ClientType;
     services: BillServiceType[];
+    workSite : WorkSiteType;
+    isDiscountFromQuote: boolean;
+    travelCosts: number,
+    travelCostsType: string,
+    workStartDate: Date,
+    workEndDate: Date,
+    workDuration: number,
+    quote: QuoteType
 }
 //
 interface CreateBillFormValueType{
@@ -243,6 +251,32 @@ interface CreateBillFormValueType{
     services: ServiceFormQuoteType[] | [];
     servicesToUnlink: ServiceFormQuoteType[] | [];
     servicesAdded: ServiceFormQuoteType[] | [];
+    status: string | null;
+    paymentTerms: string,
+    travelCosts: number | null,
+    travelCostsType: string | null,
+    workStartDate: Date | null,
+    workEndDate: Date | null,
+    workDuration: Date | null,
+    discountReason: string | null | undefined
+}
+
+interface CreateDepositBillFormValueType{
+    number: string | null;
+    dueDate: string | null;
+    natureOfWork: string | null,
+    description: string | null,
+    issueDate: string | null,
+    vatAmount: number | null,
+    totalTtc: number | null,
+    totalHt: number | null,
+    discountAmount: number | null | undefined;
+    isDiscountFromQuote: boolean,
+    serviceType: string | null;
+    workSiteId: string | null;
+    quoteId:  string | null | undefined,
+    clientId:  string | null,
+    services: ServiceFormQuoteType[] | [];
     status: string | null;
     paymentTerms: string,
     travelCosts: number | null,
@@ -280,12 +314,14 @@ interface UpdatedBillFormValueType{
     clientId: string | null;
     serviceType: string | null,
     workSiteId: string | null,
+    billId: string | null | undefined,
     quoteId: string | null,
     workStartDate: Date | null,
     workEndDate: Date | null,
     workDuration: number | null,
     isDiscountFromQuote: boolean | null,
-    services: BillServiceType[];
+    // services: BillServiceType[];
+    services: ServiceFormBillType[];
     discountAmount: number | null,
     discountReason: string | null,
     travelCosts: number | null,
@@ -319,7 +355,7 @@ interface QuoteType{
     priceHT: number;
     travelCosts: number;
     travelCostsType: string;
-    depositAmount?: number;
+    depositAmount?: number ;
     hourlyLaborRate?: number;
     paymentTerms: string;
     paymentDelay: number;
@@ -556,12 +592,12 @@ interface ServiceFormBillType{
     selectedFromSuggestions?: boolean,
     quantity?: number,
     detailsService?: string,
-    service?: { // Ajout du sous-objet service
-        id: string;
-        label: string;
-        unitPriceHT?: number;
-        type?: string;
-    };
+    // service?: { // Ajout du sous-objet service
+    //     id: string;
+    //     label: string;
+    //     unitPriceHT?: number;
+    //     type?: string;
+    // };
 }
 
 
