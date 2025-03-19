@@ -17,7 +17,7 @@ export const fetchBills = async (): Promise<BillsWithTotalsAndStatus> => {
 // Retrieve a specific Bill
 export const fetchBill = async (billNumber: string): Promise<BillTypeSingle> => {
     try {
-        const response = await fetch(`/api/bill/${billNumber}`);
+        const response = await fetch(`/api/bills/${billNumber}`);
         if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
       
         const data: BillTypeSingle = await response.json();
@@ -51,6 +51,32 @@ export const createBillFromQuote = async (bill: CreateBillFormValueType): Promis
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+            },
+            body: JSON.stringify(bill),
+        });
+  
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+  
+        const data: BillType = await response.json();
+        console.log("Created bill :", data);
+  
+        return data; 
+    } catch (error) {
+        console.error("Erreur with bill creation :", error);
+        throw error; 
+    }
+  };
+
+// Create DEPOSIT bill
+export const createDepositBillFromQuote = async (bill: CreateDepositBillFormValueType): Promise<BillType> => {
+    try {
+        const response = await fetch(`/api/bills`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Create-Type": "deposit",
             },
             body: JSON.stringify(bill),
         });
