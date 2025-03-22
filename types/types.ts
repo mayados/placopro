@@ -216,6 +216,7 @@ interface BillType{
     issueDate: Date;
     dueDate: Date;
     status: string;
+    billType: string;
     paymentDate?: Date;
     paymentTerms: string,
     discountAmount: number,
@@ -329,7 +330,13 @@ interface UpdatedBillFormValueType{
     paymentTerms: string
     servicesToUnlink: ServiceFormBillType[] | [],
     servicesAdded: ServiceFormBillType[] | [],
+}
 
+interface UpdatedDepositBillFormValueType{
+    id:string | null,
+    dueDate: Date | null;
+    status: string | null,
+    paymentTerms: string
 }
 
 interface FormValuesUpdateNotDraftBill{
@@ -547,6 +554,7 @@ interface ServiceType{
     type: string;
     vatRate: string;
     unit: string,  
+    quotes?: QuoteServiceType[]
 }
 
 interface ServiceUnitType {

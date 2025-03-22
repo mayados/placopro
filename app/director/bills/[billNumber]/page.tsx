@@ -73,6 +73,7 @@ const Bill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
             });
                   
         };
+        
     
         //   Retrieve datas from the radio buttons. Because they are in a RadioGroup, we can't retrieve the value just thanks to an event, we have to get the name (of the group) + the value selected
         const handleRadioChange = (name: string, value: string) => {
@@ -103,7 +104,12 @@ const Bill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
     
 
         if (!bill) return <div>Loading...</div>;
-      
+
+        bill?.services.map((service, index) => (
+            console.log(  service.service.quotes?.[0]?.totalHT ?? "Pas de totalHT disponible"
+            )
+        ))
+
     return (
         <>
             {/* <div><Toaster/></div> */}
@@ -194,58 +200,83 @@ const Bill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
                 <p>Date de début estimée : {formatDate(bill.workStartDate)}</p>
                 <p>Date de fin estimée : {formatDate(bill.workEndDate)}</p>
                 <p>Durée estimée des travaux : {bill.workDuration} jours</p>
-                {/* Table about bill details */}
+
+                {/* Vérifier si la facture est de type DEPOSIT ou non */}
+                {bill?.billType === "DEPOSIT" ? (
+                // Afficher le tableau pour une facture d'acompte
                 <table>
                     <thead>
-                        <tr>
-                            <th>
-                                Service
-                            </th>
-                            <th>
-                                Description 
-                            </th>
-                            <th>
-                                Quantité
-                            </th>
-                            <th>
-                                Prix Unitaire
-                            </th>
-                            <th>
-                                TVA
-                            </th>
-                            <th>
-                                Montant TVA
-                            </th>
-                            <th>
-                                Prix HT
-                            </th>
-                            <th>
-                                Prix TTC
-                            </th>
-                        </tr>                        
+                    <tr>
+                            <th>Service</th>
+                        <th>Description</th>
+                        <th>Quantité</th>
+                        <th>Prix Unitaire</th>
+                        <th>taux TVA</th>
+                        <th>Montant de tva sur l'acompte</th>
+                        <td>Total Ht service</td>
+                        {/* <th>Acompte HT sur service</th>
+                        <th>Acompte TTC sur service</th> */}
+
+                    </tr>
                     </thead>
                     <tbody>
-                        {/* bill.services => billService */}
-                        {bill?.services.map((service, index) => {
-                            console.log("taux de tva du service "+service.service.vatRate)
-
-                            return (
-                                <tr key={index}>
-                                    <td>{service.service.label} - {service.service.type}</td>
-                                    <td>{service.detailsService}</td>
-                                    <td>{service.quantity} {service.unit}</td>
-                                    <td>{service.service.unitPriceHT}</td>
-                                    <td>{service.vatRate} %</td>
-                                    <td>{service.vatAmount}</td>
-                                    <td>{service.totalHT}</td>
-                                    <td>{service.totalTTC}</td>
-                                </tr>
-                            );
-                        })}                      
+                    {/* bill.services => billService */}
+                    {bill?.services.map((service, index) => (
+                        <tr key={index}>
+                        <td>{service.service.label} - {service.service.type}</td>
+                        <td>{service.detailsService}</td>
+                        <td>{service.quantity} {service.unit}</td>
+                        <td>{service.service.unitPriceHT}</td>
+                        <td>{service.vatRate} %</td>
+                        <td>{service.vatAmount}</td>
+                        <td>
+                            {service.service.quotes
+                                ?.find(qs => qs.id === bill.quote.id)?.totalHT ?? "N/A"} €
+                        </td>
+                        {/* <td>{service.totalHT}</td>
+                        <td>{service.totalTTC}</td> */}
+                        </tr>
+                    ))}
                     </tbody>
                 </table>
-                {/* Travel costs */} 
+                ) : (
+                // Afficher le tableau pour une facture normale
                 <table>
+                    <thead>
+                    <tr>
+                        <th>Service</th>
+                        <th>Description</th>
+                        <th>Quantité</th>
+                        <th>Prix Unitaire</th>
+                        <th>TVA</th>
+                        <th>Montant TVA</th>
+                        <th>Prix HT</th>
+                        <th>Prix TTC</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {/* bill.services => billService */}
+                    {bill?.services.map((service, index) => {
+                        console.log("taux de tva du service "+service.service.vatRate)
+
+                        return (
+                        <tr key={index}>
+                            <td>{service.service.label} - {service.service.type}</td>
+                            <td>{service.detailsService}</td>
+                            <td>{service.quantity} {service.unit}</td>
+                            <td>{service.service.unitPriceHT}</td>
+                            <td>{service.vatRate} %</td>
+                            <td>{service.vatAmount}</td>
+                            <td>{service.totalHT}</td>
+                            <td>{service.totalTTC}</td>
+                        </tr>
+                        );
+                    })}
+                    </tbody>
+                </table>
+                )}
+                                {/* Travel costs */} 
+                                <table>
                     <thead>
                         <tr>
                             <th>
@@ -285,42 +316,44 @@ const Bill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
                         </tr>                        
                     </tbody>
                 </table>
-                {/* Total du devis  */}
-                <table>
-                    <thead>
-                        <tr>
-                            <th>
-                                Total HT
-                            </th>
-                            <th>
-                                Montant total de la TVA
-                            </th>
-                            <th>
-                                Montant TTC
-                            </th>
-                        </tr>                        
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                {bill.totalHt} €
-                            </td>
-                            <td>
-                                {bill.vatAmount} €
-                            </td>
-                            <td>
-                                {bill.totalTtc} €
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                {/* Total facture  */}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>
+                                    Total HT
+                                </th>
+                                <th>
+                                    Montant total de la TVA
+                                </th>
+                                <th>
+                                    Montant TTC
+                                </th>
+                            </tr>                        
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    {bill.totalHt} €
+                                </td>
+                                <td>
+                                    {bill.vatAmount} €
+                                </td>
+                                <td>
+                                    {bill.totalTtc} €
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+
             </section>
             <section>
                 {/* issuedDate */}
                 <p>Devis créé le {formatDate(bill.issueDate)}</p>
 
                 {/* Deposit amount (in %) */}
-                <p>Accompte avant le début du chantier : {bill?.quote.depositAmount} %</p>
+                <p>Accompte avant le début du chantier : {bill?.quote.depositAmount} €</p>
 
                 {/* payment terms*/}
                 <p>{bill?.paymentTerms}</p>

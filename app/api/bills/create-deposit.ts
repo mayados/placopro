@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
             // Generate bill number
             let billNumber = "";
 
-            if (status === "ready") {
+            if (status === "Ready") {
                 const currentYear = new Date().getFullYear();
                 const counter = await prisma.documentCounter.upsert({
                     where: {
@@ -83,74 +83,109 @@ export async function POST(req: NextRequest) {
                 throw new Error("Devis introuvable");
             }
 
-    // Apply discount on HT
-    const htAfterDiscount = Math.max(0, quote.priceHT - (discountAmount || 0));
-    
-    // Defin deposit 
-    const depositHt = Math.max(0, quote.depositAmount ?? 0);
-    
-    // Count VAT of deposit (we have to proceed this way because each service can have a different vat)
-    let depositVat = 0;
-    for (const service of services) {
-        const proportion = service.totalHt / quote.priceHT;
-        const serviceDepositHt = depositHt * proportion;
-        const serviceVat = serviceDepositHt * (service.vatRate / 100);
-        depositVat += serviceVat;
+// Appliquer la remise sur le HT
+const htAfterDiscount = Math.max(0, quote.priceHT - (discountAmount || 0));
+
+// Définir l'acompte HT
+const depositHt = Math.max(0, quote.depositAmount ?? 0);
+
+// Calculer la TVA de l'acompte
+let depositVat = 0;
+
+for (const service of services) {
+    const serviceTotalHt = service.unitPriceHT * service.quantity;
+    console.log("service totalHt : " + serviceTotalHt + " quote price Ht : " + htAfterDiscount);
+
+    const proportion = Number(serviceTotalHt) / Number(htAfterDiscount);
+    console.log("proportion : " + proportion);
+
+    const serviceDepositHt = depositHt * proportion; 
+    console.log("serviceDepositHt : " + serviceDepositHt);
+
+    const serviceVat = (Number(serviceDepositHt) * (service.vatRate / 100)); // 🔹 Arrondi
+    console.log("serviceVat : " + serviceVat);
+
+    depositVat += Number(serviceVat);
+}
+
+depositVat = Number(depositVat.toFixed(2)); // 🔹 Arrondi
+
+console.log("depositVAT : " + depositVat);
+
+// Montant TTC de l'acompte
+const depositTtc = (depositHt + depositVat).toFixed(2);
+
+// Création de la facture d'acompte
+const bill = await prisma.bill.create({
+    data: {
+        number: billNumber,
+        issueDate: new Date().toISOString(),
+        billType: "DEPOSIT",
+        dueDate: dueDate ? new Date(dueDate).toISOString() : new Date().toISOString(),
+        workStartDate: workStartDate ? new Date(workStartDate).toISOString() : null,
+        workEndDate: workEndDate ? new Date(workEndDate).toISOString() : null,
+        workDuration: workDuration ? parseInt(workDuration) : null,
+        natureOfWork,
+        description,
+        paymentTerms,
+        status,
+        discountAmount: discountAmount || 0,
+        travelCosts,
+        travelCostsType,
+        discountReason,
+        vatAmount: depositVat,
+        totalTtc: Number(depositTtc),
+        totalHt: Number((depositHt).toFixed(2)),
+        userId: user.id,
+        client: { connect: { id: clientId } },
+        workSite: { connect: { id: workSiteId } },
+        quote: { connect: { id: quoteId } }
+    }
+});
+
+for (const service of services) {
+    const serviceTotalHt = service.unitPriceHT * service.quantity;
+    const proportion = htAfterDiscount > 0 ? serviceTotalHt / htAfterDiscount : 0; // ⚠️ Évite division par zéro
+
+    const serviceDepositHt = Number(depositHt * proportion); // 🔹 Assure que c'est un nombre
+    const serviceVat = Number(serviceDepositHt * (service.vatRate / 100));
+    const serviceDepositTtc = Number(serviceDepositHt + serviceVat);
+
+    console.log({ serviceDepositHt, serviceVat, serviceDepositTtc }); // Debugging
+
+    // Vérifie si une valeur est NaN avant de l'insérer dans la DB
+    if (isNaN(serviceDepositHt) || isNaN(serviceVat) || isNaN(serviceDepositTtc)) {
+        throw new Error("Valeurs invalides détectées dans billService.create()");
     }
 
-    // Deposit TTC amount (because in french legislation, even deposits have vat)
-    const depositTtc = depositHt + depositVat;
-
-    // create deposit bill
-    const bill = await prisma.bill.create({
-        data: {
-            number: billNumber,
-            issueDate: new Date().toISOString(),
-            billType: "DEPOSIT",
-            // dueDate: dueDate ? new Date(dueDate).toISOString() : null,
-            dueDate: dueDate ? new Date(dueDate).toISOString() : new Date().toISOString(),
-            workStartDate: workStartDate ? new Date(workStartDate).toISOString() : null,
-            workEndDate: workEndDate ? new Date(workEndDate).toISOString() : null,
-            workDuration: workDuration ? parseInt(workDuration) : null,
-            natureOfWork,
-            description,
-            paymentTerms,
-            status,
-            discountAmount: discountAmount || 0,
-            travelCosts,
-            travelCostsType,
-            discountReason,
-            vatAmount: depositVat,
-            totalTtc: depositTtc,
-            totalHt: depositHt,
-            userId: user.id,
-            client: { connect: { id: clientId } },
-            workSite: { connect: { id: workSiteId } },
-            quote: { connect: { id: quoteId } }
-        }
+    const quoteService = await prisma.quoteService.findUnique({
+        where: { id: service.id }, // Assure-toi que `service.id` est bien l'ID de `quoteService`
+        select: { serviceId: true }
     });
 
-    // Create a BillService for each service (their amounts correspond to deposit part, because we have to display the details on the bill)
-    for (const service of services) {
-        const proportion = service.totalHt / quote.priceHT;
-        const serviceDepositHt = depositHt * proportion;
-        const serviceVat = serviceDepositHt * (service.vatRate / 100);
-        const serviceDepositTtc = serviceDepositHt + serviceVat;
-
-        await prisma.billService.create({
-            data: {
-                vatRate: service.vatRate,
-                unit: service.unit,
-                quantity: service.quantity,
-                totalHT: serviceDepositHt,
-                vatAmount: serviceVat,
-                totalTTC: serviceDepositTtc,
-                detailsService: service.detailsService,
-                bill: { connect: { id: bill.id } },
-                service: { connect: { id: service.id } }
-            }
-        });
+    if (!quoteService || !quoteService.serviceId) {
+        throw new Error(`Aucun service trouvé pour le quoteService ID: ${service.id}`);
     }
+
+    const realServiceId = quoteService.serviceId 
+
+
+    await prisma.billService.create({
+        data: {
+            vatRate: service.vatRate,
+            unit: service.unit,
+            quantity: service.quantity,
+            totalHT: Number((serviceDepositHt).toFixed(2)), // ✅ Maintenant défini
+            vatAmount: Number((serviceVat).toFixed(2)),
+            totalTTC: Number((serviceDepositTtc).toFixed(2)),
+            detailsService: service.detailsService,
+            bill: { connect: { id: bill.id } },
+            service: { connect: { id: realServiceId } }
+        }
+    });
+}
+
+
 
     return bill;
 });
