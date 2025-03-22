@@ -15,11 +15,17 @@ export async function GET(req: NextRequest, {params}: {params: {billNumber: stri
             include: {
                 client: true,
                 workSite: true,
+                quote: true,
                 // services: true,
+                // on inclut les BillServices, puis les services des BillServices, et enfin les quoteService des services
                 services: {
                     include: {
-                      service: true
-                    },
+                        service: {
+                            include: {
+                                quotes: true // Inclure les quoteServices associés à chaque service
+                            }
+                        }
+                    }
                 }
             },         
         })

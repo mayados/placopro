@@ -122,6 +122,33 @@ export const updateDraftBill = async (billNumber: string, updatedBillWithStatus:
     }
   };
 
+// Update deposit draft bill
+export const updateDepositDraftBill = async (billNumber: string, updatedBillWithStatus: UpdatedDepositBillFormValueType): Promise<BillType> => {
+    try {
+        const response = await fetch(`/api/bills/${billNumber}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Update-Type": "draft-deposit",
+  
+            },
+            body: JSON.stringify(updatedBillWithStatus),
+        });
+  
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+  
+        const data: BillType = await response.json();
+        console.log("Created bill :", data);
+  
+        return data; 
+    } catch (error) {
+        console.error("Erreur with bill update :", error);
+        throw error; 
+    }
+  };
+
   export const updateClassicBill = async (billNumber: string, formValues: FormValuesUpdateNotDraftBill): Promise<BillType> => {
     try {
         const response = await fetch(`/api/bills/${billNumber}`, {

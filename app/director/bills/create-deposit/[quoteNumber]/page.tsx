@@ -442,20 +442,25 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
         <label htmlFor="discountAmount">Montant remise</label>
         <Field className="w-full">
             <Input type="number" name="discountAmount" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                value={createBillFormValues.discountAmount || ""}
+                value={createBillFormValues.discountAmount !== null
+                        ? createBillFormValues.discountAmount
+                        : quote.discountAmount ?? ""}
+                readOnly
             >
             </Input>
         </Field>
     </div>
-    {/* Sélection du type de frais de déplacements */}
+    {/* Sélection du type de remise */}
     <Select
         name="discountReason"
         value={createBillFormValues.discountReason || ""}
         className="w-full rounded-md bg-gray-700 text-white pl-3"
+        disabled
         >
         <option value="">Type de remise</option>
         {discountReasonChoices.map((type) => (
             <option key={type} value={type}>{type}</option>
+
         ))}
     </Select>
                 {/* payment Terms */}
@@ -522,7 +527,7 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
                         </div>
                     </DialogPanel>
                 </Dialog>
-            {/* )}  */}
+            {/* )} */}
 
         </div>
     );
