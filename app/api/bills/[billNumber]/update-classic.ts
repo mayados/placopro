@@ -37,6 +37,11 @@ export async function PUT(req: NextRequest) {
     if (paymentMethod !== null){
         updateData.paymentMethod = paymentMethod
     }
+    if (canceledAt !== null){
+      const parsedDate = new Date(canceledAt);
+      updateData.canceledAt = parsedDate;  
+      console.log("date parsée : "+parsedDate)
+  } 
 
     // Verify if there are datas to update
     if (Object.keys(updateData).length === 0) {
