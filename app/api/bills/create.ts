@@ -43,12 +43,10 @@ export async function POST(req: NextRequest) {
 
         // Execute all operations in one transaction for integrity
         const result = await db.$transaction(async (prisma) => {
-
-
             // Generate bill number
             let billNumber = "";
 
-            if (status === "ready") {
+            if (status === "Ready") {
                 const currentYear = new Date().getFullYear();
                 const counter = await prisma.documentCounter.upsert({
                     where: {
@@ -69,14 +67,13 @@ export async function POST(req: NextRequest) {
                     }
                 });
                 billNumber = `FAC-${currentYear}-${counter.current_number}`;
-            }else {
+            } else {
                 // For draft bills, generate a temporary number
                 const timestamp = Date.now();
                 billNumber = `DRAFT-FAC-${timestamp}`;
             }
 
-            // Count deposit to reduce it later = rest to pay
-            // Retrieve quote to count, because totalHT and totalHT of the Bill are possibly note the same than in the quote if there were modifications
+            // Retrieve the quote
             const quote = await prisma.quote.findUnique({
                 where: { id: quoteId },
             });
@@ -90,48 +87,32 @@ export async function POST(req: NextRequest) {
                 where: { quoteId: quote.id, billType: "DEPOSIT" },
             });
 
-            // // Count deposit already paid
-            // const totalPaidDeposit = depositBills.reduce((acc, bill) => acc + bill.totalTtc, 0);
-
-
-            // Calculer les totaux des acomptes avec arrondi à 2 décimales
+            // Calculate total deposits paid with proper rounding
             const totalPaidDepositTTC = parseFloat(depositBills.reduce((acc, bill) => acc + bill.totalTtc, 0).toFixed(2));
             const totalPaidDepositHT = parseFloat(depositBills.reduce((acc, bill) => acc + bill.totalHt, 0).toFixed(2));
             const totalPaidDepositVAT = parseFloat(depositBills.reduce((acc, bill) => acc + bill.vatAmount, 0).toFixed(2));
 
-            // Appliquer la remise sur le montant HT avec arrondi
-            const htAfterDiscount = parseFloat((totalHt - discountAmount).toFixed(2));
-
-            // Calculer le nouveau montant TTC après remise
-            const ttcAfterDiscount = parseFloat((htAfterDiscount + vatAmount).toFixed(2));
-
-            // Calculer les montants restants à payer avec arrondi
-            const remainingAmountTTC = parseFloat((ttcAfterDiscount - totalPaidDepositTTC).toFixed(2));
-            const remainingAmountHT = parseFloat((htAfterDiscount - totalPaidDepositHT).toFixed(2));
-            const remainingVatAmount = parseFloat((vatAmount - totalPaidDepositVAT).toFixed(2));
-
-
-            // Bill creation
+            // Create initial bill with temporary values
             const bill = await prisma.bill.create({
                 data: {
                     number: billNumber,
                     issueDate: new Date().toISOString(),
                     billType: "INVOICE",
                     dueDate: dueDate ? new Date(dueDate).toISOString() : null,
-                    workStartDate: workStartDate ? new Date(dueDate).toISOString() : null,
-                    workEndDate: workEndDate ? new Date(dueDate).toISOString() : null,
-                    workDuration: parseInt(workDuration),
+                    workStartDate: workStartDate ? new Date(workStartDate).toISOString() : null,
+                    workEndDate: workEndDate ? new Date(workEndDate).toISOString() : null,
+                    workDuration: parseInt(workDuration) || 0,
                     natureOfWork,
                     description,
                     paymentTerms,
                     status,
                     discountAmount: parseFloat(discountAmount) || 0,
-                    travelCosts,
+                    travelCosts: parseFloat(travelCosts) || 0,
                     travelCostsType,
                     discountReason,
-                    vatAmount: parseFloat(vatAmount) || 0,
-                    totalTtc: Number(remainingAmountTTC) || 0,
-                    totalHt: Number(remainingAmountHT) || 0,
+                    vatAmount: 0, // Will be calculated later
+                    totalTtc: 0,  // Will be calculated later
+                    totalHt: 0,   // Will be calculated later
                     userId: user.id,
                     client: { connect: { id: clientId } },
                     workSite: { connect: { id: workSiteId } },
@@ -139,14 +120,33 @@ export async function POST(req: NextRequest) {
                 },
             });
 
+            // Initialize totals
+            let billTotalHT = 0;
+            let billTotalVAT = 0;
+            let billTotalTTC = 0;
 
-            // The case where everything is identitcal to the Quote
+            // Calculate travel costs
+            const travelCostsHT = parseFloat(travelCosts) || 0;
+            const travelCostsVatRate = 20; // Default VAT rate for travel costs
+            const travelCostsVAT = parseFloat((travelCostsHT * (travelCostsVatRate / 100)).toFixed(2));
+            const travelCostsTTC = parseFloat((travelCostsHT + travelCostsVAT).toFixed(2));
+
+            // Add travel costs to totals
+            billTotalHT += travelCostsHT;
+            billTotalVAT += travelCostsVAT;
+            billTotalTTC += travelCostsTTC;
+
+            // Log for debugging
+            console.log(`Frais de déplacement: ${travelCostsHT} HT, ${travelCostsVAT} TVA, ${travelCostsTTC} TTC`);
+            console.log(`Totaux après frais: ${billTotalHT} HT, ${billTotalVAT} TVA, ${billTotalTTC} TTC`);
+
+            // Process services
             if (servicesToUnlink.length === 0 && servicesAdded.length === 0) {
-                console.log("aucune modif, je crée tous les billServices");
+                // Case 1: No modifications - process all services as they are
+                console.log("Aucune modification, création des billServices à partir des quoteServices");
 
-                // Case 1: No modification - treat all services
                 for (const service of services) {
-                    // I create the billService thanks to the quoteService which it comes from
+                    // Find the original quoteService
                     const quoteService = await prisma.quoteService.findUnique({
                         where: { id: service.id },
                         include: {
@@ -158,20 +158,29 @@ export async function POST(req: NextRequest) {
                         throw new Error(`QuoteService not found for id: ${service.id}`);
                     }
 
-                    // Calculer les montants à partir des données du quoteService
+                    // Get service amounts
                     const totalHTService = Number(quoteService.totalHT);
                     const vatAmountService = Number(quoteService.vatAmount);
-                    const totalTTCService = Number(quoteService.totalTTC)
+                    const totalTTCService = Number(quoteService.totalTTC);
 
+                    // Add to bill totals
+                    billTotalHT += totalHTService;
+                    billTotalVAT += vatAmountService;
+                    billTotalTTC += totalTTCService;
 
+                    // Log for debugging
+                    console.log(`Service ${quoteService.service.label}: ${totalHTService} HT, ${vatAmountService} TVA, ${totalTTCService} TTC`);
+                    console.log(`Totaux après service: ${billTotalHT} HT, ${billTotalVAT} TVA, ${billTotalTTC} TTC`);
+
+                    // Create billService
                     await prisma.billService.create({
                         data: {
                             vatRate: service.vatRate,
                             unit: service.unit,
                             quantity: Number(service.quantity),
-                            totalHT: Number(totalHTService),
-                            vatAmount: Number(vatAmountService),
-                            totalTTC: Number(totalTTCService),
+                            totalHT: totalHTService,
+                            vatAmount: vatAmountService,
+                            totalTTC: totalTTCService,
                             detailsService: service.detailsService,
                             bill: {
                                 connect: { id: bill.id }
@@ -183,24 +192,32 @@ export async function POST(req: NextRequest) {
                     });
                 }
             } else {
-                // Case 2 : There are modifications
-                let newTotalHt = parseFloat(totalHt) || 0;
-                let newTotalTtc = parseFloat(totalTtc) || 0;
-                let newVatAmount = parseFloat(vatAmount) || 0;
+                // Case 2: Services have been modified
+                console.log("Modifications détectées, recalcul des montants");
 
                 for (const service of services) {
-                    const totalHTService = parseFloat(service.unitPriceHT) * parseFloat(service.quantity);
-                    const vatRateService = parseFloat(service.vatRate);
-                    const vatAmountService = totalHTService * (vatRateService/100);
-                    const totalTTCService = totalHTService + vatAmountService;
-
-                    if (servicesToUnlink.some((s: ServiceFormBillType) => s.id === service.id)) {
-                        newTotalHt -= totalHTService;
-                        newTotalTtc -= totalTTCService;
-                        newVatAmount -= vatAmountService;
+                    // Skip services that are marked to be unlinked
+                    if (servicesToUnlink.some((s: ServiceFormQuoteType) => s.id === service.id)) {
+                        console.log(`Service ${service.label || service.id} ignoré car marqué pour suppression`);
                         continue;
                     }
 
+                    // Calculate service amounts
+                    const totalHTService = parseFloat((parseFloat(service.unitPriceHT) * parseFloat(service.quantity)).toFixed(2));
+                    const vatRateService = parseFloat(service.vatRate);
+                    const vatAmountService = parseFloat((totalHTService * (vatRateService / 100)).toFixed(2));
+                    const totalTTCService = parseFloat((totalHTService + vatAmountService).toFixed(2));
+
+                    // Add to bill totals
+                    billTotalHT += totalHTService;
+                    billTotalVAT += vatAmountService;
+                    billTotalTTC += totalTTCService;
+
+                    // Log for debugging
+                    console.log(`Service ${service.label || service.id}: ${totalHTService} HT, ${vatAmountService} TVA, ${totalTTCService} TTC`);
+                    console.log(`Totaux après service: ${billTotalHT} HT, ${billTotalVAT} TVA, ${billTotalTTC} TTC`);
+
+                    // Determine the service ID to use
                     let serviceId = service.id;
                     const existingService = await prisma.service.findUnique({
                         where: { id: service.id }
@@ -215,10 +232,11 @@ export async function POST(req: NextRequest) {
                         if (quoteService) {
                             serviceId = quoteService.serviceId;
                         } else {
+                            // Create a new service if it doesn't exist
                             const newService = await prisma.service.create({
                                 data: {
                                     label: service.label,
-                                    unitPriceHT: parseFloat(service.unitPriceHT.toString()),
+                                    unitPriceHT: parseFloat(service.unitPriceHT),
                                     type: service.type,
                                     units: {
                                         create: {
@@ -246,36 +264,7 @@ export async function POST(req: NextRequest) {
                         }
                     }
 
-                    newTotalHt += totalHTService;
-                    newTotalTtc += totalTTCService;
-                    newVatAmount += vatAmountService;  
-                    
-                    // newTotalTtc = newTotalTtc - totalPaidDeposit;
-                    // newTotalHt = newTotalHt - (totalPaidDeposit * (newTotalHt / newTotalTtc)) - discountAmount;
-
-                    // D'abord appliquer la remise sur le HT
-                    const htAfterDiscount = parseFloat((newTotalHt - discountAmount).toFixed(2));
-
-                    // Recalculer le TTC après remise
-                    const ttcAfterDiscount = htAfterDiscount + newVatAmount 
-                    ;
-
-                    // Ensuite soustraire les acomptes
-                    newTotalTtc = ttcAfterDiscount - totalPaidDepositTTC;
-                    newTotalHt = htAfterDiscount - totalPaidDepositHT;
-                    newVatAmount = newTotalTtc - newTotalHt;
-
-                    await prisma.bill.update({
-                      where: { id: bill.id },
-                      data: {
-                          totalHt: Math.max(0, newTotalHt),
-                          vatAmount: Math.max(0, newVatAmount),
-                          totalTtc: Math.max(0, newTotalTtc)
-                      },
-                    });
-
-
-
+                    // Create billService
                     await prisma.billService.create({
                         data: {
                             vatRate: service.vatRate,
@@ -290,24 +279,69 @@ export async function POST(req: NextRequest) {
                         }
                     });
                 }
-
-                if (servicesToUnlink.length > 0) {
-                             
-                    newTotalTtc = newTotalTtc - totalPaidDepositTTC;
-                    newTotalHt = newTotalHt - totalPaidDepositHT - discountAmount;
-
-                    await prisma.bill.update({
-                        where: { id: bill.id },
-                        data: {
-                            totalHt: Math.max(0, newTotalHt),
-                            vatAmount: Math.max(0, newVatAmount),
-                            totalTtc: Math.max(0, newTotalTtc)
-                        },
-                    });
-                }
             }
 
-            return bill;
+            // Log totals before discount and deposits
+            console.log(`Totaux bruts: ${billTotalHT} HT, ${billTotalVAT} TVA, ${billTotalTTC} TTC`);
+            console.log(`Remise: ${discountAmount || 0}`);
+            console.log(`Acomptes: ${totalPaidDepositHT} HT, ${totalPaidDepositVAT} TVA, ${totalPaidDepositTTC} TTC`);
+
+            // Apply discount to HT amount
+            const discountAmountValue = parseFloat(discountAmount) || 0;
+            const htAfterDiscount = parseFloat((billTotalHT - discountAmountValue).toFixed(2));
+            
+            // Recalculate TTC after discount (VAT stays the same)
+            const ttcAfterDiscount = parseFloat((htAfterDiscount + billTotalVAT).toFixed(2));
+            
+            // Log after discount
+            console.log(`Après remise: ${htAfterDiscount} HT, ${billTotalVAT} TVA, ${ttcAfterDiscount} TTC`);
+            
+            // Subtract deposits (only if there are any)
+            let finalHT = htAfterDiscount;
+            // Recalcul de la TVA sans soustraction de la TVA de l'acompte
+            let finalVAT = billTotalVAT;
+            let finalTTC = ttcAfterDiscount;
+            
+            if (totalPaidDepositTTC > 0) {
+                finalHT = parseFloat((htAfterDiscount - totalPaidDepositHT).toFixed(2));
+                // finalVAT = parseFloat((billTotalVAT - totalPaidDepositVAT).toFixed(2));
+                finalTTC = parseFloat((ttcAfterDiscount - totalPaidDepositTTC).toFixed(2));
+                
+                // Log after deposits
+                console.log(`Après acomptes: ${finalHT} HT, ${finalVAT} TVA, ${finalTTC} TTC`);
+            }
+            
+            // Ensure non-negative values
+            finalHT = Math.max(0, finalHT);
+            finalVAT = Math.max(0, finalVAT);
+            finalTTC = Math.max(0, finalTTC);
+            
+            // Log final values
+            console.log(`Valeurs finales: ${finalHT} HT, ${finalVAT} TVA, ${finalTTC} TTC`);
+            
+            // Update bill with final amounts
+            await prisma.bill.update({
+                where: { id: bill.id },
+                data: {
+                    totalHt: finalHT,
+                    vatAmount: finalVAT,
+                    totalTtc: finalTTC,
+                    depositDeductionAmount: totalPaidDepositTTC > 0 ? totalPaidDepositTTC : 0,
+                    remainingDueAmount: finalTTC,
+                    ...(totalPaidDepositTTC > 0 && {
+                        advancePayments: {
+                            connect: depositBills.map(deposit => ({ id: deposit.id }))
+                        }
+                    })
+                },
+            });
+
+            return await prisma.bill.findUnique({
+                where: { id: bill.id },
+                include: {
+                    services: true
+                }
+            });
         });
 
         return NextResponse.json({ success: true, data: result });
