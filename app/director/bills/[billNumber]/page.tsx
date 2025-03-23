@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
-import { formatDate } from '@/lib/utils'
+import { formatDate, formatDateToInput } from '@/lib/utils'
 import DownloadBillPDF from "@/components/DownloadBillPDF";
 import { Field, Input, Label, Legend, Radio, RadioGroup, Select } from "@headlessui/react";
 import { fetchBill, updateClassicBill } from "@/services/api/billService";
@@ -17,11 +17,13 @@ const Bill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
     const [vatAmountTravelCost, setVatAmountTravelCost] = useState<number>(0)
     const [priceTTCTravelCost, setPriceTTCTravelCost] = useState<number>(0)
     const billStatusChoices = ["Prêt à l'envoi","Envoyé","Clos","Payé"];
-    const isPaidByClientChoices = ["Oui","Non"];
+    const paymentMethodChoices = ["Virement","Chèque","Espèces"];
     const [formValues, setFormValues] = useState<FormValuesUpdateNotDraftBill>({
         id: null,
         status: null,
         paymentDate: null,
+        paymentMethod: null,
+        canceledAt: null,
     })
 
     
@@ -74,14 +76,6 @@ const Bill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
                   
         };
         
-    
-        //   Retrieve datas from the radio buttons. Because they are in a RadioGroup, we can't retrieve the value just thanks to an event, we have to get the name (of the group) + the value selected
-        const handleRadioChange = (name: string, value: string) => {
-            setFormValues((formValues) => ({
-              ...formValues,
-              [name]: value,
-            }));
-          };
 
         const handleBillUpdateClassic = async () => {
 
@@ -110,10 +104,16 @@ const Bill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
             )
         ))
 
+
+
     return (
         <>
             {/* <div><Toaster/></div> */}
-            <h1 className="text-3xl text-white ml-3 text-center">Facture {bill?.number}</h1>
+            <h1 className="text-3xl text-white ml-3 text-center">  
+                {bill.billType === "DEPOSIT" 
+                    ? `Facture d'acompte n° ${bill.number}`  
+                    : `Facture n° ${bill.number}`}
+            </h1>
             
             <ul>
                 <li>Statut : {bill.status}</li>
@@ -135,36 +135,55 @@ const Bill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
                                 <Select
                                     name="status"
                                     onChange={handleInputChange}
-                                    value={formValues.status || ""}
+                                    value={formValues.status ?? bill.status ?? ""}
                                     className="w-full rounded-md bg-gray-700 text-white pl-3"
                                 >
-                                <option value="">Statut</option>
+                                <option value="" disabled>Statut</option>
                                     {billStatusChoices.map((status) => (
                                         <option key={status} value={status}>{status}</option>
                                     ))}
                                 </Select>
                             </div>
                             <div>
-                                <Field>
-                                    <Legend>Le devis a t-il été signé par le client ?</Legend>
-                                    <RadioGroup 
-                                        name="isSignedByClient"
-                                        onChange={(value)=> handleRadioChange("isSignedByClient",value)}
-
+                                <label htmlFor="paymentDate">Date de paiement facture</label>
+                                <Field className="w-full">
+                                    <Input type="date" name="paymentDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                                            value={
+                                                formValues.paymentDate 
+                                                ? formatDateToInput(formValues.paymentDate) 
+                                                : bill.paymentDate 
+                                                ? formatDateToInput(bill.paymentDate) 
+                                                : ""
+                                            }
+                                        onChange={handleInputChange}
                                     >
-                                        {isPaidByClientChoices.map((choice) => (
-                                            <Field key={choice} className="flex gap-2 items-center">
-                                                <Radio value={choice} className="group flex size-5 items-center justify-center rounded-full border bg-white data-[checked]:bg-pink-600" />
-                                                <Label>{choice}</Label>
-                                            </Field>
-                                        ))}
-                                    </RadioGroup>
+                                    </Input>
                                 </Field>
                             </div>
                             <div>
-                                <label htmlFor="signatureDate">Date de signature</label>
+                                <Select
+                                    name="paymentMethod"
+                                    onChange={handleInputChange}
+                                    value={formValues.paymentMethod ?? bill.paymentMethod ?? ""}
+                                    className="w-full rounded-md bg-gray-700 text-white pl-3"
+                                >
+                                <option value="" >Méthode de paiement</option>
+                                    {paymentMethodChoices.map((methode) => (
+                                        <option key={methode} value={methode}>{methode}</option>
+                                    ))}
+                                </Select>
+                            </div>
+                            <div>
+                                <label htmlFor="canceledAt">Clos le (= abandonnée)</label>
                                 <Field className="w-full">
-                                    <Input type="date" name="signatureDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                                    <Input type="date" name="canceledAt" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                                            value={
+                                                formValues.canceledAt 
+                                                ? formatDateToInput(formValues.canceledAt) 
+                                                : bill.canceledAt 
+                                                ? formatDateToInput(bill.canceledAt) 
+                                                : ""
+                                            }
                                         onChange={handleInputChange}
                                     >
                                     </Input>
@@ -214,8 +233,6 @@ const Bill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
                         <th>taux TVA</th>
                         <th>Montant de tva sur l'acompte</th>
                         <td>Total Ht service</td>
-                        {/* <th>Acompte HT sur service</th>
-                        <th>Acompte TTC sur service</th> */}
 
                     </tr>
                     </thead>
@@ -230,11 +247,9 @@ const Bill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
                         <td>{service.vatRate} %</td>
                         <td>{service.vatAmount}</td>
                         <td>
-                            {service.service.quotes
-                                ?.find(qs => qs.id === bill.quote.id)?.totalHT ?? "N/A"} €
+                            {service.totalHT} €
                         </td>
-                        {/* <td>{service.totalHT}</td>
-                        <td>{service.totalTTC}</td> */}
+
                         </tr>
                     ))}
                     </tbody>
