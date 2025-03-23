@@ -145,9 +145,11 @@ const bill = await prisma.bill.create({
 
 for (const service of services) {
     const serviceTotalHt = service.unitPriceHT * service.quantity;
-    const proportion = htAfterDiscount > 0 ? serviceTotalHt / htAfterDiscount : 0; // ⚠️ Évite division par zéro
+    // Avoid division by 0
+    const proportion = htAfterDiscount > 0 ? serviceTotalHt / htAfterDiscount : 0;
+    const totalServiceHt = Number(service.unitPriceHT * service.quantity);
 
-    const serviceDepositHt = Number(depositHt * proportion); // 🔹 Assure que c'est un nombre
+    const serviceDepositHt = Number(depositHt * proportion); 
     const serviceVat = Number(serviceDepositHt * (service.vatRate / 100));
     const serviceDepositTtc = Number(serviceDepositHt + serviceVat);
 
@@ -159,7 +161,7 @@ for (const service of services) {
     }
 
     const quoteService = await prisma.quoteService.findUnique({
-        where: { id: service.id }, // Assure-toi que `service.id` est bien l'ID de `quoteService`
+        where: { id: service.id }, 
         select: { serviceId: true }
     });
 
@@ -175,7 +177,7 @@ for (const service of services) {
             vatRate: service.vatRate,
             unit: service.unit,
             quantity: service.quantity,
-            totalHT: Number((serviceDepositHt).toFixed(2)), // ✅ Maintenant défini
+            totalHT: totalServiceHt, 
             vatAmount: Number((serviceVat).toFixed(2)),
             totalTTC: Number((serviceDepositTtc).toFixed(2)),
             detailsService: service.detailsService,
