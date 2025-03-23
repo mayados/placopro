@@ -218,6 +218,8 @@ interface BillType{
     status: string;
     billType: string;
     paymentDate?: Date;
+    paymentMethod?: string,
+    canceledAt?: Date,
     paymentTerms: string,
     discountAmount: number,
     discountReason: string,
@@ -343,6 +345,8 @@ interface FormValuesUpdateNotDraftBill{
     id: string | null,
     status: string | null,
     paymentDate: Date | null,
+    canceledAt: Date | null,
+    paymentMethod: string | null,
 }
 
 interface QuoteType{
