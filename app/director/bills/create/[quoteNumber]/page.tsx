@@ -519,15 +519,15 @@ const addService = () => {
                 </div>
                 {/* Sélection du type de frais de déplacements */}
                 <Select
-                name="travelCostsType"
-                value={createBillFormValues.travelCostsType || ""}
-                className="w-full rounded-md bg-gray-700 text-white pl-3"
-                disabled
-                >
-                <option value="">Type de frais de déplacement</option>
-                {travelCostsTypeChoices.map((type) => (
-                    <option key={type} value={type}>{type}</option>
-                ))}
+                    name="travelCostsType"
+                    value={createBillFormValues.travelCostsType || ""}
+                    className="w-full rounded-md bg-gray-700 text-white pl-3"
+                    disabled
+                    >
+                    <option value="">Type de frais de déplacement</option>
+                    {travelCostsTypeChoices.map((type) => (
+                        <option key={type} value={type}>{type}</option>
+                    ))}
                 </Select>
                 {/* travelCosts */}
                 <div>

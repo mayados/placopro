@@ -1,14 +1,16 @@
 // "avoir" in french
 model CreditNote {
     id String @id @default(auto()) @map("_id") @db.ObjectId
-    number Int @unique
+    number String @unique
     issueDate DateTime 
     // mistake, return..
-    reason String 
+    reason CreditNoteReasonEnum 
     // amount (positive if refund)
     amount Float
-    // Indicates if the creditNote has been refunded
-    isRefunded Boolean @default(false) 
+    // Indicates how the CreditNote was treated (it it was treated)
+    settlementType CreditNoteSettlementTypeEnum? 
+    // Indicates if the CreditNote was treated
+    isSettled Boolean @default(false) 
 
     // Linked to a Bill (mandatory)
     billId String @db.ObjectId
@@ -16,4 +18,22 @@ model CreditNote {
 
 
     @@index([billId])
+}
+
+enum CreditNoteSettlementTypeEnum {
+    // Money was give to the client
+  REFUND
+  // CreditNote was used on a Bill
+  COMPENSATION
+}
+
+enum CreditNoteReasonEnum {
+    MISTAKE
+  CANCELLATION
+  DISCOUNT
+  COMPENSATION
+  DUPLICATE
+  WRONG_CUSTOMER
+  DEPOSIT_REFUND
+  DEPOSIT_ADJUSTMENT
 }

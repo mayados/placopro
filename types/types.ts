@@ -1,3 +1,4 @@
+
 // Each User of clerkClient.users.getUserList() has originally this type
 interface GetUserType{
     id: string;
@@ -612,6 +613,38 @@ interface ServiceFormBillType{
     // };
 }
 
+enum CreditNoteSettlementTypeEnum {
+  REFUND = "Remboursement",
+  COMPENSATION = "Compensation"
+}
+
+enum CreditNoteReasonEnum {
+    MISTAKE = "Erreur de facturation",
+  CANCELLATION = "Remise exceptionnelle",
+  DISCOUNT = "Remise exceptionnelle",
+  COMPENSATION = "Compensation",
+  DUPLICATE = "Duplication de facture",
+  WRONG_CUSTOMER = "Mauvais client",
+  DEPOSIT_REFUND = "Remboursement d'acompte",
+  DEPOSIT_ADJUSTMENT = "Ajustement d'acompte"
+}
+
+interface CreditNoteType{
+    id: string,
+    number: string,
+    issueDate: Date,
+    reason: CreditNoteReasonEnum,
+    amount: number,
+    settlementType?: CreditNoteSettlementTypeEnum,
+    isSettled: boolean, 
+    billId: string,
+}
+
+interface CreateCreditNoteFormValueType{
+    amount: number;
+    billId: string | null;
+    reason: string | null | CreditNoteReasonEnum;
+}
 
 interface ServiceSuggestionType{
     id: string,
