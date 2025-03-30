@@ -22,3 +22,57 @@ export const createCreditNote = async (creditNote : CreateCreditNoteFormValueTyp
         throw error; 
     }
   };
+
+export const updateCreditNote = async (creditNoteNumber: string, formValues: UpdateCreditNoteFormValueType): Promise<CreditNoteType> => {
+    try {
+        const response = await fetch(`/api/creditNotes/${creditNoteNumber}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formValues),
+        });
+  
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+  
+        const data: CreditNoteType = await response.json();
+        console.log("Updated credit note :", data);
+  
+        return data; 
+    } catch (error) {
+        console.error("Error with credit note update :", error);
+        throw error; 
+    }
+};
+
+// Retrieve a specific credit note
+export const fetchCreditNote = async (creditNoteNumber: string): Promise<CreditNoteType> => {
+    try {
+        const response = await fetch(`/api/creditNote/${creditNoteNumber}`);
+        if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
+      
+        const data: CreditNoteType = await response.json();
+        console.log("Données reçues après le fetch :", data);
+        return data;
+    } catch (error) {
+        console.error("Erreur lors de la récupération de l'avoir :", error);
+        throw error;
+    }
+};
+
+// Delete a credit note
+export const deleteCreditNote = async (creditNoteNumber: string): Promise<void> => {
+    try {
+        const response = await fetch(`/api/creditNotes/${creditNoteNumber}`, {
+            method: "DELETE",
+        });
+        if (!response.ok) {
+            throw new Error("Error with credit note deletion");
+        }
+    } catch (error) {
+        console.error("Error with credit note deletion :", error);
+        throw error;
+    }
+};
