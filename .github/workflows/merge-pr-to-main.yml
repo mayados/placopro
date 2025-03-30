@@ -1,0 +1,41 @@
+name: Auto Merge PR to main
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+    branches:
+      - main
+
+jobs:
+  auto-merge:
+    if: github.head_ref == 'test' && github.event.pull_request.title == '🔄 Merge `test` -> `main` (Tests success)'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT_MERGE }}
+          fetch-depth: 0
+
+      - name: Auto-approve PR
+        run: |
+          gh auth login --with-token <<< "${{ secrets.GH_PAT_MERGE }}"
+          gh pr review ${{ github.event.pull_request.number }} --approve -b "Tests réussis, approbation automatique"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT_MERGE }}
+
+      - name: Wait for checks
+        run: |
+          gh auth login --with-token <<< "${{ secrets.GH_PAT_MERGE }}"
+          gh pr checks ${{ github.event.pull_request.number }} --watch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT_MERGE }}
+
+      - name: Merge PR
+        run: |
+          gh auth login --with-token <<< "${{ secrets.GH_PAT_MERGE }}"
+          gh pr merge ${{ github.event.pull_request.number }} --merge --admin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT_MERGE }}
