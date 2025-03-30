@@ -227,6 +227,7 @@ interface BillType{
     author: UserType;
     client: ClientType;
     services: BillServiceType[];
+    creditNotes: CreditNoteType[],
     workSite : WorkSiteType;
     isDiscountFromQuote: boolean;
     travelCosts: number,
@@ -638,12 +639,19 @@ interface CreditNoteType{
     settlementType?: CreditNoteSettlementTypeEnum,
     isSettled: boolean, 
     billId: string,
+    bill: BillType,
 }
 
 interface CreateCreditNoteFormValueType{
     amount: number;
     billId: string | null;
     reason: string | null | CreditNoteReasonEnum;
+}
+
+interface UpdateCreditNoteFormValueType{
+    id: string | null;
+    isSettled: boolean | null;
+    settlementType: null | CreditNoteSettlementTypeEnum;
 }
 
 interface ServiceSuggestionType{
