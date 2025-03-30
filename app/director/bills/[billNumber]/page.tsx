@@ -6,6 +6,7 @@ import DownloadBillPDF from "@/components/DownloadBillPDF";
 import { Field, Input, Label, Legend, Radio, RadioGroup, Select } from "@headlessui/react";
 import { fetchBill, updateClassicBill } from "@/services/api/billService";
 import { fetchCompany } from "@/services/api/companyService";
+import Link from "next/link";
 
 // import toast, { Toaster } from 'react-hot-toast';
 // import { useRouter } from "next/navigation";
@@ -365,7 +366,7 @@ const Bill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
             </section>
             <section>
                 {/* issuedDate */}
-                <p>Devis créé le {formatDate(bill.issueDate)}</p>
+                <p>Facture créée le {formatDate(bill.issueDate)}</p>
 
                 {/* Deposit amount (in %) */}
                 <p>Accompte avant le début du chantier : {bill?.quote.depositAmount} €</p>
@@ -374,13 +375,31 @@ const Bill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
                 <p>{bill?.paymentTerms}</p>
 
                 {/* validityEndDate */}
-                <p>Devis valable jusqu'au {formatDate(bill.dueDate)}</p>
+                <p>Facture à payer avant le {formatDate(bill.dueDate)}</p>
 
         
 
               
             </section>
+        <section>
+            <table>
+                <tbody>
+                    {bill?.creditNotes.map((creditNote, index) => (
+                                <tr key={index}>
+                                <td>{creditNote.reason}</td>
+                                <td>{creditNote.isSettled}</td>
+                                <td>
+                                    <Link href={`/director/creditNotes/${creditNote?.number}`}>
+                                                    Consulter les détails
+                                    </Link>
+                                </td>
 
+                                </tr>
+                            ))}                    
+                </tbody>
+            </table>
+
+        </section>
 
 
 

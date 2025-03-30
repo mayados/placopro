@@ -16,6 +16,7 @@ export async function GET(req: NextRequest, {params}: {params: {billNumber: stri
                 client: true,
                 workSite: true,
                 quote: true,
+                creditNotes: true,
                 // services: true,
                 // on inclut les BillServices, puis les services des BillServices, et enfin les quoteService des services
                 services: {
