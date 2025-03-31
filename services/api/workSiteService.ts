@@ -29,9 +29,9 @@ export const fetchWorkSite = async (workSiteSlug: string): Promise<WorkSiteTypeS
 };
 
 // Delete a workSite
-export const deleteWorkSite = async (workSiteId: string): Promise<void> => {
+export const deleteWorkSite = async (workSiteSlug: string): Promise<void> => {
     try {
-        const response = await fetch(`/api/workSites/${workSiteId}`, {
+        const response = await fetch(`/api/workSites/${workSiteSlug}`, {
             method: "DELETE",
         });
         if (!response.ok) {
@@ -71,7 +71,7 @@ export const createWorkSite = async (workSite: WorkSiteCreationType): Promise<Wo
 // Update workSite
 export const updateWorkSite = async (workSite: WorkSiteType): Promise<WorkSiteType> => {
     try {
-        const response = await fetch(`/api/workSites/${workSite.id}`, {
+        const response = await fetch(`/api/workSites/${workSite.slug}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",

@@ -28,19 +28,19 @@ const Clients = () =>{
         loadClients()
     },[]);
 
-    const handleClientDeletion = async (clientId: string) => {
+    const handleClientDeletion = async (clientSlug: string) => {
         try {
-            const data = await deleteClient(clientId);
+            const data = await deleteClient(clientSlug);
             setIsOpen(false);  
             // toast.success('Client deleted with success');                 
-            setClients(prevClients => prevClients.filter(client => client.id !== clientId));
+            setClients(prevClients => prevClients.filter(client => client.slug !== clientSlug));
         } catch (error) {
             console.error("Impossible to delete client :", error);               
         }
     }
 
-    const openDeleteDialog = (clientId: string) => {
-        setClientToDelete(clientId);
+    const openDeleteDialog = (clientSlug: string) => {
+        setClientToDelete(clientSlug);
         setIsOpen(true);  
     };
 
@@ -71,7 +71,7 @@ const Clients = () =>{
                 <tbody>
                 {
                     clients.map((client: ClientType) => {
-                        const clientId = client.id;
+                        const clientSlug = client.slug;
                     
                     return (
                         <tr key={client.id}>
@@ -89,7 +89,7 @@ const Clients = () =>{
                             </Link>
                           </td>
                             <td>
-                                <Button label="Remove" icon={Trash2} type="button" action={() => openDeleteDialog(clientId)} specifyBackground="text-red-500" />
+                                <Button label="Remove" icon={Trash2} type="button" action={() => openDeleteDialog(clientSlug)} specifyBackground="text-red-500" />
                             </td>
                         </tr>
                     );

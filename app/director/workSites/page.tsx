@@ -51,12 +51,12 @@ const WorkSites = () =>{
     },[]);
 
     // Delete a workSite
-    const handleWorkSiteDeletion = async (workSiteId: string) => {
+    const handleWorkSiteDeletion = async (workSiteSlug: string) => {
         try {
-            await deleteWorkSite(workSiteId);
+            await deleteWorkSite(workSiteSlug);
             setIsOpen(false);  
             // toast.success('Entreprise supprimée avec succès');                 
-            setWorkSites(prevWorkSites => prevWorkSites.filter(workSite => workSite.id !== workSiteId));
+            setWorkSites(prevWorkSites => prevWorkSites.filter(workSite => workSite.slug !== workSiteSlug));
 
         } catch (error) {
             console.error("Erreur avec la suppression du chantier", error);
@@ -64,8 +64,8 @@ const WorkSites = () =>{
     };
 
 
-    const openDeleteDialog = (workSiteId: string) => {
-        setWorkSiteToDelete(workSiteId);
+    const openDeleteDialog = (workSiteSlug: string) => {
+        setWorkSiteToDelete(workSiteSlug);
         setIsOpen(true);  
     };
 
@@ -105,7 +105,7 @@ const WorkSites = () =>{
                             <tbody>
                             {
                                 workSites.map((workSite) => {
-                                    const workSiteId = workSite.id;
+                                    const workSiteSlug = workSite.slug;
                                 
                                 return (
                                     <tr key={workSite.id}>
@@ -123,7 +123,7 @@ const WorkSites = () =>{
                                         </Link>
                                     </td>
                                         <td>
-                                            <Button label="Remove" icon={Trash2} type="button" action={() => openDeleteDialog(workSiteId)} specifyBackground="text-red-500" />
+                                            <Button label="Remove" icon={Trash2} type="button" action={() => openDeleteDialog(workSiteSlug)} specifyBackground="text-red-500" />
                                         </td>
                                     </tr>
                                 );
@@ -147,7 +147,7 @@ const WorkSites = () =>{
                             <tbody>
                             {
                                 inProgressWorkSites.map((workSite) => {
-                                    const workSiteId = workSite.id;
+                                    const workSiteSlug = workSite.slug;
                                 
                                 return (
                                     <tr key={workSite.id}>
@@ -165,7 +165,7 @@ const WorkSites = () =>{
                                         </Link>
                                     </td>
                                         <td>
-                                            <Button label="Remove" icon={Trash2} type="button" action={() => openDeleteDialog(workSiteId)} specifyBackground="text-red-500" />
+                                            <Button label="Remove" icon={Trash2} type="button" action={() => openDeleteDialog(workSiteSlug)} specifyBackground="text-red-500" />
                                         </td>
                                     </tr>
                                 );
@@ -189,7 +189,7 @@ const WorkSites = () =>{
                             <tbody>
                             {
                                 commingWorkSites.map((workSite) => {
-                                    const workSiteId = workSite.id;
+                                    const workSiteSlug = workSite.slug;
                                 
                                 return (
                                     <tr key={workSite.id}>
@@ -207,7 +207,7 @@ const WorkSites = () =>{
                                         </Link>
                                     </td>
                                         <td>
-                                            <Button label="Remove" icon={Trash2} type="button" action={() => openDeleteDialog(workSiteId)} specifyBackground="text-red-500" />
+                                            <Button label="Remove" icon={Trash2} type="button" action={() => openDeleteDialog(workSiteSlug)} specifyBackground="text-red-500" />
                                         </td>
                                     </tr>
                                 );
@@ -231,7 +231,7 @@ const WorkSites = () =>{
                             <tbody>
                             {
                                 completedWorkSites.map((workSite) => {
-                                    const workSiteId = workSite.id;
+                                    const workSiteSlug = workSite.slug;
                                 
                                 return (
                                     <tr key={workSite.id}>
@@ -249,7 +249,7 @@ const WorkSites = () =>{
                                         </Link>
                                     </td>
                                         <td>
-                                            <Button label="Remove" icon={Trash2} type="button" action={() => openDeleteDialog(workSiteId)} specifyBackground="text-red-500" />
+                                            <Button label="Remove" icon={Trash2} type="button" action={() => openDeleteDialog(workSiteSlug)} specifyBackground="text-red-500" />
                                         </td>
                                     </tr>
                                 );
