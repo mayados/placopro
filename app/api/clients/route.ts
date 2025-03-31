@@ -22,6 +22,6 @@ export async function DELETE(req: NextRequest, { params }: { params: { clientId:
   return deleteClient(req, {params});  
 }
 
-export async function UPDATE(req: NextRequest, { params }: { params: { clientId: string }}) {
+export async function PUT(req: NextRequest, { params }: { params: { clientId: string }}) {
   return updateClient(req);  
 }
