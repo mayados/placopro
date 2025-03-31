@@ -18,6 +18,6 @@ export async function DELETE(req: NextRequest, { params }: { params: { companyId
   return deleteCompany(req, {params});  
 }
 
-export async function UPDATE(req: NextRequest, { params }: { params: { companyId: string }}) {
+export async function PUT(req: NextRequest, { params }: { params: { companyId: string }}) {
   return updateCompany(req);  
 }
