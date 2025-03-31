@@ -36,19 +36,19 @@ const Employees = () =>  {
 
   
   // Delete an employee
-  const handleDeleteEmployee = async (employeeId: string) => {
+  const handleDeleteEmployee = async (employeeSlug: string) => {
       try {
-          await deleteEmployee(employeeId);
+          await deleteEmployee(employeeSlug);
           setIsOpen(false);  
           // toast.success('Category deleted with success');                 
-          setEmployees(prevEmployees => prevEmployees.filter(employee => employee.id !== employeeId));  
+          setEmployees(prevEmployees => prevEmployees.filter(employee => employee.slug !== employeeSlug));  
       } catch (error) {
           console.error("Erreur avec la suppression de l'employé", error);
       }
   };
 
-  const openDeleteDialog = (employeeId: string) => {
-    setEmployeeToDelete(employeeId);
+  const openDeleteDialog = (employeeSlug: string) => {
+    setEmployeeToDelete(employeeSlug);
     setIsOpen(true);  
   };
 
@@ -95,7 +95,7 @@ const Employees = () =>  {
                             </Link>
                           </td>
                           <td>
-                            <Button label="Supprimer" icon={Trash2} type="button" action={() => openDeleteDialog(employee.id)} specifyBackground="text-red-500" />
+                            <Button label="Supprimer" icon={Trash2} type="button" action={() => openDeleteDialog(employee.slug)} specifyBackground="text-red-500" />
                           </td>
                       </tr>
                   );
