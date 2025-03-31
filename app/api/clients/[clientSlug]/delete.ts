@@ -3,20 +3,20 @@ import { db } from "@/lib/db";
 
 
 // Asynchrone : waits for a promise
-export async function DELETE(req: NextRequest, {params}: {params: {companyId: string}})
+export async function DELETE(req: NextRequest, {params}: {params: {clientSlug: string}})
 {
     const resolvedParams = await params;
-    const companyId = resolvedParams.companyId;
+    const clientSlug = resolvedParams.clientSlug;
 
     try{
 
-        await db.company.delete({
+        await db.client.delete({
             where: {
-                id: companyId
+                slug: clientSlug
             }            
         })
 
-        return new NextResponse(JSON.stringify({ success: true, message: 'Company deleted with success' }), {
+        return new NextResponse(JSON.stringify({ success: true, message: 'Client deleted with success' }), {
             status: 200,
         });
 

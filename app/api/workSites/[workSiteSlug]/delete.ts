@@ -3,16 +3,16 @@ import { db } from "@/lib/db";
 
 
 // Asynchrone : waits for a promise
-export async function DELETE(req: NextRequest, {params}: {params: {workSiteId: string}})
+export async function DELETE(req: NextRequest, {params}: {params: {workSiteSlug: string}})
 {
     const resolvedParams = await params;
-    const workSiteId = resolvedParams.workSiteId;
+    const workSiteSlug = resolvedParams.workSiteSlug;
 
     try{
 
         await db.workSite.delete({
             where: {
-                id: workSiteId
+                slug: workSiteSlug
             }            
         })
 
