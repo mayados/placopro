@@ -171,7 +171,7 @@ const Quote = ({ params }: { params: Promise<{ quoteNumber: string }>}) => {
                     </section>
 
                 )}
-            <DownloadPDF quote={quote} company={company} vatAmountTravelCost={vatAmountTravelCost} priceTTCTravelCost={priceTTCTravelCost} />
+            <DownloadPDF quote={quote} company={company as CompanyType} vatAmountTravelCost={vatAmountTravelCost} priceTTCTravelCost={priceTTCTravelCost} />
             {/* <div><Toaster /></div> */}
             <section>
                 <div>
