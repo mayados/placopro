@@ -4,12 +4,19 @@ import { POST as createWorkSite } from "@/app/api/workSites/create";
 import { GET as getWorkSites} from "@/app/api/workSites/list"; 
 import { GET as findWorkSite} from "@/app/api/workSites/find"; 
 
-export async function GET(req: NextRequest, { params }: { params: { value: string }}) {
-    if(req.nextUrl.searchParams.get('search')){
-        return findWorkSite(req); 
+// export async function GET(req: NextRequest, { params }: { params: { value: string }}) {
+//     if(req.nextUrl.searchParams.get('search')){
+//         return findWorkSite(req); 
 
-    }
-    return getWorkSites(req); 
+//     }
+//     return getWorkSites(req); 
+// }
+
+export async function GET(req: NextRequest) {
+  if (req.nextUrl.searchParams.get("search")) {
+      return findWorkSite(req);
+  }
+  return getWorkSites(req);
 }
 
 export async function POST(req: NextRequest) {
