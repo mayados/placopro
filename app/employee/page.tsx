@@ -3,7 +3,7 @@
 // import { useEffect, useState } from "react";
 // import Link from "next/link";
 
-const DirectorDashboard = () =>{
+const EmployeeDashboard = () =>{
 
     // const [companies, setCompanies] = useState<CompanyType[]>([])
     // const [companyToDelete, setCompanyToDelete] = useState<string | null>(null); 
@@ -56,5 +56,5 @@ const DirectorDashboard = () =>{
   )
 }
 
-export default DirectorDashboard
+export default EmployeeDashboard
 
