@@ -62,6 +62,22 @@ export const fetchCreditNote = async (creditNoteNumber: string): Promise<CreditN
     }
 };
 
+// Retrieve all the credit notes
+// Return a promise with object of type CreditNotesWithTotalsAndStatus
+export const fetchCreditNotes = async (): Promise<CreditNotesWithTotalsAndStatus> => {
+    try {
+      const response = await fetch(`/api/creditNote`);
+      if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
+  
+      const data: CreditNotesWithTotalsAndStatus = await response.json();
+      console.log("Données reçues après le fetch :", data);
+      return data;
+    } catch (error) {
+      console.error("Erreur lors de la récupération des credit notes :", error);
+      throw error;
+    }
+  };
+
 // Delete a credit note
 export const deleteCreditNote = async (creditNoteNumber: string): Promise<void> => {
     try {
