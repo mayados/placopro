@@ -29,9 +29,9 @@
   };
 
   // Delete a company
-export const deleteCompany = async (companyId: string): Promise<void> => {
+export const deleteCompany = async (companySlug: string): Promise<void> => {
   try {
-      const response = await fetch(`/api/companies/${companyId}`, {
+      const response = await fetch(`/api/companies/${companySlug}`, {
           method: "DELETE",
       });
       if (!response.ok) {
@@ -46,7 +46,7 @@ export const deleteCompany = async (companyId: string): Promise<void> => {
 // Update company
 export const updateCompany = async (company: CompanyType): Promise<CompanyType> => {
   try {
-      const response = await fetch(`/api/companies/${company.id}`, {
+      const response = await fetch(`/api/companies/${company.slug}`, {
           method: "PUT",
           headers: {
               "Content-Type": "application/json",

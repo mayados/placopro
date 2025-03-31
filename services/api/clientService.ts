@@ -32,9 +32,9 @@ export const fetchClient = async (clientSlug: string): Promise<ClientTypeSingle>
 
 
 // Delete a client
-export const deleteClient = async (clientId: string): Promise<void> => {
+export const deleteClient = async (clientSlug: string): Promise<void> => {
     try {
-        const response = await fetch(`/api/clients/${clientId}`, {
+        const response = await fetch(`/api/clients/${clientSlug}`, {
             method: "DELETE",
         });
         if (!response.ok) {
@@ -74,7 +74,7 @@ export const createClient = async (client: ClientFormValueType): Promise<ClientT
 // Update client
 export const updateClient = async (client: ClientType): Promise<ClientType> => {
     try {
-        const response = await fetch(`/api/clients/${client.id}`, {
+        const response = await fetch(`/api/clients/${client.slug}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -87,11 +87,11 @@ export const updateClient = async (client: ClientType): Promise<ClientType> => {
         }
   
         const data: ClientType = await response.json();
-        console.log("Created quote :", data);
+        console.log("Created client :", data);
   
         return data; 
     } catch (error) {
-        console.error("Erreur with quote update :", error);
+        console.error("Erreur with client update :", error);
         throw error; 
     }
   };

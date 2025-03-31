@@ -30,19 +30,19 @@ const Companies = () =>{
     },[]);
 
         // Delete a company
-        const handleDeleteCompany = async (companyId: string) => {
+        const handleDeleteCompany = async (companySlug: string) => {
             try {
-                await deleteCompany(companyId);
+                await deleteCompany(companySlug);
                 setIsOpen(false);  
                 // toast.success('Entreprise supprimée avec succès');                 
-                setCompanies(prevCompanies => prevCompanies.filter(company => company.id !== companyId));  
+                setCompanies(prevCompanies => prevCompanies.filter(company => company.slug !== companySlug));  
             } catch (error) {
                 console.error("Erreur avec la suppression du devis", error);
             }
         };
     
-    const openDeleteDialog = (companyId: string) => {
-        setCompanyToDelete(companyId);
+    const openDeleteDialog = (companySlug: string) => {
+        setCompanyToDelete(companySlug);
         setIsOpen(true);  
     };
 
@@ -71,7 +71,7 @@ const Companies = () =>{
                 <tbody>
                 {
                     companies.map((company) => {
-                        const companyId = company.id;
+                        const companySlug = company.slug;
                     
                     return (
                         <tr key={company.id}>
@@ -87,7 +87,7 @@ const Companies = () =>{
                             </Link>
                           </td>
                             <td>
-                                <Button label="Remove" icon={Trash2} type="button" action={() => openDeleteDialog(companyId)} specifyBackground="text-red-500" />
+                                <Button label="Remove" icon={Trash2} type="button" action={() => openDeleteDialog(companySlug)} specifyBackground="text-red-500" />
                             </td>
                         </tr>
                     );
