@@ -195,7 +195,7 @@ const Bill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
                     </section>
 
                 )}
-            <DownloadBillPDF bill={bill} company={company} vatAmountTravelCost={vatAmountTravelCost} priceTTCTravelCost={priceTTCTravelCost} />
+            <DownloadBillPDF bill={bill} company={company as CompanyType} vatAmountTravelCost={vatAmountTravelCost} priceTTCTravelCost={priceTTCTravelCost} />
             {/* <div><Toaster /></div> */}
             <section>
                 <div>
