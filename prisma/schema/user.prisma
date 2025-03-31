@@ -7,7 +7,6 @@ model User{
     password  String
     role String
     toDos ToDo[]
-    plannings Planning[]
     reportsDone Report[]
     // billsEstablished Bill[]
     // quotesEstablished Quote[]
