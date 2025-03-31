@@ -3,14 +3,14 @@ import { clerkClient} from "@clerk/express";
 
 
 // Asynchrone : waits for a promise
-export async function DELETE(req: NextRequest, {params}: {params: {employeeId: string}})
+export async function DELETE(req: NextRequest, {params}: {params: {employeeSlug: string}})
 {
     const resolvedParams = await params;
-    const employeeId = resolvedParams.employeeId;
+    const employeeSlug = resolvedParams.employeeSlug;
 
     try{
 
-       await clerkClient.users.deleteUser(employeeId)
+       await clerkClient.users.deleteUser(employeeSlug)
 
 
         return new NextResponse(JSON.stringify({ success: true, message: 'Employee deleted with success' }), {

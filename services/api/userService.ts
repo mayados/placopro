@@ -29,9 +29,9 @@ export const fetchEmployee = async (employeeSlug: string): Promise<UserType> => 
 };
 
 // Delete an employee
-export const deleteEmployee = async (employeeId: string): Promise<void> => {
+export const deleteEmployee = async (employeeSlug: string): Promise<void> => {
     try {
-        const response = await fetch(`/api/users/${employeeId}`, {
+        const response = await fetch(`/api/users/${employeeSlug}`, {
             method: "DELETE",
         });
         if (!response.ok) {
@@ -72,7 +72,7 @@ export const createEmployee = async (employee: UserFormValueType): Promise<UserT
 // Update employee
 export const updateUser = async (employee: UserType): Promise<UserType> => {
     try {
-        const response = await fetch(`/api/users/${employee.id}`, {
+        const response = await fetch(`/api/users/${employee.slug}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
