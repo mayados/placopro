@@ -642,6 +642,15 @@ interface CreditNoteType{
     bill: BillType,
 }
 
+interface CreditNoteForListType{
+    id: string,
+    number: string,
+    reason: CreditNoteReasonEnum,
+    isSettled: boolean,
+    bill: BillType,
+    issueDate: Date
+}
+
 interface CreateCreditNoteFormValueType{
     amount: number;
     billId: string | null;
@@ -652,6 +661,16 @@ interface UpdateCreditNoteFormValueType{
     id: string | null;
     isSettled: boolean | null;
     settlementType: null | CreditNoteSettlementTypeEnum;
+}
+
+interface CreditNotesWithTotalsAndStatus{
+    success: boolean,
+    creditNotes: CreditNoteForListType[],
+    settledCreditNotes: CreditNoteForListType[],
+    notSettledCreditNotes: CreditNoteForListType[],
+    totalCreditNotes : number,
+    totalSettledCreditNotes : number,
+    totalNotSettledCreditNotes : number,
 }
 
 interface ServiceSuggestionType{
