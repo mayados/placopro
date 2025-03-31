@@ -1,13 +1,24 @@
 import React from "react";
 import jsPDF from "jspdf";
-import autoTable from 'jspdf-autotable'
 import 'jspdf-autotable'
 import { formatDate } from '@/lib/utils'
+import { UserOptions } from 'jspdf-autotable';
 
 
-const DownloadPDF = ({ quote, company, vatAmountTravelCost, priceTTCTravelCost }) => {
+interface jsPDFCustom extends jsPDF {
+  autoTable: (options: UserOptions) => void;
+}
+
+interface DownloadQuotePDFProps {
+  quote: QuoteType; 
+  company: CompanyType; 
+  vatAmountTravelCost: number; 
+  priceTTCTravelCost: number;
+}
+
+const DownloadQuotePDF: React.FC<DownloadQuotePDFProps> = ({ quote, company, vatAmountTravelCost, priceTTCTravelCost }) => {
   const generatePDF = () => {
-    const doc = new jsPDF();
+    const doc = new jsPDF() as jsPDFCustom;
     
     // Title
     doc.setFontSize(18);
@@ -51,6 +62,9 @@ const DownloadPDF = ({ quote, company, vatAmountTravelCost, priceTTCTravelCost }
       `${service.totalTTC} €`,
     ]);
 
+    // Variable pour récupérer la position du dernier tableau
+    let lastY = 10;
+
     doc.autoTable({
       startY: 100,
       head: [["Service", "Description", "Quantité", "Prix Unitaire", "TVA", "Montant TVA", "Prix HT", "Prix TTC"]],
@@ -59,7 +73,6 @@ const DownloadPDF = ({ quote, company, vatAmountTravelCost, priceTTCTravelCost }
 
     // Travel costs
     doc.autoTable({
-      startY: doc.lastAutoTable.finalY + 10,
       head: [["Frais de déplacement HT", "Type de forfait", "TVA", "Montant TVA", "Frais TTC"]],
       body: [
         [
@@ -70,22 +83,35 @@ const DownloadPDF = ({ quote, company, vatAmountTravelCost, priceTTCTravelCost }
           `${priceTTCTravelCost} €`,
         ],
       ],
+      didDrawPage: (data) => {
+        // `data.cursor.y` donne la position Y du dernier tableau après son rendu
+        // Assurez-vous que data.cursor est défini avant d'assigner à lastY
+        if (data?.cursor?.y !== undefined) {
+          lastY = data.cursor.y;
+        }
+      },
     });
 
     // Total Quote cost
     doc.autoTable({
-      startY: doc.lastAutoTable.finalY + 10,
       head: [["Total HT", "Montant total TVA", "Total TTC"]],
       body: [
         [`${quote?.priceHT} €`, `${quote?.vatAmount} €`, `${quote?.priceTTC} €`],
       ],
+      didDrawPage: (data) => {
+        // `data.cursor.y` donne la position Y du dernier tableau après son rendu
+        // Assurez-vous que data.cursor est défini avant d'assigner à lastY
+        if (data?.cursor?.y !== undefined) {
+          lastY = data.cursor.y;
+        }
+      },
     });
 
     // Footer (conditions, etc.)
     doc.setFontSize(12);
-    doc.text(`Devis créé le : ${formatDate(quote.issueDate)}`, 10, doc.lastAutoTable.finalY + 20);
-    doc.text(`Valable jusqu'au : ${formatDate(quote.validityEndDate)}`, 10, doc.lastAutoTable.finalY + 25);
-    doc.text(`Accompte demandé : ${quote?.depositAmount} %`, 10, doc.lastAutoTable.finalY + 30);
+    doc.text(`Devis créé le : ${formatDate(quote.issueDate)}`, 10, lastY + 20);
+    doc.text(`Valable jusqu'au : ${formatDate(quote.validityEndDate)}`, 10, lastY + 25);
+    doc.text(`Accompte demandé : ${quote?.depositAmount} %`, 10, lastY + 30);
 
     // Download PDF : name of the file
     doc.save(`Devis_${quote?.number}.pdf`);
@@ -100,4 +126,5 @@ const DownloadPDF = ({ quote, company, vatAmountTravelCost, priceTTCTravelCost }
   );
 };
 
-export default DownloadPDF;
+
+export default DownloadQuotePDF;
