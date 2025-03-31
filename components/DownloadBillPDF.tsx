@@ -1,13 +1,26 @@
 import React from "react";
 import jsPDF from "jspdf";
-import autoTable from 'jspdf-autotable'
+// import autoTable from 'jspdf-autotable'
 import 'jspdf-autotable'
 import { formatDate } from '@/lib/utils'
+import { UserOptions } from 'jspdf-autotable';
 
 
-const DownloadBillPDF = ({ bill, company, vatAmountTravelCost, priceTTCTravelCost }) => {
+interface jsPDFCustom extends jsPDF {
+  autoTable: (options: UserOptions) => void;
+}
+
+interface DownloadBillPDFProps {
+  bill: BillType; 
+  company: CompanyType; 
+  vatAmountTravelCost: number; 
+  priceTTCTravelCost: number;
+}
+
+
+const DownloadBillPDF: React.FC<DownloadBillPDFProps> = ({ bill, company, vatAmountTravelCost, priceTTCTravelCost }) => {
   const generatePDF = () => {
-    const doc = new jsPDF();
+    const doc = new jsPDF() as jsPDFCustom;
     
     // Title
     doc.setFontSize(18);
@@ -34,9 +47,9 @@ const DownloadBillPDF = ({ bill, company, vatAmountTravelCost, priceTTCTravelCos
     doc.text("Informations du chantier :", 10, 80);
     doc.setFontSize(12);
     doc.text(`Adresse : ${bill?.workSite?.addressNumber} ${bill?.workSite?.road} ${bill?.workSite?.postalCode} ${bill?.workSite?.city}`, 10, 85);
-    doc.text(`Date de début estimée : ${formatDate(bill.workStartDate)}`, 10, 90);
-    doc.text(`Date de fin estimée : ${formatDate(bill.estimatedWorkEndDate)}`, 10, 95);
-    doc.text(`Durée de travaux estimée : ${bill?.estimatedWorkDuration}`, 10, 100);
+    doc.text(`Date de début  : ${formatDate(bill.workStartDate)}`, 10, 90);
+    doc.text(`Date de fin  : ${formatDate(bill.workEndDate)}`, 10, 95);
+    doc.text(`Durée de travaux  : ${bill?.workDuration}`, 10, 100);
 
 
     // Services Table
@@ -50,6 +63,8 @@ const DownloadBillPDF = ({ bill, company, vatAmountTravelCost, priceTTCTravelCos
       `${service.totalHT} €`,
       `${service.totalTTC} €`,
     ]);
+    // Variable pour récupérer la position du dernier tableau
+    let lastY = 10;
 
     doc.autoTable({
       startY: 100,
@@ -59,7 +74,6 @@ const DownloadBillPDF = ({ bill, company, vatAmountTravelCost, priceTTCTravelCos
 
     // Travel costs
     doc.autoTable({
-      startY: doc.lastAutoTable.finalY + 10,
       head: [["Frais de déplacement HT", "Type de forfait", "TVA", "Montant TVA", "Frais TTC"]],
       body: [
         [
@@ -70,22 +84,35 @@ const DownloadBillPDF = ({ bill, company, vatAmountTravelCost, priceTTCTravelCos
           `${priceTTCTravelCost} €`,
         ],
       ],
+      didDrawPage: (data) => {
+        // `data.cursor.y` donne la position Y du dernier tableau après son rendu
+        // Assurez-vous que data.cursor est défini avant d'assigner à lastY
+        if (data?.cursor?.y !== undefined) {
+          lastY = data.cursor.y;
+        }
+      },
     });
 
     // Total bill cost
     doc.autoTable({
-      startY: doc.lastAutoTable.finalY + 10,
       head: [["Total HT", "Montant total TVA", "Total TTC"]],
       body: [
-        [`${bill?.priceHT} €`, `${bill?.vatAmount} €`, `${bill?.priceTTC} €`],
+        [`${bill?.totalHt} €`, `${bill?.vatAmount} €`, `${bill?.totalTtc} €`],
       ],
+      didDrawPage: (data) => {
+        // `data.cursor.y` donne la position Y du dernier tableau après son rendu
+        // Assurez-vous que data.cursor est défini avant d'assigner à lastY
+        if (data?.cursor?.y !== undefined) {
+          lastY = data.cursor.y;
+        }
+      },
     });
 
     // Footer (conditions, etc.)
     doc.setFontSize(12);
-    doc.text(`Devis créé le : ${formatDate(bill.issueDate)}`, 10, doc.lastAutoTable.finalY + 20);
-    doc.text(`Valable jusqu'au : ${formatDate(bill.validityEndDate)}`, 10, doc.lastAutoTable.finalY + 25);
-    doc.text(`Accompte demandé : ${bill?.depositAmount} %`, 10, doc.lastAutoTable.finalY + 30);
+    doc.text(`Devis créé le : ${formatDate(bill.issueDate)}`, 10, lastY + 20);
+    doc.text(`Valable jusqu'au : ${formatDate(bill.dueDate)}`, 10, lastY + 25);
+    doc.text(`Accompte demandé : ${bill?.quote.depositAmount} %`, 10, lastY + 30);
 
     // Download PDF : name of the file
     doc.save(`Devis_${bill?.number}.pdf`);
