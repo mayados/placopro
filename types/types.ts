@@ -807,3 +807,34 @@ interface SuggestionsResponse<T> {
 interface UpdatedDraftQuoteResponse{
     updatedQuote: QuoteType;
 }
+
+interface PlanningType{
+    id: string,
+    task: string,
+    startDate: Date,
+    endDate: Date,
+    startTime: Date,
+    endTime: Date,
+    clerkUserId: string,
+    workSiteId: string,
+    workSite: WorkSiteType
+}
+
+interface PlanningsListType{
+    success: boolean,
+    plannings: PlanningType[], 
+}
+
+// For FullCalendar event
+interface CalendarEvent {
+    id: string;
+    title: string;
+    start: string;
+    end: string;
+}
+
+interface EmployeeType {
+    id: string;
+    firstName: string;
+    lastName: string;
+  }

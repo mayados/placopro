@@ -76,7 +76,7 @@ export const fetchCreditNotes = async (): Promise<CreditNotesWithTotalsAndStatus
       console.error("Erreur lors de la récupération des credit notes :", error);
       throw error;
     }
-  };
+};
 
 // Delete a credit note
 export const deleteCreditNote = async (creditNoteNumber: string): Promise<void> => {
