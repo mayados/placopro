@@ -2,10 +2,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GET as getCompany} from "@/app/api/companies/[companySlug]/get"; 
 
-export async function GET(req: NextRequest, { params }: { params: { companySlug: string }}) {
-    return getCompany(req, {params}); 
 
+export async function GET(req: NextRequest) {
+  const pathname = req.nextUrl.pathname;
+  const companySlug = pathname.split("/").pop(); // Get companySlug from the URL
+
+  if (!companySlug) {
+    return NextResponse.json({ error: "companySlug is required" }, { status: 400 });
+  }
+
+  return getCompany(req, { params: { companySlug } });
 }
-
 
 
