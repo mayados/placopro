@@ -7,13 +7,11 @@ import { currentUser } from '@clerk/nextjs/server'
 export async function POST(req: NextRequest) {
     const data = await req.json();
     const { 
-            task,
+            title,
             workSiteId,
-            userId,
-            startDate,
-            startTime,
-            endDate,
-            endTime
+            clerkUserId,
+            start,
+            end
         } = data;
         // currentUser() is a founction from Clerk which allows to retrieve the current User
         const user = await currentUser()
@@ -31,13 +29,11 @@ export async function POST(req: NextRequest) {
         // We create the planning thanks to te datas retrieved
         const planning = await db.planning.create({
             data: {
-                task: task,
-                startDate: startDate,
-                startTime: startTime,
-                endDate: endDate,
-                endTime: endTime,
+                task: title,
+                startTime: start,
+                endTime: end,
                 workSiteId: workSiteId,
-                clerkUserId: userId
+                clerkUserId: clerkUserId
             },
         });
 

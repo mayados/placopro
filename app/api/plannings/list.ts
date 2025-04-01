@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { NextResponse, NextRequest } from "next/server";
+import { clerkClient} from "@clerk/express";
 
 export async function GET(req: NextRequest) {
 
@@ -7,20 +8,31 @@ export async function GET(req: NextRequest) {
         const plannings = await db.planning.findMany({
             select: {
                 id: true,
-                startDate: true,
                 startTime: true,
+                endTime: true,
                 task: true,
                 workSite: true,
-                user: true
+                clerkUserId: true
               }
         });
+
+        const planningsWithUserData = await Promise.all(
+            plannings.map(async (planning) => {
+              const user = await clerkClient.users.getUser(planning.clerkUserId);
+      
+              return {
+                ...planning,
+                employee: user.firstName + " " + user.lastName, 
+              };
+            })
+          );
 
 
     console.log("plannings retrieved : "+plannings)
           
     return NextResponse.json({
             success: true,
-            plannings: plannings,
+            plannings: planningsWithUserData,
         })
 
     } catch (error) {

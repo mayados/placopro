@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(req: NextRequest) {
   const data = await req.json();
-  const { id, startDate, startTime, endDate, endTime, task } = data;
+  const { id, start, end, title, clerkUserId, workSiteId } = data;
 
   try {
     // construct dynamically update's object
@@ -11,24 +11,24 @@ export async function PUT(req: NextRequest) {
 
 
 
-    if (startDate !== null){
-        updateData.startDate = startDate
+    if (start !== null){
+        updateData.startDate = start
     }
 
-    if (startTime !== null){
-        updateData.startTime = startDate
+    if (end !== null){
+        updateData.endTime = end
     }
 
-    if (endDate !== null){
-        updateData.endDate = startDate
+    if (clerkUserId !== null){
+        updateData.clerkUserId = clerkUserId
     }
 
-    if (endTime !== null){
-        updateData.endTime = startDate
+    if (title !== null){
+        updateData.task = title
     }
 
-    if (task !== null){
-        updateData.task = task
+    if (workSiteId !== null){
+        updateData.worksiteId = workSiteId
     }
 
     // Verify if there are datas to update
@@ -42,8 +42,6 @@ export async function PUT(req: NextRequest) {
       data: updateData,
       include: {
         workSite: true, 
-        user: true,
-
       },
     });
 

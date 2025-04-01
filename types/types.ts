@@ -202,10 +202,6 @@ interface EstimationType{
     id: string;
 }
 
-interface PlanningType{
-    id: string;
-}
-
 interface BillType{
     id: string;
     number: string;
@@ -811,11 +807,10 @@ interface UpdatedDraftQuoteResponse{
 interface PlanningType{
     id: string,
     task: string,
-    startDate: Date,
-    endDate: Date,
     startTime: Date,
     endTime: Date,
     clerkUserId: string,
+    employee?: string,
     workSiteId: string,
     workSite: WorkSiteType
 }
@@ -827,10 +822,12 @@ interface PlanningsListType{
 
 // For FullCalendar event
 interface CalendarEvent {
-    id: string;
+    id?: string;
     title: string;
-    start: string;
-    end: string;
+    start: Date;
+    end: Date;
+    clerkUserId: string,
+    workSiteId: string,
 }
 
 interface EmployeeType {

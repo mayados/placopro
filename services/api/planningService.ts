@@ -2,7 +2,7 @@
 // Return a promise with object of type ?
 export const fetchPlannings = async (): Promise<PlanningsListType> => {
     try {
-      const response = await fetch(`/api/planning`);
+      const response = await fetch(`/api/plannings`);
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
       const data: PlanningsListType = await response.json();
@@ -15,7 +15,7 @@ export const fetchPlannings = async (): Promise<PlanningsListType> => {
 };
 
 // Create a Planning
-export const createPlanning = async (planning : PlanningType): Promise<PlanningType> => {
+export const createPlanning = async (planning : CalendarEvent): Promise<PlanningType> => {
     try {
         const response = await fetch(`/api/plannings`, {
             method: "POST",
@@ -39,7 +39,7 @@ export const createPlanning = async (planning : PlanningType): Promise<PlanningT
     }
 };
 
-export const updatePlanning = async (PlanningId: string, formValues: PlanningType): Promise<PlanningType> => {
+export const updatePlanning = async (PlanningId: string, formValues: CalendarEvent): Promise<PlanningType> => {
     try {
         const response = await fetch(`/api/plannings/${PlanningId}`, {
             method: "PUT",
