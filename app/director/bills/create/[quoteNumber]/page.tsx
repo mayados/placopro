@@ -5,14 +5,14 @@ import { Field,Input, Label, Legend, Radio, RadioGroup, Select, Textarea } from 
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import { CirclePlus, CircleX } from "lucide-react";
-import { capitalizeFirstLetter } from "@/lib/utils";
-import { formatDateForInput } from '@/lib/utils'
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
 import { fetchQuote, updateDraftQuote } from "@/services/api/quoteService";
 import { fetchVatRates } from "@/services/api/vatRateService";
 import { fetchUnits } from "@/services/api/unitService";
 import { fetchSuggestions } from "@/services/api/suggestionService";
 import { createBillFromQuote } from "@/services/api/billService";
+import { createBillDraftSchema, createBillFinalSchema } from "@/validation/billValidation";
+import { z } from 'zod';
 
 // import toast, { Toaster } from 'react-hot-toast';
 
@@ -34,7 +34,7 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
         services: [],
         servicesToUnlink: [],
         servicesAdded: [],
-        serviceType: null,
+        // serviceType: null,
         workSiteId: null,
         // client: null,
         quoteId: null as string | null,
@@ -56,6 +56,9 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
     // Allows to know if a bill is registered as a draft or ready (to be send)
     const [status, setStatus] = useState<"Draft" | "Ready">("Draft");
     const [isOpen, setIsOpen] = useState(false);
+    // For zod validation errors
+    const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
+    
 
 
     // cont which allows redirection
@@ -145,17 +148,25 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
         loadQuote();
         loadVatRates();
         loadUnits();
-    },[params]);
+    },[params, errors]);
 
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         console.log("évènement reçu : "+e)
-        const { name, value } = e.target;
+        const { name, value , type} = e.target;
+
+        let formattedValue: string | Date | number | null = value;
+
+        if (type === "date") {
+            formattedValue = value ? new Date(value) : null; // Conversion en Date
+        } else if (type === "number") {
+            formattedValue = value ? Number(value) : null; // Conversion en Number
+        }
         console.log("select :"+name+" valeur : "+value)
         setCreateBillFormValues({
             ...createBillFormValues,
             // Allow to delete completely the value contained in the field 
-            [name]:value === "" ? "" : value
+            [name]:formattedValue
         });
 
         if(name === "unit"){
@@ -175,12 +186,12 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
 
 
     const handleBillCreation = async (statusReady?: string) => {
-        console.log("La facture crééé : "+JSON.stringify(createBillFormValues.servicesToUnlink))
         console.log("Le quote intial : "+JSON.stringify(quote?.services))        
-        console.log("lors du submit, le status est : "+statusReady)
 
         const status = statusReady ? "Ready": "Draft"
         const quoteId = quote?.id
+        console.log("lors du submit, le status est : "+status)
+
 
         try{
             const createBillWithStatus = {
@@ -188,16 +199,41 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
                 status,
                 quoteId,
             };
+        console.log("La facture crééé : "+JSON.stringify(createBillFormValues))
 
             if(!quote?.number){
                 return
             }
+
+            // Choisir le schéma de validation en fonction du statut
+            const schema = statusReady === "Ready" ? createBillFinalSchema : createBillDraftSchema;
+
+            // Validation des données du formulaire en fonction du statut
+            const validationResult = schema.safeParse(createBillFormValues);
+
+            if (!validationResult.success) {
+                // Si la validation échoue, afficher les erreurs
+                console.error("Erreurs de validation :", validationResult.error.errors);
+                    // Transformer les erreurs Zod en un format utilisable dans le JSX
+                const formattedErrors = validationResult.error.flatten().fieldErrors;
+
+                // Afficher les erreurs dans la console pour débogage
+                console.log(formattedErrors);
+              
+                // Mettre à jour l'état avec les erreurs
+                setErrors(formattedErrors);
+                return;  // Ne pas soumettre si la validation échoue
+            }
+
+            // Delete former validation errors
+            setErrors({})
 
             const data = await createBillFromQuote(createBillWithStatus)
             console.log("data renvoyés : "+data)
             const createdBill = data;
             console.log("voici la bill crééé : "+createdBill.number)
             console.log("status du devis updaté "+createdBill.status)
+
             try {
                 if(createdBill.status === "Draft"){
                     // Redirect to the page of bill's update
@@ -338,13 +374,18 @@ const handleServiceFieldChange = (
     fieldName: string,
     value: string 
 ) => {
+    let formattedValue: string | number | null = value;
+
+    if (fieldName === "unitPriceHT" || fieldName === "quantity") {
+        formattedValue = value ? Number(value) : null; // Conversion en Number
+    }
     const newServices = [...createBillFormValues.services];
     const currentService = newServices[index];
     
     // Update the service with new value
     newServices[index] = {
         ...currentService,
-        [fieldName]: value,
+        [fieldName]: formattedValue,
     };
 
     // Only update servicesAdded if:
@@ -421,9 +462,9 @@ const addService = () => {
       
     if (!quote) return <div>Loading...</div>;
 
-    console.log("Les services contenus dans bill :", JSON.stringify(createBillFormValues.services));
-    console.log("Les services ajoutés dans bill :", JSON.stringify(createBillFormValues.servicesAdded));
-    console.log("Les services enlevés de bill :", JSON.stringify(createBillFormValues.servicesToUnlink));
+    // console.log("Les services contenus dans bill :", JSON.stringify(createBillFormValues.services));
+    // console.log("Les services ajoutés dans bill :", JSON.stringify(createBillFormValues.servicesAdded));
+    // console.log("Les services enlevés de bill :", JSON.stringify(createBillFormValues.servicesToUnlink));
 
     return (
         <div className="relative">
@@ -447,6 +488,7 @@ const addService = () => {
                             readOnly
                         >
                         </Input>
+                        {errors.clientId && <p style={{ color: "red" }}>{errors.clientId}</p>}
                     </Field>                
                 </div>
                 {/* WorkSite of the quote */}
@@ -459,6 +501,7 @@ const addService = () => {
                             readOnly
                         >
                         </Input>
+                        {errors.workSiteId && <p style={{ color: "red" }}>{errors.workSiteId}</p>}
                     </Field>                
                 </div>
                 {/* Nature of work */}
@@ -473,6 +516,9 @@ const addService = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.natureOfWork && errors.natureOfWork.map((error, index) => (
+                        <p key={index} style={{ color: "red" }}>{error}</p>
+                    ))}
                 </div>
                 {/* Work description */}
                 <div>
@@ -486,6 +532,8 @@ const addService = () => {
                         >
                         </Textarea>
                     </Field>
+                    {errors.description && <p style={{ color: "red" }}>{errors.description}</p>}
+
                 </div>
                 {/* Work start date */}
                 <div>
@@ -496,6 +544,7 @@ const addService = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.workStartDate && <p style={{ color: "red" }}>{errors.workStartDate}</p>}
                 </div>
                 {/* work end date */}
                 <div>
@@ -506,6 +555,8 @@ const addService = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.workEndDate && <p style={{ color: "red" }}>{errors.workEndDate}</p>}
+
                 </div>
                 {/* work duration */}
                 <div>
@@ -516,6 +567,8 @@ const addService = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.workDuration && <p style={{ color: "red" }}>{errors.workDuration}</p>}
+
                 </div>
                 {/* Sélection du type de frais de déplacements */}
                 <Select
@@ -529,6 +582,8 @@ const addService = () => {
                         <option key={type} value={type}>{type}</option>
                     ))}
                 </Select>
+                {errors.travelCostsType && <p style={{ color: "red" }}>{errors.travelCostsType}</p>}
+
                 {/* travelCosts */}
                 <div>
                     <label htmlFor="travelCosts">Frais de déplacement</label>
@@ -541,6 +596,7 @@ const addService = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.travelCosts && <p style={{ color: "red" }}>{errors.travelCosts}</p>}
                 </div>
             <h2>Services</h2>
             {createBillFormValues.services.map((service, index) => (
