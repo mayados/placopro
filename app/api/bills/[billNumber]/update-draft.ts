@@ -17,17 +17,17 @@ export async function PUT(req: NextRequest) {
 
         const { 
             id, 
-            number,
+            // number,
             dueDate,
             natureOfWork,
             description,
-            issueDate,
-            vatAmount,
-            totalTtc,
-            totalHt,
-            workSiteId,
+            // issueDate,
+            // vatAmount,
+            // totalTtc,
+            // totalHt,
+            // workSiteId,
             quoteId,
-            clientId,
+            // clientId,
             services,
             servicesToUnlink,
             servicesAdded,
@@ -42,8 +42,8 @@ export async function PUT(req: NextRequest) {
             paymentTerms,
             paymentDate,
             paymentMethod,
-            isCanceled,
-            cancelReason
+            // isCanceled,
+            // cancelReason
         } = data;
 
         // Verify if bill exists
@@ -124,7 +124,7 @@ export async function PUT(req: NextRequest) {
                 travelCostsType: travelCostsType || existingBill.travelCostsType,
                 paymentDate: paymentDate ? new Date(paymentDate) : existingBill.paymentDate,
                 paymentMethod: paymentMethod || existingBill.paymentMethod,
-                canceledAt: isCanceled ? new Date() : existingBill.canceledAt,
+                // canceledAt: isCanceled ? new Date() : existingBill.canceledAt,
             };
 
             // Delete services which are unliked

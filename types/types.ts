@@ -236,7 +236,7 @@ interface BillType{
 //
 interface CreateBillFormValueType{
     number: string | null;
-    dueDate: string | null;
+    dueDate: Date | null;
     natureOfWork: string | null,
     description: string | null,
     issueDate: string | null,
@@ -245,7 +245,7 @@ interface CreateBillFormValueType{
     totalHt: number | null,
     discountAmount: number | null | undefined;
     isDiscountFromQuote: boolean,
-    serviceType: string | null;
+    // serviceType: string | null;
     workSiteId: string | null;
     quoteId:  string | null | undefined,
     clientId:  string | null,
@@ -258,8 +258,23 @@ interface CreateBillFormValueType{
     travelCostsType: string | null,
     workStartDate: Date | null,
     workEndDate: Date | null,
-    workDuration: Date | null,
+    workDuration: number | null,
     discountReason: string | null | undefined
+}
+
+
+
+interface BillForListType{
+    id: string;
+    number: string;
+    client: ClientType;
+    issueDate: Date;
+    dueDate: Date;
+    status: string;
+}
+
+interface BillTypeSingle{
+    bill: BillType;
 }
 
 interface CreateDepositBillFormValueType{
@@ -288,17 +303,12 @@ interface CreateDepositBillFormValueType{
     discountReason: string | null | undefined
 }
 
-interface BillForListType{
-    id: string;
-    number: string;
-    client: ClientType;
-    issueDate: Date;
-    dueDate: Date;
-    status: string;
-}
-
-interface BillTypeSingle{
-    bill: BillType;
+interface FormValuesUpdateNotDraftBill{
+    id: string | null,
+    status: string | null,
+    paymentDate: Date | null,
+    canceledAt: Date | null,
+    paymentMethod: string | null,
 }
 
 interface UpdatedBillFormValueType{
@@ -337,14 +347,6 @@ interface UpdatedDepositBillFormValueType{
     dueDate: Date | null;
     status: string | null,
     paymentTerms: string
-}
-
-interface FormValuesUpdateNotDraftBill{
-    id: string | null,
-    status: string | null,
-    paymentDate: Date | null,
-    canceledAt: Date | null,
-    paymentMethod: string | null,
 }
 
 interface QuoteType{
@@ -855,3 +857,7 @@ interface EmployeeType {
     firstName: string;
     lastName: string;
   }
+
+interface FormErrors {
+    [key: string]: string;
+}
