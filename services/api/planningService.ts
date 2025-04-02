@@ -39,7 +39,7 @@ export const createPlanning = async (planning : CalendarEvent): Promise<Planning
     }
 };
 
-export const updatePlanning = async (PlanningId: string, formValues: CalendarEvent): Promise<PlanningType> => {
+export const updatePlanning = async (PlanningId: string, formValues: UpdateCalendarEventType): Promise<PlanningType> => {
     try {
         const response = await fetch(`/api/plannings/${PlanningId}`, {
             method: "PUT",

@@ -830,6 +830,26 @@ interface CalendarEvent {
     workSiteId: string,
 }
 
+// For FullCalendar event update
+interface UpdateCalendarEventType {
+    id: string;
+    title: string | null;
+    start: Date | null;
+    end: Date | null;
+    clerkUserId: string | null,
+    workSiteId: string | null,
+}
+
+// For FullCalendar event update
+interface CreateOrUpdateCalendarEventType {
+    id?: string;
+    title?: string | null;
+    start?: Date | null;
+    end?: Date | null;
+    clerkUserId?: string | null,
+    workSiteId?: string | null,
+}
+
 interface EmployeeType {
     id: string;
     firstName: string;
