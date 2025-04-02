@@ -1,10 +1,10 @@
 model Planning{
    	id String @id @default(auto()) @map("_id") @db.ObjectId
-	task String
-	startTime DateTime
-	endTime DateTime
+    task String
+    startTime DateTime
+    endTime DateTime
 
-  clerkUserId String
+    clerkUserId String
 
     workSiteId String @db.ObjectId
     workSite WorkSite @relation(fields: [workSiteId], references: [id], onUpdate: Cascade, onDelete: Cascade)

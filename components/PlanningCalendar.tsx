@@ -3,10 +3,12 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { createPlanning, fetchPlannings } from "@/services/api/planningService";
+import { createPlanning, deletePlanning, fetchPlannings, updatePlanning } from "@/services/api/planningService";
 import { fetchEmployees } from "@/services/api/userService";
 import frLocale from '@fullcalendar/core/locales/fr';
 import { fetchWorkSites } from "@/services/api/workSiteService";
+import { EventClickArg } from '@fullcalendar/core';
+
 
 
 interface PlanningCalendarProps {
@@ -21,7 +23,7 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }
   // Display form or not
   const [showForm, setShowForm] = useState<boolean>(false);  
   // Event selectionated for modification
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);  
+  const [selectedEvent, setSelectedEvent] = useState<CreateOrUpdateCalendarEventType | null>(null);  
   // Title of the event
   const [eventTitle, setEventTitle] = useState<string>("");  
   // FullCalendar events
@@ -30,12 +32,12 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }
   const [workSites, setWorkSites] = useState<WorkSiteForListType[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<string | undefined>(clerkUserId);
   const [selectedWorkSite, setSelectedWorkSite] = useState<string | undefined>();
+  // Modal to display to make sure the users wants to delete 
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   // Retrieve employee name for the title of the created event
   const [employeeName, setEmployeeName] = useState<string | null>(null); 
 
 
-  
-    // useEffect pour charger les plannings en fonction de l'employé sélectionné
     useEffect(() => {
 
       if (role === "director") {
@@ -64,7 +66,6 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }
       const loadPlannings = async () => {
         try {
           const data = await fetchPlannings();
-          console.log("données reçues après le fetch : " + JSON.stringify(data));
           
           // Filtrer en fonction du rôle et de l'employé sélectionné
           const employeeIdToFilter = role === "director" ? selectedEmployee : clerkUserId;
@@ -82,7 +83,7 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }
               workSiteId: planning.workSiteId,
               clerkUserId: planning.clerkUserId
             }));
-            console.log("Événements formatés pour FullCalendar :", formattedEvents);
+            // console.log("Événements formatés pour FullCalendar :", formattedEvents);
 
           setEvents(formattedEvents);
         } catch (error) {
@@ -93,6 +94,19 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }
       loadPlannings();
     }, [role, clerkUserId]);
   
+    const handleDeleteEvent = async() => {
+      if (selectedEvent?.id) {
+        try {
+          const data = await deletePlanning(selectedEvent.id)
+          setEvents((prevEvents) => prevEvents.filter(event => event.id !== selectedEvent.id));
+          setShowDeleteModal(false);
+          setShowForm(false);
+        } catch (error) {
+          console.error("Erreur lors de la création de l'événement :", error);
+        }
+      }
+    };
+
     // Modify a planning (only available for director)
     const handleEventDrop = async (eventInfo: any) => {
       if (role !== "director") return; // Empêcher modification si pas directeur
@@ -116,22 +130,33 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }
       );
     };
 
-    const handleEventClick = (clickInfo: any) => {
-      setSelectedEvent({
-        id: clickInfo.event.id,
-        start: clickInfo.event.start,
-        end: clickInfo.event.end,
-      });
-    
-      setEventTitle(clickInfo.event.title.split(" - ")[0]); // Récupère uniquement le titre
-      setSelectedEmployee(clickInfo.event.extendedProps.clerkUserId);
-      setSelectedWorkSite(clickInfo.event.extendedProps.workSiteId);
-    
-      const selectedEmp = employees.find(emp => emp.id === clickInfo.event.extendedProps.clerkUserId);
-      setEmployeeName(selectedEmp ? `${selectedEmp.firstName} ${selectedEmp.lastName}` : null);
-    
-      setShowForm(true);
+    const handleEventClick = (info: EventClickArg) => {
+  // info.event contains instance of event FullCalendar (EventImpl)
+  const event = info.event;
+  
+  console.log("event à modifier : " + JSON.stringify(event));
+  
+  // Extract title without employee name (formatted as "Title - Employee")
+  let title = event.title;
+  if (title.includes(" - ")) {
+    title = title.split(" - ")[1]; 
+  }
+  
+  setEventTitle(title);
+  setSelectedEmployee(event.extendedProps.clerkUserId);
+  setSelectedWorkSite(event.extendedProps.workSiteId);
+  
+  setSelectedEvent({
+    id: event.id,
+    title: event.title,
+    start: event.start,
+    end: event.end,
+    clerkUserId: event.extendedProps.clerkUserId,
+    workSiteId: event.extendedProps.workSiteId
+  });
+      setShowForm(true); 
     };
+    
 
   // DisplayForm
   const displayCreationForm = (selectInfo: any) => {
@@ -147,62 +172,81 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }
     setShowForm(true);  
   };
 
-  // handle form submission
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(selectedEmployee)
-
-    if (employeeName && selectedEmployee && selectedWorkSite && eventTitle && selectedEvent.start && selectedEvent.end) {
+  
+    if (eventTitle && selectedEmployee && selectedWorkSite && selectedEvent?.start && selectedEvent?.end) {
       const localStart = new Date(selectedEvent.start);
       const localEnd = new Date(selectedEvent.end);
-      
-      // Ajust hour with local hour (if not the case, there will be a decalage of 2 hours)
+  
+      // Adjust hours (évite les décalages de fuseau horaire)
       localStart.setMinutes(localStart.getMinutes() - localStart.getTimezoneOffset());
       localEnd.setMinutes(localEnd.getMinutes() - localEnd.getTimezoneOffset());
-
-      const newEvent = {
-        title: eventTitle,
-        start: localStart, 
-        end: localEnd, 
-        clerkUserId: selectedEmployee,  
-        workSiteId: selectedWorkSite
-      };
-
-      // Ajouter l'événement à l'état local
-      setEvents((prevEvents) => [
-        ...prevEvents, 
-        { 
-          ...newEvent, 
-          // Add employee name to title for the display
-          title: `${eventTitle} - ${employeeName}` 
+  
+      // Create new event
+      if (!selectedEvent.id) {
+        const newEvent = {
+          title: eventTitle,
+          start: localStart, 
+          end: localEnd, 
+          clerkUserId: selectedEmployee,  
+          workSiteId: selectedWorkSite
+        };
+        console.log("New event : "+JSON.stringify(newEvent))
+        try {
+          const data = await createPlanning(newEvent)
+          setEvents(prev => [...prev, { ...newEvent, id: data.id }]);
+        } catch (error) {
+          console.error("Erreur lors de la création de l'événement :", error);
         }
-      ]);
-      console.log("Evènements enregistrés : "+events)
-      console.log("worksite : "+selectedWorkSite)
-      console.log("employee : "+selectedEmployee)
-      console.log("start : "+newEvent.start)
-      console.log("end : "+newEvent.end)
-      // Call to API route
-      const data = await createPlanning(newEvent)
-      
-
-      // Close the form
-      setShowForm(false);   
-      
-      // Reset form fields
+      } 
+      // existing event's update
+      else {
+        const updatedEvent = {
+          id: selectedEvent.id, 
+          title: eventTitle !== selectedEvent.title ? eventTitle : null,
+          start: selectedEvent.start !== localStart? localStart : null,
+          end: selectedEvent.end !== localEnd ? localEnd : null,
+          clerkUserId: selectedEmployee !== selectedEvent.clerkUserId ? selectedEmployee : null,
+          workSiteId: selectedWorkSite !== selectedEvent.workSiteId ? selectedWorkSite : null
+        };
+        console.log("updated Event : "+JSON.stringify(updatedEvent))
+        try {
+          const response = await updatePlanning(selectedEvent.id, updatedEvent); 
+          setEvents((prev) =>
+            prev.map((event) =>
+              event.id === selectedEvent.id
+                ? {
+                    ...event,
+                    // We only udpate fields that changed (for performance in database)
+                    ...(updatedEvent.start && updatedEvent.start !== event.start ? { start: updatedEvent.start } : {}),
+                    ...(updatedEvent.end && updatedEvent.end !== event.end ? { end: updatedEvent.end } : {}),
+                    ...(updatedEvent.title && updatedEvent.title !== event.title ? { title: updatedEvent.title } : {}),
+                    ...(updatedEvent.clerkUserId && updatedEvent.clerkUserId !== event.clerkUserId ? { clerkUserId: updatedEvent.clerkUserId } : {}),
+                    ...(updatedEvent.workSiteId && updatedEvent.workSiteId !== event.workSiteId ? { workSiteId: updatedEvent.workSiteId } : {}),
+                  }
+                : event
+            )
+          );
+        } catch (error) {
+          console.error("Erreur lors de la modification de l'événement :", error);
+        }
+      }
+  
+      // Re initialize form after submission
+      setShowForm(false);
       setEventTitle("");
-      setSelectedEmployee(clerkUserId);
+      setSelectedEmployee(undefined);
       setSelectedWorkSite(undefined);
       setSelectedEvent(null);
-      setEmployeeName(null);
-    }else{
-      console.error("All fields are mandatory")
+    } else {
+      console.error("Tous les champs sont obligatoires pour la création !");
     }
-
-
   };
-  
-  
+
+  const formTitle = selectedEvent?.id ? "Modifier l'événement" : "Ajouter un événement";
+
+
     return (
       <div className="space-y-4 w-full z-20">
         <button
@@ -226,7 +270,7 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }
               >
                 ✖
               </button>
-              <h2 className="text-xl mb-4">Ajouter un événement</h2>
+              <h2 className="text-xl mb-4 text-black">{formTitle}</h2>
               <div className="mb-4">
                 <label htmlFor="title" className="block text-sm font-medium text-black">
                   Titre de l'événement
@@ -289,14 +333,6 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }
                 <label htmlFor="start" className="block text-sm font-medium text-black">
                   Date et heure de début
                 </label>
-                {/* <input
-                  id="start"
-                  type="datetime-local"
-                  value={selectedEvent?.start ? new Date(selectedEvent.start.getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ""}
-                  onChange={(e) => setSelectedEvent((prev) => ({ ...prev, start: new Date(e.target.value) }))}
-                  className="mt-1 p-2 border border-gray-300 rounded-md w-full text-black"
-                  required
-                /> */}
                 <input
                   id="start"
                   type="datetime-local"
@@ -311,14 +347,6 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }
                 <label htmlFor="end" className="block text-sm font-medium text-black">
                   Date et heure de fin
                 </label>
-                {/* <input
-                  id="end"
-                  type="datetime-local"
-                  value={selectedEvent?.end ? new Date(selectedEvent.end.getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ""}
-                  onChange={(e) => setSelectedEvent((prev) => ({ ...prev, end: new Date(e.target.value) }))}
-                  className="mt-1 p-2 border border-gray-300 rounded-md w-full text-black"
-                  required
-                /> */}
                 <input
                   id="end"
                   type="datetime-local"
@@ -328,16 +356,39 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }
                   required
                 />
               </div>
-
+              {/* delete button, only display on modification mode */}
+              {selectedEvent?.id && (
+                <button 
+                  type="button"   
+                  onClick={() => {
+                    setShowForm(false); // Masquer le formulaire
+                    setTimeout(() => setShowDeleteModal(true), 100); // Afficher la modale après un court délai
+                  }} 
+                  style={{ backgroundColor: "red", color: "white", marginTop: "10px" }}>
+                  Supprimer l'événement
+                </button>
+              )}
               <div className="flex justify-end">
                 <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-md">
-                  Sauvegarder
+                  Enregistrer
                 </button>
               </div>
             </form>
           </div>
         )}
-  
+        {/*  Confirmation modale for suppression */}
+        {showDeleteModal && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center modal">
+            <div className="modal-content">
+              <h3>Confirmer la suppression</h3>
+              <p>Êtes-vous sûr de vouloir supprimer cet événement ?</p>
+              <button onClick={() => setShowDeleteModal(false)}>Annuler</button>
+              <button onClick={handleDeleteEvent} style={{ backgroundColor: "red", color: "white" }}>
+                Supprimer
+              </button>
+            </div>
+          </div>
+        )}
         {/* Calendrier */}
         <FullCalendar
           timeZone="Europe/Paris"
@@ -356,6 +407,7 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }
           select={displayCreationForm}  
           // Allow time selection
           selectable={true}  
+          eventClick={handleEventClick}
         />
       </div>
     );
