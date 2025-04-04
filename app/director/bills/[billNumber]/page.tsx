@@ -7,6 +7,8 @@ import { Field, Input, Label, Legend, Radio, RadioGroup, Select } from "@headles
 import { fetchBill, updateClassicBill } from "@/services/api/billService";
 import { fetchCompany } from "@/services/api/companyService";
 import Link from "next/link";
+import { updateClassicBillSchema } from "@/validation/billValidation";
+
 
 // import toast, { Toaster } from 'react-hot-toast';
 // import { useRouter } from "next/navigation";
@@ -26,6 +28,9 @@ const Bill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
         paymentMethod: null,
         canceledAt: null,
     })
+    // For zod validation errors
+    const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
+    
 
     
         useEffect(() => {
@@ -86,6 +91,26 @@ const Bill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
         
             try{
 
+                            // Validation des données du formulaire en fonction du statut
+            const validationResult = updateClassicBillSchema.safeParse(formValues);
+
+            if (!validationResult.success) {
+                // Si la validation échoue, afficher les erreurs
+                console.error("Erreurs de validation :", validationResult.error.errors);
+                    // Transformer les erreurs Zod en un format utilisable dans le JSX
+                const formattedErrors = validationResult.error.flatten().fieldErrors;
+
+                // Afficher les erreurs dans la console pour débogage
+                console.log(formattedErrors);
+              
+                // Mettre à jour l'état avec les erreurs
+                setErrors(formattedErrors);
+                return;  // Ne pas soumettre si la validation échoue
+            }
+
+            // Delete former validation errors
+            setErrors({})
+
                 const data = await updateClassicBill(bill.number,formValues)
                 const updatedBill = data;
                 console.log("voici la facture mis à jour : "+updatedBill.number)
@@ -122,7 +147,7 @@ const Bill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
 
             </ul>
             {/* If the bill's status is different from draft, we can display the form */}
-                {bill.status !== "draft" && (
+                {bill.status !== "Draft" && (
                     <section>
                         <h2>Modifier les informations</h2>
                         <form 
@@ -144,6 +169,8 @@ const Bill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
                                         <option key={status} value={status}>{status}</option>
                                     ))}
                                 </Select>
+                                {errors.status && <p style={{ color: "red" }}>{errors.status}</p>}
+
                             </div>
                             <div>
                                 <label htmlFor="paymentDate">Date de paiement facture</label>
@@ -160,6 +187,8 @@ const Bill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
                                     >
                                     </Input>
                                 </Field>
+                                {errors.paymentDate && <p style={{ color: "red" }}>{errors.paymentDate}</p>}
+
                             </div>
                             <div>
                                 <Select
@@ -173,6 +202,8 @@ const Bill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
                                         <option key={methode} value={methode}>{methode}</option>
                                     ))}
                                 </Select>
+                                {errors.paymentMethod && <p style={{ color: "red" }}>{errors.paymentMethod}</p>}
+
                             </div>
                             <div>
                                 <label htmlFor="canceledAt">Clos le (= abandonnée)</label>
@@ -189,6 +220,7 @@ const Bill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
                                     >
                                     </Input>
                                 </Field>
+                                {errors.canceledAt && <p style={{ color: "red" }}>{errors.canceledAt}</p>}
                             </div>
                             <button type="submit">Modifier</button>
                         </form>                        

@@ -11,8 +11,9 @@ import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react
 import { fetchQuote, updateDraftQuote } from "@/services/api/quoteService";
 import { fetchVatRates } from "@/services/api/vatRateService";
 import { fetchUnits } from "@/services/api/unitService";
-import { fetchSuggestions } from "@/services/api/suggestionService";
-import { createBillFromQuote, createDepositBillFromQuote } from "@/services/api/billService";
+// import { fetchSuggestions } from "@/services/api/suggestionService";
+import { createDepositBillFromQuote } from "@/services/api/billService";
+import { createDepositBillDraftSchema, createDepositBillFinalSchema } from "@/validation/billValidation";
 
 // import toast, { Toaster } from 'react-hot-toast';
 
@@ -54,6 +55,8 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
     // Allows to know if a bill is registered as a draft or ready (to be send)
     const [status, setStatus] = useState<"Draft" | "Ready">("Draft");
     const [isOpen, setIsOpen] = useState(false);
+    // For zod validation errors
+    const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
 
 
     // cont which allows redirection
@@ -191,6 +194,29 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
                 return
             }
 
+            // Choisir le schéma de validation en fonction du statut
+            const schema = statusReady === "Ready" ? createDepositBillFinalSchema : createDepositBillDraftSchema;
+            
+            // Validation des données du formulaire en fonction du statut
+            const validationResult = schema.safeParse(createBillFormValues);
+            
+            if (!validationResult.success) {
+                // Si la validation échoue, afficher les erreurs
+                 console.error("Erreurs de validation :", validationResult.error.errors);
+                                // Transformer les erreurs Zod en un format utilisable dans le JSX
+                const formattedErrors = validationResult.error.flatten().fieldErrors;
+            
+                // Afficher les erreurs dans la console pour débogage
+                console.log(formattedErrors);
+                          
+                // Mettre à jour l'état avec les erreurs
+                setErrors(formattedErrors);
+                return;  // Ne pas soumettre si la validation échoue
+            }
+            
+            // Delete former validation errors
+            setErrors({})
+
             const data = await createDepositBillFromQuote(createBillWithStatus)
             console.log("data renvoyés : "+data)
             const createdBill = data;
@@ -257,7 +283,8 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
                             readOnly
                         >
                         </Input>
-                    </Field>                
+                    </Field>  
+                    {errors.clientId && <p style={{ color: "red" }}>{errors.clientId}</p>}              
                 </div>
                 {/* WorkSite of the quote */}
                 <div>
@@ -269,7 +296,9 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
                             readOnly
                         >
                         </Input>
-                    </Field>                
+                    </Field>   
+                    {errors.workSiteId && <p style={{ color: "red" }}>{errors.workSiteId}</p>}
+             
                 </div>
                 {/* Nature of work */}
                 <div>
@@ -283,6 +312,8 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
                         >
                         </Input>
                     </Field>
+                    {errors.natureOfWork && <p style={{ color: "red" }}>{errors.natureOfWork}</p>}
+
                 </div>
                 {/* Work description */}
                 <div>
@@ -296,6 +327,8 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
                         >
                         </Textarea>
                     </Field>
+                    {errors.description && <p style={{ color: "red" }}>{errors.description}</p>}
+
                 </div>
                 {/* Work start date */}
                 <div>
@@ -306,6 +339,8 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
                         >
                         </Input>
                     </Field>
+                    {errors.workStartDate && <p style={{ color: "red" }}>{errors.workStartDate}</p>}
+
                 </div>
                 {/* work end date */}
                 <div>
@@ -316,6 +351,8 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
                         >
                         </Input>
                     </Field>
+                    {errors.workEndDate && <p style={{ color: "red" }}>{errors.workEndDate}</p>}
+
                 </div>
                 {/* work duration */}
                 <div>
@@ -326,19 +363,23 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
                         >
                         </Input>
                     </Field>
+                    {errors.workDuration && <p style={{ color: "red" }}>{errors.workDuration}</p>}
+
                 </div>
                 {/* Sélection du type de frais de déplacements */}
                 <Select
-                name="travelCostsType"
-                value={createBillFormValues.travelCostsType || ""}
-                className="w-full rounded-md bg-gray-700 text-white pl-3"
-                disabled
-                >
-                <option value="">Type de frais de déplacement</option>
-                {travelCostsTypeChoices.map((type) => (
-                    <option key={type} value={type}>{type}</option>
-                ))}
+                    name="travelCostsType"
+                    value={createBillFormValues.travelCostsType || ""}
+                    className="w-full rounded-md bg-gray-700 text-white pl-3"
+                    disabled
+                    >
+                    <option value="">Type de frais de déplacement</option>
+                    {travelCostsTypeChoices.map((type) => (
+                        <option key={type} value={type}>{type}</option>
+                    ))}
                 </Select>
+                {errors.travelCostsType && <p style={{ color: "red" }}>{errors.travelCostsType}</p>}
+
                 {/* travelCosts */}
                 <div>
                     <label htmlFor="travelCosts">Frais de déplacement</label>
@@ -351,6 +392,8 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
                         >
                         </Input>
                     </Field>
+                    {errors.travelCosts && <p style={{ color: "red" }}>{errors.travelCosts}</p>}
+
                 </div>
             <h2>Services</h2>
             {createBillFormValues.services.map((service, index) => (
@@ -449,6 +492,8 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
             >
             </Input>
         </Field>
+        {errors.discountAmount && <p style={{ color: "red" }}>{errors.discountAmount}</p>}
+
     </div>
     {/* Sélection du type de remise */}
     <Select
@@ -463,6 +508,8 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
 
         ))}
     </Select>
+    {errors.discountReason && <p style={{ color: "red" }}>{errors.discountReason}</p>}
+
                 {/* payment Terms */}
                 <div>
                     <label htmlFor="paymentTerms">Conditions de paiement</label>
@@ -473,6 +520,8 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
                         >
                         </Textarea>
                     </Field>
+                    {errors.paymentTerms && <p style={{ color: "red" }}>{errors.paymentTerms}</p>}
+
                 </div>
 
 
@@ -486,6 +535,8 @@ const CreationBillFromQuote = ({ params }: { params: Promise<{ quoteNumber: stri
                         >
                         </Input>
                     </Field>
+                    {errors.dueDate && <p style={{ color: "red" }}>{errors.dueDate}</p>}
+
                 </div>
                 <button 
                     className="bg-red-400"

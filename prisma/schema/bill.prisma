@@ -7,7 +7,7 @@ model Bill{
     totalTtc Float
     vatAmount Float
     issueDate DateTime
-    dueDate DateTime
+    dueDate DateTime?
     workStartDate DateTime?
     workEndDate DateTime?
     workDuration Int?

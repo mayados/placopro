@@ -3,6 +3,8 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server';
+import { updateDraftBillDepositSchema, updateDraftFinalDepositBillSchema } from "@/validation/billValidation";
+
 
 export async function PUT(req: NextRequest) {
     try {
@@ -17,12 +19,35 @@ export async function PUT(req: NextRequest) {
             return NextResponse.json({ success: false, message: "Utilisateur non authentifié." }, { status: 401 });
         }
 
-        const { 
-            id, 
-            paymentTerms,
-            dueDate,
-            status
-        } = data;
+        // const { 
+        //     id, 
+        //     paymentTerms,
+        //     dueDate,
+        //     status
+        // } = data;
+
+        // Détecter si la facture est enregistrée en tant que "brouillon" ou en "final"
+        // Exclure 'status' du schéma de validation Zod
+        const { status, id, ...dataWithoutStatus } = data;
+        console.log("Bill ID extrait:", id); // Vérifie s'il est bien défini
+        
+        // Choisir le schéma en fonction du statut (avant ou après validation)
+        const schema = status === "Ready" ? updateDraftFinalDepositBillSchema : updateDraftBillDepositSchema;
+                
+        // Validation avec Zod (sans 'status')
+        const parsedData = schema.safeParse(dataWithoutStatus);
+        if (!parsedData.success) {
+            console.error("Validation Zod échouée :", parsedData.error.format());
+        
+            return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
+        }
+                
+        // Validation réussie, traiter les données avec le statut
+        const validatedData = parsedData.data;
+                
+        // Ajoute le statut aux données validées
+        data.status = status;
+        data.id = id;
 
         // Verify if bill exists
         const existingBill = await db.bill.findUnique({
@@ -42,12 +67,12 @@ export async function PUT(req: NextRequest) {
         // Préparer l'objet de mise à jour (ignorer les champs absents)
         const updateData: Record<string, string | Date | null> = {};
 
-        if (paymentTerms !== null && paymentTerms !== existingBill.paymentTerms) {
-            updateData.paymentTerms = paymentTerms;
+        if (validatedData.paymentTerms !== null && validatedData.paymentTerms !== existingBill.paymentTerms) {
+            updateData.paymentTerms = validatedData.paymentTerms;
         }
         
-        if (dueDate !== null && dueDate !== existingBill.paymentDate) {
-            updateData.paymentDate = dueDate ? new Date(dueDate) : null;
+        if (validatedData.dueDate !== null && validatedData.dueDate !== existingBill.paymentDate) {
+            updateData.paymentDate = validatedData.dueDate ? new Date(validatedData.dueDate) : null;
         }
         
         if (status !== null && status !== existingBill.status) {

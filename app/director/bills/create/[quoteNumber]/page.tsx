@@ -756,6 +756,8 @@ const addService = () => {
                         >
                         </Textarea>
                     </Field>
+                    {errors.paymentTerms && <p style={{ color: "red" }}>{errors.paymentTerms}</p>}
+
                 </div>
 
 
@@ -769,6 +771,8 @@ const addService = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.dueDate && <p style={{ color: "red" }}>{errors.dueDate}</p>}
+
                 </div>
                 <button 
                     className="bg-red-400"

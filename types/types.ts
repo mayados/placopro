@@ -320,7 +320,7 @@ interface UpdatedBillFormValueType{
     vatAmount: number | null;
     // issueDate: Date | null;
     dueDate: Date | null;
-    paymentDate?: Date | null;
+    // paymentDate?: Date | null;
     status: string | null,
     clientId: string | null;
     serviceType: string | null,
@@ -330,7 +330,7 @@ interface UpdatedBillFormValueType{
     workStartDate: Date | null,
     workEndDate: Date | null,
     workDuration: number | null,
-    isDiscountFromQuote: boolean | null,
+    // isDiscountFromQuote: boolean | null,
     // services: BillServiceType[];
     services: ServiceFormBillType[];
     discountAmount: number | null,

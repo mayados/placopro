@@ -54,6 +54,8 @@ export async function POST(req: NextRequest) {
                 // Validation avec Zod (sans 'status')
                 const parsedData = schema.safeParse(dataWithoutStatus);
                 if (!parsedData.success) {
+                    console.error("Validation Zod échouée :", parsedData.error.format());
+
                     return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
                 }
         
