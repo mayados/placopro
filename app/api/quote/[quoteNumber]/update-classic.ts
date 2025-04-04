@@ -1,9 +1,11 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
+import { updateClassicQuoteSchema } from "@/validation/quoteValidation";
+
 
 export async function PUT(req: NextRequest) {
   const data = await req.json();
-  const { id, status, isSignedByClient, signatureDate } = data;
+  // const { id, status, isSignedByClient, signatureDate } = data;
 
   // Mapping of french statuts to english
   const statusMapping: Record<string, string> = {
@@ -14,6 +16,27 @@ export async function PUT(req: NextRequest) {
   };
 
   try {
+
+      // Détecter si la facture est enregistrée en tant que "brouillon" ou en "final"
+      // Exclure 'status' du schéma de validation Zod
+      const { id, ...dataWithoutId } = data;
+      console.log(" ID extrait:", id); // Vérifie s'il est bien défini
+    
+      // Choisir le schéma en fonction du statut (avant ou après validation)
+            
+      // Validation avec Zod (sans 'status')
+      const parsedData = updateClassicQuoteSchema.safeParse(dataWithoutId);
+      if (!parsedData.success) {
+          console.error("Validation Zod échouée :", parsedData.error.format());
+    
+          return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
+      }
+            
+      // Validation réussie, traiter les données avec le statut
+      const validatedData = parsedData.data;
+            
+      // Ajoute le statut aux données validées
+      data.id = id;
     // construct dynamically update's object
     const updateData: Record<string, any> = {};
 
@@ -27,11 +50,11 @@ export async function PUT(req: NextRequest) {
         }
     }
 
-    if (isSignedByClient !== null) {
-        updateData.isSignedByClient = isSignedByClient === "Oui";
+    if (validatedData.isSignedByClient !== null) {
+        updateData.isSignedByClient = validatedData.isSignedByClient === "Oui";
       }
-    if (signatureDate !== null){
-        const parsedDate = new Date(signatureDate);
+    if (validatedData.signatureDate !== null){
+        const parsedDate = new Date(validatedData.signatureDate);
         updateData.signatureDate = parsedDate;  
         console.log("date parsée : "+parsedDate)
     } 

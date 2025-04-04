@@ -1,39 +1,67 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
+import { updateDraftQuoteSchema, updateDraftFinalQuoteSchema } from "@/validation/quoteValidation";
+
 
 export async function PUT(req: NextRequest) {
   const data = await req.json();
-  const { 
-        quoteId,
-        number,
-        validityEndDate,
-        natureOfWork, 
-        description,
-        workStartDate,
-        estimatedWorkEndDate,
-        estimatedWorkDuration,
-        vatAmount,
-        isQuoteFree,
-        hasRightOfWithdrawal,
-        priceTTC,
-        priceHT,
-        travelCosts,
-        hourlyLaborRate,
-        paymentTerms,
-        paymentDelay,
-        latePaymentPenalities,
-        recoveryFee,
-        withdrawalPeriod,
-        quoteCost,
-        clientId,
-        workSiteId,
-        services,
-        servicesToUnlink,
-        serviceType,
-        status,
-        discountAmount,
-        discountReason
-  } = data;
+  // const { 
+  //       quoteId,
+  //       number,
+  //       validityEndDate,
+  //       natureOfWork, 
+  //       description,
+  //       workStartDate,
+  //       estimatedWorkEndDate,
+  //       estimatedWorkDuration,
+  //       vatAmount,
+  //       isQuoteFree,
+  //       hasRightOfWithdrawal,
+  //       priceTTC,
+  //       priceHT,
+  //       travelCosts,
+  //       hourlyLaborRate,
+  //       paymentTerms,
+  //       paymentDelay,
+  //       latePaymentPenalities,
+  //       recoveryFee,
+  //       withdrawalPeriod,
+  //       quoteCost,
+  //       clientId,
+  //       workSiteId,
+  //       services,
+  //       servicesToUnlink,
+  //       serviceType,
+  //       status,
+  //       discountAmount,
+  //       discountReason
+  // } = data;
+
+
+  
+  // Détecter si la facture est enregistrée en tant que "brouillon" ou en "final"
+  // Exclure 'status' du schéma de validation Zod
+  const { status, quoteId, number, ...dataWithoutStatus } = data;
+  console.log("Quote ID extrait:", quoteId); // Vérifie s'il est bien défini
+
+  // Choisir le schéma en fonction du statut (avant ou après validation)
+  const schema = status === "Ready" ? updateDraftFinalQuoteSchema : updateDraftQuoteSchema;
+        
+  // Validation avec Zod (sans 'status')
+  const parsedData = schema.safeParse(dataWithoutStatus);
+  if (!parsedData.success) {
+      console.error("Validation Zod échouée :", parsedData.error.format());
+
+      return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
+  }
+        
+  // Validation réussie, traiter les données avec le statut
+  const validatedData = parsedData.data;
+        
+  // Ajoute le statut aux données validées
+  data.status = status;
+  data.quoteId = quoteId;
+  data.number = number;
 
   console.log(data)
   console.log("valeur de saveMode  : "+data.status)
@@ -317,7 +345,7 @@ const generateQuoteNumber = async (type = "quote", isDraft = false) => {
       priceHT: finalTotalHT,  
       vatAmount: finalVatAmount,
       priceTTC: finalTotalTTC,
-      discountReason: discountReason
+      discountReason: validatedData.discountReason
       // discountAmount is already in updateData thanks to fieldsToUpdate
     });
 

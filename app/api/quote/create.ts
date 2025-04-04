@@ -1,6 +1,8 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
+import { createQuoteDraftSchema, createQuoteFinalSchema } from "@/validation/quoteValidation";
+
 
 
 // Asynchrone : waits for a promise
@@ -8,35 +10,37 @@ export async function POST(req: NextRequest) {
     const data = await req.json();
     console.log("Données reçues dans la requête :", data);
 
-    const { 
-            validityEndDate, 
-            natureOfWork, 
-            description, 
-            workStartDate, 
-            estimatedWorkEndDate, 
-            estimatedWorkDuration, 
-            isQuoteFree, 
-            quoteCost, 
-            priceTTC, 
-            priceHT, 
-            travelCosts, 
-            hourlyLaborRate, 
-            paymentDelay,
-            paymentTerms,
-            latePaymentPenalities,
-            recoveryFees,
-            hasRightOfWithdrawal,
-            withdrawalPeriod,
-            clientId,
-            workSiteId,
-            services,
-            discountAmount,
-            depositAmount,
-            discountReason,
-            status
-        } = data;
-            // currentUser() is a founction from Clerk which allows to retrieve the current User
-            const user = await currentUser()
+    // const { 
+    //         validityEndDate, 
+    //         natureOfWork, 
+    //         description, 
+    //         workStartDate, 
+    //         estimatedWorkEndDate, 
+    //         estimatedWorkDuration, 
+    //         isQuoteFree, 
+    //         quoteCost, 
+    //         priceTTC, 
+    //         priceHT, 
+    //         travelCosts, 
+    //         hourlyLaborRate, 
+    //         paymentDelay,
+    //         paymentTerms,
+    //         latePaymentPenalities,
+    //         recoveryFees,
+    //         hasRightOfWithdrawal,
+    //         withdrawalPeriod,
+    //         clientId,
+    //         workSiteId,
+    //         services,
+    //         discountAmount,
+    //         depositAmount,
+    //         discountReason,
+    //         status
+    //     } = data;
+
+        
+    // currentUser() is a founction from Clerk which allows to retrieve the current User
+    const user = await currentUser()
     if (!data) {
         return NextResponse.json({ success: false, message: "Aucune donnée reçue." }, { status: 400 });
     }
@@ -50,28 +54,49 @@ export async function POST(req: NextRequest) {
 
     try {
 
-      const sanitizedData = {
-        ...data,
-        workStartDate: data.workStartDate ? new Date(data.workStartDate).toISOString() : null,
-        validityEndDate: data.validityEndDate ? new Date(data.validityEndDate).toISOString() : null,
-        estimatedWorkEndDate: data.estimatedWorkEndDate ? new Date(data.estimatedWorkEndDate).toISOString() : null,
-        isQuoteFree: isQuoteFree === "Oui" ? true : false,
-        hasRightOfWithdrawal: hasRightOfWithdrawal=== "Oui" ? true : false,
-        vatAmount: parseFloat(data.vatAmount) || 0,
-        estimatedWorkDuration: parseInt(data.estimatedWorkDuration, 10) || 0,
-        priceTTC: parseFloat(data.priceTTC) || 0,
-        priceHT: parseFloat(data.priceHT) || 0,
-        travelCosts: parseFloat(data.travelCosts) || 0,
-        hourlyLaborRate: parseFloat(data.hourlyLaborRate) || 0,
-        paymentDelay: parseInt(data.paymentDelay, 10) || 0,
-        latePaymentPenalities: parseFloat(data.latePaymentPenalities) || 0,
-        recoveryFees: parseFloat(data.recoveryFees) || 0,
-        withdrawalPeriod: parseInt(data.withdrawalPeriod, 10) || 0,
-        quoteCost: parseFloat(data.quoteCost) || 0,
-        discountAmount: parseFloat(data.discountAmount) || 0,
-        discountReason: data.discountReason || null,
-        status: data.status || "Ready",
-    };
+      // Détecter si la facture est en "brouillon" ou en "final"
+        // Exclure 'status' du schéma de validation Zod
+        const { status, ...dataWithoutStatus } = data;
+      
+        // Choisir le schéma en fonction du statut (avant ou après validation)
+        const schema = status === "Ready" ? createQuoteFinalSchema : createQuoteDraftSchema;
+              
+        // Validation avec Zod (sans 'status')
+        const parsedData = schema.safeParse(dataWithoutStatus);
+        if (!parsedData.success) {
+            console.error("Validation Zod échouée :", parsedData.error.format());
+      
+            return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
+        }
+              
+        // Validation réussie, traiter les données avec le statut
+        const validatedData = parsedData.data;
+              
+        // Ajoute le statut aux données validées
+        data.status = status;
+
+    //   const sanitizedData = {
+    //     ...data,
+    //     workStartDate: data.workStartDate ? new Date(data.workStartDate).toISOString() : null,
+    //     validityEndDate: data.validityEndDate ? new Date(data.validityEndDate).toISOString() : null,
+    //     estimatedWorkEndDate: data.estimatedWorkEndDate ? new Date(data.estimatedWorkEndDate).toISOString() : null,
+    //     isQuoteFree: isQuoteFree === "Oui" ? true : false,
+    //     hasRightOfWithdrawal: hasRightOfWithdrawal=== "Oui" ? true : false,
+    //     vatAmount: parseFloat(data.vatAmount) || 0,
+    //     estimatedWorkDuration: parseInt(data.estimatedWorkDuration, 10) || 0,
+    //     priceTTC: parseFloat(data.priceTTC) || 0,
+    //     priceHT: parseFloat(data.priceHT) || 0,
+    //     travelCosts: parseFloat(data.travelCosts) || 0,
+    //     hourlyLaborRate: parseFloat(data.hourlyLaborRate) || 0,
+    //     paymentDelay: parseInt(data.paymentDelay, 10) || 0,
+    //     latePaymentPenalities: parseFloat(data.latePaymentPenalities) || 0,
+    //     recoveryFees: parseFloat(data.recoveryFees) || 0,
+    //     withdrawalPeriod: parseInt(data.withdrawalPeriod, 10) || 0,
+    //     quoteCost: parseFloat(data.quoteCost) || 0,
+    //     discountAmount: parseFloat(data.discountAmount) || 0,
+    //     discountReason: data.discountReason || null,
+    //     status: data.status || "Ready",
+    // };
 
 
       // Generate an unique and chronological quote's number if the status is Ready / fictive number if the status is draft
@@ -132,7 +157,7 @@ export async function POST(req: NextRequest) {
       };
 
       // We have to know if the quote was saved as a draft
-      const isDraft = sanitizedData.status === "draft";
+      const isDraft = status === "draft";
       const quoteNumber =  await generateQuoteNumber();
       
       // for each data.services : see if it already exists. If it's the case, it has an id. In the other case, the Id is null.
@@ -237,34 +262,34 @@ export async function POST(req: NextRequest) {
         const quote = await db.quote.create({
             data: {
                 number: quoteNumber,
-                status: sanitizedData.status,
+                status: status,
                 issueDate : new Date().toISOString(), 
-                validityEndDate: sanitizedData.validityEndDate, 
-                natureOfWork: sanitizedData.natureOfWork, 
-                description: sanitizedData.description, 
-                workStartDate: sanitizedData.workStartDate, 
-                estimatedWorkEndDate: sanitizedData.estimatedWorkEndDate, 
-                estimatedWorkDuration: sanitizedData.estimatedWorkDuration, 
-                isQuoteFree: sanitizedData.isQuoteFree, 
-                quoteCost: sanitizedData.quoteCost, 
+                validityEndDate: validatedData.validityEndDate, 
+                natureOfWork: validatedData.natureOfWork, 
+                description: validatedData.description, 
+                workStartDate: validatedData.workStartDate, 
+                estimatedWorkEndDate: validatedData.estimatedWorkEndDate, 
+                estimatedWorkDuration: validatedData.estimatedWorkDuration, 
+                isQuoteFree: validatedData.isQuoteFree === "Oui" ? true : false, 
+                quoteCost: 0, 
                 vatAmount: 0,  
                 priceTTC: 0, 
                 priceHT: 0, 
-                depositAmount: depositAmount,
-                discountAmount: discountAmount,
-                discountReason: discountReason,
-                travelCosts: sanitizedData.travelCosts, 
-                hourlyLaborRate: sanitizedData.hourlyLaborRate, 
-                paymentDelay: sanitizedData.paymentDelay,
-                paymentTerms: sanitizedData.paymentTerms,
-                latePaymentPenalties: sanitizedData.latePaymentPenalities,
-                recoveryFee: sanitizedData.recoveryFees,
+                depositAmount: validatedData.depositAmount,
+                discountAmount: validatedData.discountAmount,
+                discountReason: validatedData.discountReason,
+                travelCosts: validatedData.travelCosts, 
+                hourlyLaborRate: 0, 
+                paymentDelay: validatedData.paymentDelay,
+                paymentTerms: validatedData.paymentTerms,
+                latePaymentPenalties: validatedData.latePaymentPenalities,
+                recoveryFee: validatedData.recoveryFees,
                 isSignedByClient: false,
                 signatureDate: null,
-                hasRightOfWithdrawal: sanitizedData.hasRightOfWithdrawal,
-                withdrawalPeriod: sanitizedData.withdrawalPeriod,
-                clientId: clientId,
-                workSiteId: workSiteId,
+                hasRightOfWithdrawal: validatedData.hasRightOfWithdrawal=== "Oui" ? true : false,
+                withdrawalPeriod: validatedData.withdrawalPeriod,
+                clientId: validatedData.clientId,
+                workSiteId: validatedData.workSiteId,
                 userId: user.id,
 
             },
@@ -337,15 +362,15 @@ export async function POST(req: NextRequest) {
       )
 
       // add travelCosts to totalHtQuote (which contains services costs HT)
-      totalHtQuote += parseFloat(travelCosts)
-      totalHtQuote-= discountAmount
+      totalHtQuote += validatedData.travelCosts
+      totalHtQuote-= validatedData.discountAmount
       // Count vatAmount for travelCosts and add the result to vatAmountQuote
-      const vatAmountForTravelCosts = travelCosts * (20 / 100);
+      const vatAmountForTravelCosts = validatedData.travelCosts * (20 / 100);
       console.log("montant tva pour les trajets : "+vatAmountForTravelCosts)
       vatAmountQuote += vatAmountForTravelCosts
       console.log("montant tva du devis : "+vatAmountQuote)
       // add totalTTC travelCosts to totalTTCQuote
-      totalTTCQuote += parseFloat(travelCosts) + Number(vatAmountForTravelCosts)
+      totalTTCQuote += validatedData.travelCosts + Number(vatAmountForTravelCosts)
       console.log("total du prix du devis : "+totalTTCQuote)
 
         //update Quote
