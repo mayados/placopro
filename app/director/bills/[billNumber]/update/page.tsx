@@ -5,14 +5,13 @@ import { Field,Input, Label, Legend, Radio, RadioGroup, Select, Textarea } from 
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import { CirclePlus, CircleX } from "lucide-react";
-import { capitalizeFirstLetter } from "@/lib/utils";
-import { formatDateForInput } from '@/lib/utils'
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
 // import { fetchbill, updateInvoiceDraftBill } from "@/services/api/bill/Service";
 import { fetchVatRates } from "@/services/api/vatRateService";
 import { fetchUnits } from "@/services/api/unitService";
 import { fetchSuggestions } from "@/services/api/suggestionService";
 import { fetchBill, updateDraftBill } from "@/services/api/billService";
+import { updateDraftBillSchema, updateDraftFinalBillSchema } from "@/validation/billValidation";
 
 // import toast, { Toaster } from 'react-hot-toast';
 
@@ -43,7 +42,7 @@ const UpdateBill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
         workStartDate: null,
         workEndDate: null,
         workDuration: null,
-        isDiscountFromQuote: false,
+        // isDiscountFromQuote: false,
         quoteId: null,
         discountReason: null,
     })
@@ -56,7 +55,9 @@ const UpdateBill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
     // Allows to know if a bill is registered as a draft or ready (to be send)
     const [status, setStatus] = useState<"Draft" | "Ready">("Draft");
     const [isOpen, setIsOpen] = useState(false);
-
+    // for zod validation errors
+    const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
+    
 
     // cont which allows redirection
     const router = useRouter();
@@ -82,7 +83,7 @@ const UpdateBill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
 
                 try{
                     const data = await fetchBill(billNumber)
-                    let isDiscountFrombill = false
+                    // let isDiscountFrombill = false
                   
                     setUpdateBillFormValues({
                         ...updateBillFormValues,
@@ -92,7 +93,7 @@ const UpdateBill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
                         clientId: data.bill.client.id,
                         workSiteId: data.bill.workSite.id,
                         billId: data.bill.id,
-                        isDiscountFromQuote: data.bill.isDiscountFromQuote,
+                        // isDiscountFromQuote: data.bill.isDiscountFromQuote,
                         discountReason: data.bill.discountReason,
                         discountAmount: data.bill.discountAmount,
                         travelCosts: data.bill.travelCosts,
@@ -192,6 +193,29 @@ const UpdateBill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
             if(!bill?.number){
                 return
             }
+
+            // Choisir le schéma de validation en fonction du statut
+            const schema = statusReady === "Ready" ? updateDraftFinalBillSchema : updateDraftBillSchema;
+
+            // Validation des données du formulaire en fonction du statut
+            const validationResult = schema.safeParse(updateBillFormValues);
+
+            if (!validationResult.success) {
+                // Si la validation échoue, afficher les erreurs
+                console.error("Erreurs de validation :", validationResult.error.errors);
+                    // Transformer les erreurs Zod en un format utilisable dans le JSX
+                const formattedErrors = validationResult.error.flatten().fieldErrors;
+
+                // Afficher les erreurs dans la console pour débogage
+                console.log(formattedErrors);
+              
+                // Mettre à jour l'état avec les erreurs
+                setErrors(formattedErrors);
+                return;  // Ne pas soumettre si la validation échoue
+            }
+
+            // Delete former validation errors
+            setErrors({})
 
             const data = await updateDraftBill(bill.number,updateBillWithStatus)
             console.log("data renvoyés : "+data)
@@ -425,6 +449,7 @@ const addService = () => {
     console.log("Les services ajoutés dans bill :", JSON.stringify(updateBillFormValues.servicesAdded));
     console.log("Les services enlevés de bill :", JSON.stringify(updateBillFormValues.servicesToUnlink));
 
+    console.log("les erreurs zod : "+console.log(errors))
     return (
         <div className="relative">
             {/* <div><Toaster/></div> */}
@@ -447,7 +472,9 @@ const addService = () => {
                             readOnly
                         >
                         </Input>
-                    </Field>                
+                    </Field>   
+                    {errors.clientId && <p style={{ color: "red" }}>{errors.clientId}</p>}
+             
                 </div>
                 {/* WorkSite of the bill? */}
                 <div>
@@ -459,7 +486,9 @@ const addService = () => {
                             readOnly
                         >
                         </Input>
-                    </Field>                
+                    </Field>    
+                    {errors.workSiteId && <p style={{ color: "red" }}>{errors.workSiteId}</p>}
+            
                 </div>
                 {/* Nature of work */}
                 <div>
@@ -473,6 +502,8 @@ const addService = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.natureOfWork && <p style={{ color: "red" }}>{errors.natureOfWork}</p>}
+
                 </div>
                 {/* Work description */}
                 <div>
@@ -486,6 +517,8 @@ const addService = () => {
                         >
                         </Textarea>
                     </Field>
+                    {errors.description && <p style={{ color: "red" }}>{errors.description}</p>}
+
                 </div>
                 {/* Work start date */}
                 <div>
@@ -496,6 +529,8 @@ const addService = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.workStartDate && <p style={{ color: "red" }}>{errors.workStartDate}</p>}
+
                 </div>
                 {/* work end date */}
                 <div>
@@ -506,6 +541,8 @@ const addService = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.workEndDate && <p style={{ color: "red" }}>{errors.workEndDate}</p>}
+
                 </div>
                 {/* work duration */}
                 <div>
@@ -516,19 +553,23 @@ const addService = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.workDuration && <p style={{ color: "red" }}>{errors.workDuration}</p>}
+
                 </div>
-                {/* Sélection du type de frais de déplacements */}
-                <Select
-                name="travelCostsType"
-                value={updateBillFormValues.travelCostsType || ""}
-                className="w-full rounded-md bg-gray-700 text-white pl-3"
-                disabled
-                >
-                <option value="">Type de frais de déplacement</option>
-                {travelCostsTypeChoices.map((type) => (
-                    <option key={type} value={type}>{type}</option>
-                ))}
-                </Select>
+                    {/* Sélection du type de frais de déplacements */}
+                    <Select
+                    name="travelCostsType"
+                    value={updateBillFormValues.travelCostsType || ""}
+                    className="w-full rounded-md bg-gray-700 text-white pl-3"
+                    disabled
+                    >
+                    <option value="">Type de frais de déplacement</option>
+                    {travelCostsTypeChoices.map((type) => (
+                        <option key={type} value={type}>{type}</option>
+                    ))}
+                    </Select>
+                    {errors.travelCostsType && <p style={{ color: "red" }}>{errors.travelCostsTypeChoices}</p>}
+
                 {/* travelCosts */}
                 <div>
                     <label htmlFor="travelCosts">Frais de déplacement</label>
@@ -541,6 +582,8 @@ const addService = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.travelCosts && <p style={{ color: "red" }}>{errors.travelCosts}</p>}
+
                 </div>
             <h2>Services</h2>
             {updateBillFormValues.services.map((service, index) => (
@@ -678,7 +721,7 @@ const addService = () => {
             </Input>
         </Field>
     </div>
-    {/* Sélection du type de frais de déplacements */}
+    {/* Sélection du type de remise */}
     <Select
         name="discountReason"
         value={updateBillFormValues.discountReason || ""}
@@ -689,6 +732,8 @@ const addService = () => {
         {discountReasonChoices.map((type) => (
             <option key={type} value={type}>{type}</option>
         ))}
+        {errors.discountReason && <p style={{ color: "red" }}>{errors.discountReason}</p>}
+
     </Select>
                 {/* payment Terms */}
                 <div>
@@ -700,6 +745,7 @@ const addService = () => {
                         >
                         </Textarea>
                     </Field>
+                    {errors.paymentTerms && <p style={{ color: "red" }}>{errors.paymentTerms}</p>}
                 </div>
 
 
@@ -713,6 +759,8 @@ const addService = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.dueDate && <p style={{ color: "red" }}>{errors.dueDate}</p>}
+
                 </div>
                 <button 
                     className="bg-red-400"

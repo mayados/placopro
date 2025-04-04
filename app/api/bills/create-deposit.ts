@@ -1,6 +1,8 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
+import { createDepositBillDraftSchema, createDepositBillFinalSchema } from "@/validation/billValidation";
+
 
 export async function POST(req: NextRequest) {
     try {
@@ -15,33 +17,54 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: false, message: "Utilisateur non authentifié." }, { status: 401 });
         }
 
-        const { 
-            number,
-            dueDate,
-            natureOfWork,
-            description,
-            issueDate,
-            vatAmount,
-            totalTtc,
-            totalHt,
-            workSiteId,
-            quoteId,
-            clientId,
-            services,
-            status,
-            workStartDate,
-            workEndDate,
-            workDuration,
-            discountAmount,
-            discountReason,
-            travelCosts,
-            travelCostsType,
-            paymentTerms
-        } = data;
+        // const { 
+        //     number,
+        //     dueDate,
+        //     natureOfWork,
+        //     description,
+        //     // issueDate,
+        //     // vatAmount,
+        //     // totalTtc,
+        //     // totalHt,
+        //     workSiteId,
+        //     quoteId,
+        //     clientId,
+        //     services,
+        //     status,
+        //     workStartDate,
+        //     workEndDate,
+        //     workDuration,
+        //     discountAmount,
+        //     discountReason,
+        //     travelCosts,
+        //     travelCostsType,
+        //     paymentTerms
+        // } = data;
 
         // Execute all operations in one transaction for integrity
         const result = await db.$transaction(async (prisma) => {
 
+     // Détecter si la facture est en "brouillon" ou en "final"
+                // Exclure 'status' du schéma de validation Zod
+                const { status,quoteId, ...dataWithoutStatus } = data;
+
+                // Choisir le schéma en fonction du statut (avant ou après validation)
+                const schema = status === "Ready" ? createDepositBillFinalSchema : createDepositBillDraftSchema;
+        
+                // Validation avec Zod (sans 'status')
+                const parsedData = schema.safeParse(dataWithoutStatus);
+                if (!parsedData.success) {
+                    console.error("Validation Zod échouée :", parsedData.error.format());
+
+                    return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
+                }
+        
+                // Validation réussie, traiter les données avec le statut
+                const validatedData = parsedData.data;
+        
+                // Ajoute le statut aux données validées
+                data.status = status;
+                data.quoteId = quoteId;
 
             // Generate bill number
             let billNumber = "";
@@ -84,7 +107,7 @@ export async function POST(req: NextRequest) {
             }
 
 // Appliquer la remise sur le HT
-const htAfterDiscount = Math.max(0, quote.priceHT - (discountAmount || 0));
+const htAfterDiscount = Math.max(0, quote.priceHT - (validatedData.discountAmount || 0));
 
 // Définir l'acompte HT
 const depositHt = Math.max(0, quote.depositAmount ?? 0);
@@ -92,8 +115,8 @@ const depositHt = Math.max(0, quote.depositAmount ?? 0);
 // Calculer la TVA de l'acompte
 let depositVat = 0;
 
-for (const service of services) {
-    const serviceTotalHt = service.unitPriceHT * service.quantity;
+for (const service of validatedData.services) {
+    const serviceTotalHt = Number(service.unitPriceHT) * service.quantity;
     console.log("service totalHt : " + serviceTotalHt + " quote price Ht : " + htAfterDiscount);
 
     const proportion = Number(serviceTotalHt) / Number(htAfterDiscount);
@@ -102,7 +125,7 @@ for (const service of services) {
     const serviceDepositHt = depositHt * proportion; 
     console.log("serviceDepositHt : " + serviceDepositHt);
 
-    const serviceVat = (Number(serviceDepositHt) * (service.vatRate / 100)); // 🔹 Arrondi
+    const serviceVat = (Number(serviceDepositHt) * (Number(service.vatRate) / 100)); // 🔹 Arrondi
     console.log("serviceVat : " + serviceVat);
 
     depositVat += Number(serviceVat);
@@ -121,36 +144,36 @@ const bill = await prisma.bill.create({
         number: billNumber,
         issueDate: new Date().toISOString(),
         billType: "DEPOSIT",
-        dueDate: dueDate ? new Date(dueDate).toISOString() : new Date().toISOString(),
-        workStartDate: workStartDate ? new Date(workStartDate).toISOString() : null,
-        workEndDate: workEndDate ? new Date(workEndDate).toISOString() : null,
-        workDuration: workDuration ? parseInt(workDuration) : null,
-        natureOfWork,
-        description,
-        paymentTerms,
+        dueDate: validatedData.dueDate ? new Date(validatedData.dueDate).toISOString() : new Date().toISOString(),
+        workStartDate: validatedData.workStartDate ? new Date(validatedData.workStartDate).toISOString() : null,
+        workEndDate: validatedData.workEndDate ? new Date(validatedData.workEndDate).toISOString() : null,
+        workDuration: validatedData.workDuration ? validatedData.workDuration : null,
+        natureOfWork: validatedData.natureOfWork,
+        description: validatedData.description,
+        paymentTerms: validatedData.paymentTerms ,
         status,
-        discountAmount: discountAmount || 0,
-        travelCosts,
-        travelCostsType,
-        discountReason,
+        discountAmount: validatedData.discountAmount || 0,
+        travelCosts: validatedData.travelCosts,
+        travelCostsType : validatedData.travelCostsType,
+        discountReason: validatedData.discountReason,
         vatAmount: depositVat,
         totalTtc: Number(depositTtc),
         totalHt: Number((depositHt).toFixed(2)),
         userId: user.id,
-        client: { connect: { id: clientId } },
-        workSite: { connect: { id: workSiteId } },
+        client: { connect: { id: validatedData.clientId } },
+        workSite: { connect: { id: validatedData.workSiteId } },
         quote: { connect: { id: quoteId } }
     }
 });
 
-for (const service of services) {
-    const serviceTotalHt = service.unitPriceHT * service.quantity;
+for (const service of validatedData.services) {
+    const serviceTotalHt = Number(service.unitPriceHT) * service.quantity;
     // Avoid division by 0
     const proportion = htAfterDiscount > 0 ? serviceTotalHt / htAfterDiscount : 0;
-    const totalServiceHt = Number(service.unitPriceHT * service.quantity);
+    const totalServiceHt = Number(Number(service.unitPriceHT) * service.quantity);
 
     const serviceDepositHt = Number(depositHt * proportion); 
-    const serviceVat = Number(serviceDepositHt * (service.vatRate / 100));
+    const serviceVat = Number(serviceDepositHt * (Number(service.vatRate) / 100));
     const serviceDepositTtc = Number(serviceDepositHt + serviceVat);
 
     console.log({ serviceDepositHt, serviceVat, serviceDepositTtc }); // Debugging

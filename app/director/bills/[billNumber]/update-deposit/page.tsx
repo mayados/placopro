@@ -13,6 +13,7 @@ import { fetchVatRates } from "@/services/api/vatRateService";
 import { fetchUnits } from "@/services/api/unitService";
 import { fetchSuggestions } from "@/services/api/suggestionService";
 import { fetchBill, updateDepositDraftBill } from "@/services/api/billService";
+import { updateDraftBillDepositSchema, updateDraftFinalDepositBillSchema } from "@/validation/billValidation";
 
 // import toast, { Toaster } from 'react-hot-toast';
 
@@ -30,7 +31,8 @@ const UpdateBill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
     // Allows to know if a bill is registered as a draft or ready (to be send)
     const [status, setStatus] = useState<"Draft" | "Ready">("Draft");
     const [isOpen, setIsOpen] = useState(false);
-
+    // for zod validation errors
+    const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
 
     // cont which allows redirection
     const router = useRouter();
@@ -112,6 +114,29 @@ const UpdateBill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
             if(!bill?.number){
                 return
             }
+
+            // Choisir le schéma de validation en fonction du statut
+            const schema = statusReady === "Ready" ? updateDraftFinalDepositBillSchema : updateDraftBillDepositSchema;
+
+            // Validation des données du formulaire en fonction du statut
+            const validationResult = schema.safeParse(updateBillFormValues);
+
+            if (!validationResult.success) {
+                // Si la validation échoue, afficher les erreurs
+                console.error("Erreurs de validation :", validationResult.error.errors);
+                    // Transformer les erreurs Zod en un format utilisable dans le JSX
+                const formattedErrors = validationResult.error.flatten().fieldErrors;
+
+                // Afficher les erreurs dans la console pour débogage
+                console.log(formattedErrors);
+              
+                // Mettre à jour l'état avec les erreurs
+                setErrors(formattedErrors);
+                return;  // Ne pas soumettre si la validation échoue
+            }
+
+            // Delete former validation errors
+            setErrors({})
 
             const data = await updateDepositDraftBill(bill.number,updateBillWithStatus)
             // console.log("data renvoyés : "+data)
@@ -342,6 +367,8 @@ const UpdateBill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
                         >
                         </Textarea>
                     </Field>
+                    {errors.paymentTerms && <p style={{ color: "red" }}>{errors.paymentTerms}</p>}
+
                 </div>
 
 
@@ -356,6 +383,8 @@ const UpdateBill = ({ params }: { params: Promise<{ billNumber: string }>}) => {
                         >
                         </Input>
                     </Field>
+                    {errors.dueDate && <p style={{ color: "red" }}>{errors.dueDate}</p>}
+
                 </div>
                 <button 
                     className="bg-red-400"

@@ -4,6 +4,8 @@ import { useEffect, useState, use } from "react";
 import { Field,Input } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import { createClient } from "@/services/api/clientService";
+import { createClientSchema } from "@/validation/clientValidation";
+
 // import toast, { Toaster } from 'react-hot-toast';
 
 const clientCreation = () => {
@@ -21,7 +23,8 @@ const clientCreation = () => {
         prospectNumber: "",
     })
     const router = useRouter();
-      
+    const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
+    
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -46,6 +49,26 @@ const clientCreation = () => {
             console.log("Ville du client : "+client.city)
             console.log("Complément d'adresse du client : "+client.additionalAddress)
             console.log("Numéro de prospect : "+client.prospectNumber)
+
+            // Validation des données du formulaire en fonction du statut
+            const validationResult = createClientSchema.safeParse(client);
+
+            if (!validationResult.success) {
+                // Si la validation échoue, afficher les erreurs
+                console.error("Erreurs de validation :", validationResult.error.errors);
+                    // Transformer les erreurs Zod en un format utilisable dans le JSX
+                const formattedErrors = validationResult.error.flatten().fieldErrors;
+
+                // Afficher les erreurs dans la console pour débogage
+                console.log(formattedErrors);
+              
+                // Mettre à jour l'état avec les erreurs
+                setErrors(formattedErrors);
+                return;  // Ne pas soumettre si la validation échoue
+            }
+
+            // Delete former validation errors
+            setErrors({})
 
             const newClient = await createClient(client);
 
@@ -83,6 +106,8 @@ const clientCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.name && <p style={{ color: "red" }}>{errors.name}</p>}
+
                 </div>
                 {/* firstName */}
                 <div>
@@ -93,6 +118,8 @@ const clientCreation = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.firstName && <p style={{ color: "red" }}>{errors.firstName}</p>}
+
                 </div>
                 {/* mail */}
                 <div>
@@ -103,6 +130,8 @@ const clientCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.mail && <p style={{ color: "red" }}>{errors.mail}</p>}
+
                 </div>
                 {/* phone */}
                 <div>
@@ -113,6 +142,8 @@ const clientCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.phone && <p style={{ color: "red" }}>{errors.phone}</p>}
+
                 </div>
                 {/* addressNumber */}
                 <div>
@@ -123,6 +154,8 @@ const clientCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.addressNumber && <p style={{ color: "red" }}>{errors.addressNumber}</p>}
+
                 </div>
                 {/* road */}
                 <div>
@@ -133,6 +166,8 @@ const clientCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.road && <p style={{ color: "red" }}>{errors.road}</p>}
+
                 </div>
                 {/* additionnalAddress */}
                 <div>
@@ -143,6 +178,8 @@ const clientCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.additionalAddress && <p style={{ color: "red" }}>{errors.additionalAddress}</p>}
+
                 </div>
                 {/* postalCode */}
                 <div>
@@ -153,6 +190,8 @@ const clientCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.postalCode && <p style={{ color: "red" }}>{errors.postalCode}</p>}
+
                 </div>
                 {/* city */}
                 <div>
@@ -163,6 +202,8 @@ const clientCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.city && <p style={{ color: "red" }}>{errors.city}</p>}
+
                 </div>
                 {/* If the client was a prospect */}
                 <div>
@@ -173,6 +214,8 @@ const clientCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.prospectNumber && <p style={{ color: "red" }}>{errors.prospectNumber}</p>}
+
                 </div>
                 <button type="submit">Créer</button>
             </form>

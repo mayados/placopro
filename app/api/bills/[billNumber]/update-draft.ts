@@ -1,10 +1,13 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server';
+import { updateDraftBillSchema, updateDraftFinalBillSchema } from "@/validation/billValidation";
 
 export async function PUT(req: NextRequest) {
     try {
         const data = await req.json();
+        console.log("Données reçues dans l'API :", JSON.stringify(data));
+
         const user = await currentUser();
 
         if (!data) {
@@ -15,40 +18,63 @@ export async function PUT(req: NextRequest) {
             return NextResponse.json({ success: false, message: "Utilisateur non authentifié." }, { status: 401 });
         }
 
-        const { 
-            id, 
-            // number,
-            dueDate,
-            natureOfWork,
-            description,
-            // issueDate,
-            // vatAmount,
-            // totalTtc,
-            // totalHt,
-            // workSiteId,
-            quoteId,
-            // clientId,
-            services,
-            servicesToUnlink,
-            servicesAdded,
-            status,
-            workStartDate,
-            workEndDate,
-            workDuration,
-            discountAmount,
-            discountReason,
-            travelCosts,
-            travelCostsType,
-            paymentTerms,
-            paymentDate,
-            paymentMethod,
-            // isCanceled,
-            // cancelReason
-        } = data;
+        // const { 
+        //     id, 
+        //     // number,
+        //     dueDate,
+        //     natureOfWork,
+        //     description,
+        //     // issueDate,
+        //     // vatAmount,
+        //     // totalTtc,
+        //     // totalHt,
+        //     // workSiteId,
+        //     quoteId,
+        //     // clientId,
+        //     services,
+        //     servicesToUnlink,
+        //     servicesAdded,
+        //     status,
+        //     workStartDate,
+        //     workEndDate,
+        //     workDuration,
+        //     discountAmount,
+        //     discountReason,
+        //     travelCosts,
+        //     travelCostsType,
+        //     paymentTerms,
+        //     paymentDate,
+        //     paymentMethod,
+        //     // isCanceled,
+        //     // cancelReason
+        // } = data;
+
+        // Détecter si la facture est enregistrée en tant que "brouillon" ou en "final"
+                // Exclure 'status' du schéma de validation Zod
+                const { status, billId, ...dataWithoutStatus } = data;
+                console.log("Bill ID extrait:", billId); // Vérifie s'il est bien défini
+
+                // Choisir le schéma en fonction du statut (avant ou après validation)
+                const schema = status === "Ready" ? updateDraftFinalBillSchema : updateDraftBillSchema;
+        
+                // Validation avec Zod (sans 'status')
+                const parsedData = schema.safeParse(dataWithoutStatus);
+                if (!parsedData.success) {
+                    console.error("Validation Zod échouée :", parsedData.error.format());
+
+                    return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
+                }
+        
+                // Validation réussie, traiter les données avec le statut
+                const validatedData = parsedData.data;
+        
+                // Ajoute le statut aux données validées
+                data.status = status;
+                data.billId = billId;
 
         // Verify if bill exists
         const existingBill = await db.bill.findUnique({
-            where: { id },
+            where: { id: billId },
             include: {
                 services: true,
                 quote: true
@@ -66,13 +92,13 @@ export async function PUT(req: NextRequest) {
             let totalPaidDepositHT = 0;
             let totalPaidDepositVAT = 0;
 
-            if (quoteId) {
+            if (validatedData.quoteId) {
                 const depositBills = await prisma.bill.findMany({
                     where: { 
-                        quoteId: quoteId, 
+                        quoteId: validatedData.quoteId, 
                         billType: "DEPOSIT",
                         // Exclude this Bill
-                        id: { not: id }
+                        id: { not: billId }
                     },
                 });
 
@@ -110,26 +136,24 @@ export async function PUT(req: NextRequest) {
             // Update base's informations of the bill
             const baseUpdateData = {
                 number: billNumber,
-                dueDate: dueDate ? new Date(dueDate) : existingBill.dueDate,
-                workStartDate: workStartDate ? new Date(workStartDate) : existingBill.workStartDate,
-                workEndDate: workEndDate ? new Date(workEndDate) : existingBill.workEndDate,
-                workDuration: workDuration !== undefined ? parseInt(workDuration) : existingBill.workDuration,
-                natureOfWork: natureOfWork || existingBill.natureOfWork,
-                description: description || existingBill.description,
-                paymentTerms: paymentTerms || existingBill.paymentTerms,
+                dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : existingBill.dueDate,
+                workStartDate: validatedData.workStartDate ? new Date(validatedData.workStartDate) : existingBill.workStartDate,
+                workEndDate: validatedData.workEndDate ? new Date(validatedData.workEndDate) : existingBill.workEndDate,
+                workDuration: validatedData.workDuration !== undefined ? validatedData.workDuration : existingBill.workDuration,
+                natureOfWork: validatedData.natureOfWork || existingBill.natureOfWork,
+                description: validatedData.description || existingBill.description,
+                paymentTerms: validatedData.paymentTerms || existingBill.paymentTerms,
                 status: status || existingBill.status,
-                discountAmount: discountAmount !== undefined ? parseFloat(discountAmount) : existingBill.discountAmount,
-                discountReason: discountReason !== undefined ? discountReason : existingBill.discountReason,
-                travelCosts: travelCosts !== undefined ? parseFloat(travelCosts) : existingBill.travelCosts,
-                travelCostsType: travelCostsType || existingBill.travelCostsType,
-                paymentDate: paymentDate ? new Date(paymentDate) : existingBill.paymentDate,
-                paymentMethod: paymentMethod || existingBill.paymentMethod,
+                discountAmount: validatedData.discountAmount !== undefined ? validatedData.discountAmount : existingBill.discountAmount,
+                discountReason: validatedData.discountReason !== undefined ? validatedData.discountReason : existingBill.discountReason,
+                travelCosts: validatedData.travelCosts !== undefined ? validatedData.travelCosts : existingBill.travelCosts,
+                travelCostsType: validatedData.travelCostsType || existingBill.travelCostsType,
                 // canceledAt: isCanceled ? new Date() : existingBill.canceledAt,
             };
 
             // Delete services which are unliked
-            if (servicesToUnlink && servicesToUnlink.length > 0) {
-                for (const serviceToUnlink of servicesToUnlink) {
+            if (validatedData.servicesToUnlink && validatedData.servicesToUnlink.length > 0) {
+                for (const serviceToUnlink of validatedData.servicesToUnlink) {
                     await prisma.billService.delete({
                         where: { id: serviceToUnlink.id }
                     });
@@ -142,9 +166,9 @@ export async function PUT(req: NextRequest) {
             let newTotalTtc = 0;
 
             // Update existing services and add new services
-            if (services && services.length > 0) {
-                for (const service of services) {
-                    const totalHTService = parseFloat(service.unitPriceHT) * parseFloat(service.quantity);
+            if (validatedData.services && validatedData.services.length > 0) {
+                for (const service of validatedData.services) {
+                    const totalHTService = parseFloat(service.unitPriceHT) * service.quantity;
                     const vatRateService = parseFloat(service.vatRate);
                     const vatAmountService = totalHTService * (vatRateService / 100);
                     const totalTTCService = totalHTService + vatAmountService;
@@ -154,11 +178,11 @@ export async function PUT(req: NextRequest) {
                     newTotalTtc += totalTTCService;
 
                     // If the service has an ID, it's an update
-                    if (service.billServiceId) {
+                    if (service.id) {
                         await prisma.billService.update({
-                            where: { id: service.billServiceId },
+                            where: { id: service.id },
                             data: {
-                                quantity: parseFloat(service.quantity),
+                                quantity: service.quantity,
                                 totalHT: totalHTService,
                                 vatAmount: vatAmountService,
                                 totalTTC: totalTTCService,
@@ -207,12 +231,12 @@ export async function PUT(req: NextRequest) {
                             data: {
                                 vatRate: service.vatRate,
                                 unit: service.unit,
-                                quantity: parseFloat(service.quantity),
+                                quantity: service.quantity,
                                 totalHT: totalHTService,
                                 vatAmount: vatAmountService,
                                 totalTTC: totalTTCService,
                                 detailsService: service.detailsService,
-                                bill: { connect: { id: id } },
+                                bill: { connect: { id: billId } },
                                 service: { connect: { id: serviceId } }
                             }
                         });
@@ -221,7 +245,7 @@ export async function PUT(req: NextRequest) {
             }
 
             // Apply discount on HT
-            const htAfterDiscount = parseFloat((newTotalHt - (discountAmount || 0)).toFixed(2));
+            const htAfterDiscount = parseFloat((newTotalHt - (validatedData.discountAmount || 0)).toFixed(2));
             
             // Count TTC after discount
             const ttcAfterDiscount = htAfterDiscount + newVatAmount;
@@ -239,7 +263,7 @@ export async function PUT(req: NextRequest) {
 
             // Update Bill
             const updatedBill = await prisma.bill.update({
-                where: { id },
+                where: { id: billId },
                 data: {
                     ...baseUpdateData,
                     totalHt: finalTotalHt,

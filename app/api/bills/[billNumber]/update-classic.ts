@@ -1,5 +1,7 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
+import { updateClassicBillSchema } from "@/validation/billValidation";
+
 
 export async function PUT(req: NextRequest) {
   const data = await req.json();
@@ -14,6 +16,16 @@ export async function PUT(req: NextRequest) {
   };
 
   try {
+
+    const parsedData = updateClassicBillSchema.safeParse(data);
+        if (!parsedData.success) {
+            console.error("Validation Zod échouée :", parsedData.error.format());
+    
+            return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
+        }
+            
+    // Validation réussie, traiter les données avec le statut
+    const validatedData = parsedData.data;
     // construct dynamically update's object
     const updateData: Record<string, any> = {};
 
@@ -28,17 +40,17 @@ export async function PUT(req: NextRequest) {
     }
 
 
-    if (paymentDate !== null){
-        const parsedDate = new Date(paymentDate);
+    if (validatedData.paymentDate !== null){
+        const parsedDate = new Date(validatedData.paymentDate);
         updateData.paymentDate = parsedDate;  
         console.log("date parsée : "+parsedDate)
     } 
 
     if (paymentMethod !== null){
-        updateData.paymentMethod = paymentMethod
+        updateData.paymentMethod = validatedData.paymentMethod
     }
-    if (canceledAt !== null){
-      const parsedDate = new Date(canceledAt);
+    if (validatedData.canceledAt !== null){
+      const parsedDate = new Date(validatedData.canceledAt);
       updateData.canceledAt = parsedDate;  
       console.log("date parsée : "+parsedDate)
   } 
