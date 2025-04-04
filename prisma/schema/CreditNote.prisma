@@ -28,7 +28,7 @@ enum CreditNoteSettlementTypeEnum {
 }
 
 enum CreditNoteReasonEnum {
-    MISTAKE
+  MISTAKE
   CANCELLATION
   DISCOUNT
   COMPENSATION
@@ -37,3 +37,4 @@ enum CreditNoteReasonEnum {
   DEPOSIT_REFUND
   DEPOSIT_ADJUSTMENT
 }
+

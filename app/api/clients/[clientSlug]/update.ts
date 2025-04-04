@@ -1,5 +1,7 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
+import { updateClientSchema } from "@/validation/clientValidation";
+
 
 export async function PUT(req: NextRequest) {
   // Retrieve datas from request's body
@@ -20,8 +22,20 @@ export async function PUT(req: NextRequest) {
     // let {isAnonymized} = data.isAnonymized
 
   try {
-
+    const { prospectNumber, ...dataWithoutProspectNumber } = data;
+    data.prospectNumber = prospectNumber;
     console.log("numéro de prospect récupéré :"+prospectNumber)
+
+    // Validation avec Zod (sans 'status')
+    const parsedData = updateClientSchema.safeParse(dataWithoutProspectNumber);
+    if (!parsedData.success) {
+        console.error("Validation Zod échouée :", parsedData.error.format());
+        
+        return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
+    }
+                
+    // Validation réussie, traiter les données avec le statut
+    const validatedData = parsedData.data;
 
     /* We have to verify which value(s) has/have changed
         So first, we retrieve the client thanks to the id (unique value which doesn't change)
@@ -128,19 +142,19 @@ if ((prospectNumber !== null)&&(prospectNumber !== undefined)) {
 
         // We verify if the values have changed by comparing original values and values retrieved from the form
         // If it's the case, we replace const client's values by values retrieve from the forms
-        if (originalClient.name !== name) client.name = name;
+        if (originalClient.name !== validatedData.name) client.name = validatedData.name;
         if (originalClient.name !== name) client.slug = name.toLowerCase()+"-"+firstName.toLowerCase();
-        if (originalClient.firstName !== firstName) client.firstName = firstName;
-        if (originalClient.firstName !== firstName) client.slug = name.toLowerCase()+"-"+firstName.toLowerCase();
-        if (originalClient.mail !== mail) client.mail = mail;
-        if (originalClient.phone !== phone) client.phone = phone;
+        if (originalClient.firstName !== validatedData.firstname) client.firstName = validatedData.firstname;
+        if (originalClient.firstName !== validatedData.firstname) client.slug = validatedData.name.toLowerCase()+"-"+validatedData.firstname.toLowerCase();
+        if (originalClient.mail !== validatedData.mail) client.mail = validatedData.mail;
+        if (originalClient.phone !== validatedData.phone) client.phone = validatedData.phone;
         if (originalClient.prospect?.prospectNumber !== prospectNumber) client.prospect = prospectData;
         // if (originalClient.isAnonymized !== isAnonymized) client.isAnonymized = isAnonymized;
-        if (originalClient.road !== road) client.road = road;
-        if (originalClient.addressNumber !== addressNumber) client.addressNumber = addressNumber;
-        if (originalClient.postalCode !== postalCode) client.postalCode = postalCode;
-        if (originalClient.city !== city) client.city = city;
-        if (originalClient.additionalAddress !== additionalAddress) client.additionalAddress = additionalAddress;
+        if (originalClient.road !== validatedData.road) client.road = validatedData.road;
+        if (originalClient.addressNumber !== validatedData.addressNumber) client.addressNumber = validatedData.addressNumber;
+        if (originalClient.postalCode !== validatedData.postalCode) client.postalCode = validatedData.postalCode;
+        if (originalClient.city !== validatedData.city) client.city = validatedData.city;
+        if (originalClient.additionalAddress !== validatedData.additionalAddress) client.additionalAddress = validatedData.additionalAddress;
 
     
 

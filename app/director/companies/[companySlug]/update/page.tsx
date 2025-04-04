@@ -5,6 +5,8 @@ import { Field,Input, Select } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import { fetchCompany, updateCompany } from "@/services/api/companyService";
 // import toast, { Toaster } from 'react-hot-toast';
+import { updateCompanySchema } from "@/validation/companyValidation";
+
 
 const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) => {
 
@@ -12,6 +14,8 @@ const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) 
     // Define options for select
     const typeChoices = ["PME","SAS","TPE","SARL"];
     const router = useRouter();
+    const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
+    
       
 
     useEffect(() => {
@@ -58,6 +62,26 @@ const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) 
 
         try{
 
+            // Validation des données du formulaire en fonction du statut
+            const validationResult = updateCompanySchema.safeParse(company);
+            
+            if (!validationResult.success) {
+                // Si la validation échoue, afficher les erreurs
+                console.error("Erreurs de validation :", validationResult.error.errors);
+                    // Transformer les erreurs Zod en un format utilisable dans le JSX
+                const formattedErrors = validationResult.error.flatten().fieldErrors;
+            
+                // Afficher les erreurs dans la console pour débogage
+                console.log(formattedErrors);
+                          
+                // Mettre à jour l'état avec les erreurs
+                setErrors(formattedErrors);
+                return;  // Ne pas soumettre si la validation échoue
+            }
+            
+            // Delete former validation errors
+            setErrors({})
+
             const data = await updateCompany(company)
             const updatedCompany = data;
             setCompany(updatedCompany);
@@ -97,6 +121,8 @@ const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) 
                         </Input>                           
 
                     </Field>
+                    {errors.name && <p style={{ color: "red" }}>{errors.name}</p>}
+
                 </div>
                 {/* type of company */}
                 <div>
@@ -112,6 +138,8 @@ const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) 
                             <option key={type} value={type}>{type}</option>
                         ))}
                     </Select>
+                    {errors.type && <p style={{ color: "red" }}>{errors.type}</p>}
+
                 </div>
                 {/* phone */}
                 <div>
@@ -123,6 +151,8 @@ const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) 
                         >
                         </Input>
                     </Field>
+                    {errors.phone && <p style={{ color: "red" }}>{errors.phone}</p>}
+
                 </div>
                 {/* mail */}
                 <div>
@@ -134,6 +164,8 @@ const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) 
                             >
                         </Input>
                     </Field>
+                    {errors.email && <p style={{ color: "red" }}>{errors.email}</p>}
+
                 </div>
                 {/* Company's capital */}
                 <div>
@@ -145,6 +177,8 @@ const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) 
                             >
                         </Input>
                     </Field>
+                    {errors.capital && <p style={{ color: "red" }}>{errors.capital}</p>}
+
                 </div>
                 {/* Company's RCS */}
                 <div>
@@ -156,6 +190,8 @@ const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) 
                             >
                         </Input>
                     </Field>
+                    {errors.rcs && <p style={{ color: "red" }}>{errors.rcs}</p>}
+
                 </div>
                 {/* SIRET number */}
                 <div>
@@ -167,6 +203,8 @@ const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) 
                             >
                         </Input>
                     </Field>
+                    {errors.siret && <p style={{ color: "red" }}>{errors.siret}</p>}
+
                 </div>
                 {/* APE code */}
                 <div>
@@ -178,6 +216,8 @@ const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) 
                             >
                         </Input>
                     </Field>
+                    {errors.ape && <p style={{ color: "red" }}>{errors.ape}</p>}
+
                 </div>
                 {/* Intra community VAT */}
                 <div>
@@ -189,6 +229,8 @@ const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) 
                             >
                         </Input>
                     </Field>
+                    {errors.intraCommunityVat && <p style={{ color: "red" }}>{errors.intraCommunityVat}</p>}
+
                 </div>
                 {/* Address number */}
                 <div>
@@ -200,6 +242,8 @@ const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) 
                             >
                         </Input>
                     </Field>
+                    {errors.addressNumber && <p style={{ color: "red" }}>{errors.addressNumber}</p>}
+
                 </div>
                 {/* Company's road */}
                 <div>
@@ -211,6 +255,8 @@ const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) 
                             >
                         </Input>
                     </Field>
+                    {errors.road && <p style={{ color: "red" }}>{errors.road}</p>}
+
                 </div>
                 {/* Additionnal address */}
                 <div>
@@ -222,6 +268,8 @@ const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) 
                             >
                         </Input>
                     </Field>
+                    {errors.additionnalAddress && <p style={{ color: "red" }}>{errors.additionalAddress}</p>}
+
                 </div>
                 {/* Company's postal code */}
                 <div>
@@ -233,6 +281,8 @@ const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) 
                             >
                         </Input>
                     </Field>
+                    {errors.postalCode && <p style={{ color: "red" }}>{errors.postalCode}</p>}
+
                 </div>
                 {/* Company's city */}
                 <div>
@@ -244,6 +294,8 @@ const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) 
                             >
                         </Input>
                     </Field>
+                    {errors.city && <p style={{ color: "red" }}>{errors.city}</p>}
+
                 </div>
                 {/* Decennial insurance name */}
                 <div>
@@ -255,6 +307,8 @@ const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) 
                             >
                         </Input>
                     </Field>
+                    {errors.insuranceName && <p style={{ color: "red" }}>{errors.insuranceName}</p>}
+
                 </div>
                 {/* Insurance contract number */}
                 <div>
@@ -266,6 +320,8 @@ const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) 
                             >
                         </Input>
                     </Field>
+                    {errors.insuranceContractNumber && <p style={{ color: "red" }}>{errors.insuranceContractNumber}</p>}
+
                 </div>
                 {/* Aera covered by insurance */}
                 <div>
@@ -277,6 +333,8 @@ const modifyCompany = ({ params }: { params: Promise<{ companySlug: string }>}) 
                             >
                         </Input>
                     </Field>
+                    {errors.insuranceCoveredZone && <p style={{ color: "red" }}>{errors.insuranceCoveredZone}</p>}
+
                 </div>
                 <button type="submit">Modifier</button>
             </form>

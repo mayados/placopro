@@ -8,6 +8,7 @@ import { fetchEmployees } from "@/services/api/userService";
 import frLocale from '@fullcalendar/core/locales/fr';
 import { fetchWorkSites } from "@/services/api/workSiteService";
 import { EventClickArg } from '@fullcalendar/core';
+import { updatePlanningSchema, createPlanningSchema } from "@/validation/planningValidation";
 
 
 
@@ -36,6 +37,7 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   // Retrieve employee name for the title of the created event
   const [employeeName, setEmployeeName] = useState<string | null>(null); 
+  const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
 
 
     useEffect(() => {
@@ -194,6 +196,25 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }
         };
         console.log("New event : "+JSON.stringify(newEvent))
         try {
+          // Validation des données du formulaire en fonction du statut
+          const validationResult = createPlanningSchema.safeParse(newEvent);
+                  
+          if (!validationResult.success) {
+              // Si la validation échoue, afficher les erreurs
+              console.error("Erreurs de validation :", validationResult.error.errors);
+                          // Transformer les erreurs Zod en un format utilisable dans le JSX
+              const formattedErrors = validationResult.error.flatten().fieldErrors;
+                  
+              // Afficher les erreurs dans la console pour débogage
+              console.log(formattedErrors);
+                                
+              // Mettre à jour l'état avec les erreurs
+              setErrors(formattedErrors);
+              return;  // Ne pas soumettre si la validation échoue
+          }
+                  
+          // Delete former validation errors
+          setErrors({})
           const data = await createPlanning(newEvent)
           setEvents(prev => [...prev, { ...newEvent, id: data.id }]);
         } catch (error) {
@@ -212,6 +233,25 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }
         };
         console.log("updated Event : "+JSON.stringify(updatedEvent))
         try {
+          // Validation des données du formulaire en fonction du statut
+          const validationResult = updatePlanningSchema.safeParse(updatedEvent);
+                  
+          if (!validationResult.success) {
+              // Si la validation échoue, afficher les erreurs
+              console.error("Erreurs de validation :", validationResult.error.errors);
+                          // Transformer les erreurs Zod en un format utilisable dans le JSX
+              const formattedErrors = validationResult.error.flatten().fieldErrors;
+                            
+              // Afficher les erreurs dans la console pour débogage
+              console.log(formattedErrors);
+                                          
+              // Mettre à jour l'état avec les erreurs
+              setErrors(formattedErrors);
+              return;  // Ne pas soumettre si la validation échoue
+          }
+                            
+          // Delete former validation errors
+          setErrors({})
           const response = await updatePlanning(selectedEvent.id, updatedEvent); 
           setEvents((prev) =>
             prev.map((event) =>
@@ -283,6 +323,8 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }
                   className="mt-1 p-2 border border-gray-300 rounded-md w-full text-black"
                   required
                 />
+                {errors.title && <p style={{ color: "red" }}>{errors.title}</p>}
+
               </div>
               <div className="mb-4">
                 <label htmlFor="employee" className="block text-sm font-medium text-black">
@@ -308,6 +350,8 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }
                     </option>
                   ))}
                 </select>
+                {errors.userId && <p style={{ color: "red" }}>{errors.userId}</p>}
+
               </div>
 
               <div className="mb-4">
@@ -328,6 +372,8 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }
                     </option>
                   ))}
                 </select>
+                {errors.workSiteId && <p style={{ color: "red" }}>{errors.workSiteId}</p>}
+
               </div>
               <div className="mb-4">
                 <label htmlFor="start" className="block text-sm font-medium text-black">
@@ -341,6 +387,8 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }
                   className="mt-1 p-2 border border-gray-300 rounded-md w-full text-black"
                   required
                 />
+                {errors.start && <p style={{ color: "red" }}>{errors.start}</p>}
+
               </div>
 
               <div className="mb-4">
@@ -355,6 +403,8 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }
                   className="mt-1 p-2 border border-gray-300 rounded-md w-full text-black"
                   required
                 />
+                {errors.end && <p style={{ color: "red" }}>{errors.end}</p>}
+
               </div>
               {/* delete button, only display on modification mode */}
               {selectedEvent?.id && (

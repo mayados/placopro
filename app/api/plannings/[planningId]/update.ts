@@ -1,46 +1,62 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
+import { updatePlanningSchema } from "@/validation/planningValidation";
+
 
 export async function PUT(req: NextRequest) {
   const data = await req.json();
-  const { id, start, end, title, clerkUserId, workSiteId } = data;
+  // const { id, start, end, title, clerkUserId, workSiteId } = data;
   console.log("datas reçues :  "+JSON.stringify(data))
   try {
+
+        const { id, ...dataWithoutId } = data;
+        data.id = id;
+        
+        // Validation avec Zod (sans 'status')
+        const parsedData = updatePlanningSchema.safeParse(dataWithoutId);
+        if (!parsedData.success) {
+            console.error("Validation Zod échouée :", parsedData.error.format());
+                
+            return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
+        }
+                        
+        // Validation réussie, traiter les données avec le statut
+        const validatedData = parsedData.data;
     // construct dynamically update's object
     const updateData: Record<string, any> = {};
 
 
-    console.log("start : "+start)
-    console.log("end : "+end)
-    console.log("title : "+title)
-    console.log("clerkUserId : "+clerkUserId)
-    console.log("workSiteId : "+workSiteId)
+    // console.log("start : "+start)
+    // console.log("end : "+end)
+    // console.log("title : "+title)
+    // console.log("clerkUserId : "+clerkUserId)
+    // console.log("workSiteId : "+workSiteId)
     console.log("id : "+id)
-    if (start !== null){
-        updateData.startTime = new Date(start)
+    if (validatedData.start !== null){
+        updateData.startTime = new Date(validatedData.start)
         console.log("start n'est pas null")
     }
 
-    if (end !== null){
-        updateData.endTime = new Date(end)
+    if (validatedData.end !== null){
+        updateData.endTime = new Date(validatedData.end)
         console.log("end n'est pas null")
 
     }
 
-    if (clerkUserId !== null){
-        updateData.clerkUserId = clerkUserId
+    if (validatedData.clerkUserId !== null){
+        updateData.clerkUserId = validatedData.clerkUserId
         console.log("cler user id n'est pas null")
 
     }
 
-    if (title !== null){
-        updateData.task = title
+    if (validatedData.title !== null){
+        updateData.task = validatedData.title
         console.log("title n'est pas null")
 
     }
 
-    if (workSiteId !== null){
-        updateData.workSiteId = workSiteId
+    if (validatedData.workSiteId !== null){
+        updateData.workSiteId = validatedData.workSiteId
         console.log("worksietid n'est pas null")
 
     }

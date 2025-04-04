@@ -5,14 +5,17 @@ import { Field,Input, Select } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import { fetchClient, updateClient } from "@/services/api/clientService";
 // import toast, { Toaster } from 'react-hot-toast';
+import { updateClientSchema } from "@/validation/clientValidation";
+
 
 const modifyClient = ({ params }: { params: Promise<{ clientSlug: string }>}) => {
 
     const [client, setClient] = useState<ClientType | null>(null);
     // Define options for select
     const router = useRouter();
+    const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
+    
       
-
     useEffect(() => {
         async function loadClient() {
             // Params is now asynchronous. It's a Promise
@@ -56,6 +59,26 @@ const modifyClient = ({ params }: { params: Promise<{ clientSlug: string }>}) =>
 const handleClientUpdate = async () => { 
             
     try{
+
+        // Validation des données du formulaire en fonction du statut
+        const validationResult = updateClientSchema.safeParse(client);
+        
+        if (!validationResult.success) {
+            // Si la validation échoue, afficher les erreurs
+            console.error("Erreurs de validation :", validationResult.error.errors);
+                // Transformer les erreurs Zod en un format utilisable dans le JSX
+            const formattedErrors = validationResult.error.flatten().fieldErrors;
+        
+            // Afficher les erreurs dans la console pour débogage
+            console.log(formattedErrors);
+                      
+            // Mettre à jour l'état avec les erreurs
+            setErrors(formattedErrors);
+            return;  // Ne pas soumettre si la validation échoue
+        }
+        
+        // Delete former validation errors
+        setErrors({})
     
         const data = await updateClient(client)
         const updatedClient = data;
@@ -99,6 +122,8 @@ const handleClientUpdate = async () => {
                             >
                         </Input>
                     </Field>
+                    {errors.name && <p style={{ color: "red" }}>{errors.name}</p>}
+
                 </div>
                 {/* firstName */}
                 <div>
@@ -110,6 +135,8 @@ const handleClientUpdate = async () => {
                         >
                         </Input>
                     </Field>
+                    {errors.firstname && <p style={{ color: "red" }}>{errors.firstname}</p>}
+
                 </div>
                 {/* mail */}
                 <div>
@@ -121,6 +148,8 @@ const handleClientUpdate = async () => {
                             >
                         </Input>
                     </Field>
+                    {errors.mail && <p style={{ color: "red" }}>{errors.mail}</p>}
+
                 </div>
                 {/* phone */}
                 <div>
@@ -132,6 +161,8 @@ const handleClientUpdate = async () => {
                             >
                         </Input>
                     </Field>
+                    {errors.phone && <p style={{ color: "red" }}>{errors.phone}</p>}
+
                 </div>
                 {/* addressNumber */}
                 <div>
@@ -143,6 +174,8 @@ const handleClientUpdate = async () => {
                             >
                         </Input>
                     </Field>
+                    {errors.addressNumber && <p style={{ color: "red" }}>{errors.addressNumber}</p>}
+
                 </div>
                 {/* road */}
                 <div>
@@ -154,6 +187,8 @@ const handleClientUpdate = async () => {
                             >
                         </Input>
                     </Field>
+                    {errors.road && <p style={{ color: "red" }}>{errors.road}</p>}
+
                 </div>
                 {/* additionnalAddress */}
                 <div>
@@ -165,6 +200,8 @@ const handleClientUpdate = async () => {
                             >
                         </Input>
                     </Field>
+                    {errors.additionnalAddress && <p style={{ color: "red" }}>{errors.additionalAddress}</p>}
+
                 </div>
                 {/* postalCode */}
                 <div>
@@ -176,6 +213,8 @@ const handleClientUpdate = async () => {
                             >
                         </Input>
                     </Field>
+                    {errors.postalCode && <p style={{ color: "red" }}>{errors.postalCode}</p>}
+
                 </div>
                 {/* city */}
                 <div>
@@ -187,6 +226,8 @@ const handleClientUpdate = async () => {
                             >
                         </Input>
                     </Field>
+                    {errors.city && <p style={{ color: "red" }}>{errors.city}</p>}
+
                 </div>
                 {/* If the client was a prospect */}
                 <div>
@@ -198,6 +239,8 @@ const handleClientUpdate = async () => {
                             >
                         </Input>
                     </Field>
+                    {errors.prospectNumber && <p style={{ color: "red" }}>{errors.prospectNumber}</p>}
+
                 </div>
                 <button type="submit">Modifier</button>
             </form>
