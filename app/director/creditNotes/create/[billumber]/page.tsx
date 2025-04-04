@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
 import { fetchBill} from "@/services/api/billService";
 import { createCreditNote } from "@/services/api/creditNoteService";
-import { CreditNoteReasonEnum } from "@prisma/client";
+import { createCreditNoteSchema } from "@/validation/creditNoteValidation";
 
 // import toast, { Toaster } from 'react-hot-toast';
 
@@ -17,10 +17,11 @@ const CreateCreditNote = ({ params }: { params: Promise<{ billNumber: string }>}
     const [createCreditNoteFormValues, setCreateCreditNoteFormValues] = useState<CreateCreditNoteFormValueType>({
         amount: 0,
         billId: null,
-        reason: null,
+        reason: "",
     })
 
     const [isOpen, setIsOpen] = useState(false);
+    const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
 
 
     // const which allows redirection
@@ -77,6 +78,25 @@ const CreateCreditNote = ({ params }: { params: Promise<{ billNumber: string }>}
             if(!bill?.number){
                 return
             }
+                    // Validation des données du formulaire en fonction du statut
+                    const validationResult = createCreditNoteSchema.safeParse(createCreditNoteFormValues);
+                    
+                    if (!validationResult.success) {
+                        // Si la validation échoue, afficher les erreurs
+                        console.error("Erreurs de validation :", validationResult.error.errors);
+                            // Transformer les erreurs Zod en un format utilisable dans le JSX
+                        const formattedErrors = validationResult.error.flatten().fieldErrors;
+                    
+                        // Afficher les erreurs dans la console pour débogage
+                        console.log(formattedErrors);
+                                  
+                        // Mettre à jour l'état avec les erreurs
+                        setErrors(formattedErrors);
+                        return;  // Ne pas soumettre si la validation échoue
+                    }
+                    
+                    // Delete former validation errors
+                    setErrors({})
 
             const data = await createCreditNote(createCreditNoteFormValues)
             console.log("data renvoyés : "+data)
@@ -136,6 +156,8 @@ const CreateCreditNote = ({ params }: { params: Promise<{ billNumber: string }>}
                             >
                             </Input>
                         </Field>
+                        {errors.amount && <p style={{ color: "red" }}>{errors.amount}</p>}
+
                     </div>
                 <Select
                     name="reason"
@@ -143,20 +165,28 @@ const CreateCreditNote = ({ params }: { params: Promise<{ billNumber: string }>}
                     className="w-full rounded-md bg-gray-700 text-white pl-3"
                     onChange={handleInputChange}
                     >
-                    <option value="" disabled>-- Sélectionner un motif --</option>
-                        {Object.values(CreditNoteReasonEnum).map((reasonKey) => (
+                    {/* <option value="" disabled>-- Sélectionner un motif --</option>
+                        {Object.values(CreditNoteReasonEnumDescription).map((reasonKey) => (
                             <option key={reasonKey} value={reasonKey}>
                                 {reasonKey}
                     </option>
-                ))}
+                ))} */}
+                    <option value="" disabled>-- Sélectionner un motif --</option>
+                        {Object.entries(CreditNoteReasonEnumDescription).map(([key, description]) => (
+                            <option key={key} value={key}>
+                                {description}
+                    </option>
+                        ))}
                 </Select>
+                {errors.reason && <p style={{ color: "red" }}>{errors.reason}</p>}
+
                     <button
                         // type="button" avoid the form to be automatically submitted
                         type="button"
                         onClick={openChoiceDialog}
                         className="bg-green-600 text-white px-4 py-2 rounded-md"
                     >
-                        Finaliser la facture 
+                        Finaliser l'avoir 
                     </button>
             </form>
             {/* Dialog to save as final version of CreditNote*/}

@@ -5,6 +5,7 @@ import { RadioGroup,Select} from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
 import { fetchCreditNote, updateCreditNote, deleteCreditNote} from "@/services/api/creditNoteService";
+import { updateCreditNoteSchema } from "@/validation/creditNoteValidation";
 
 // import toast, { Toaster } from 'react-hot-toast';
 
@@ -19,7 +20,7 @@ const CreditNote = ({ params }: { params: Promise<{ creditNoteNumber: string }>}
     })
 
     const [isOpen, setIsOpen] = useState(false);
-
+    const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
 
     // const which allows redirection
     const router = useRouter();
@@ -74,6 +75,26 @@ const CreditNote = ({ params }: { params: Promise<{ creditNoteNumber: string }>}
             if(!creditNote?.number){
                 return
             }
+
+            // Validation des données du formulaire en fonction du statut
+            const validationResult = updateCreditNoteSchema.safeParse(updateCreditNoteFormValues);
+                    
+            if (!validationResult.success) {
+                // Si la validation échoue, afficher les erreurs
+                console.error("Erreurs de validation :", validationResult.error.errors);
+                    // Transformer les erreurs Zod en un format utilisable dans le JSX
+                const formattedErrors = validationResult.error.flatten().fieldErrors;
+                    
+                // Afficher les erreurs dans la console pour débogage
+                console.log(formattedErrors);
+                                  
+                // Mettre à jour l'état avec les erreurs
+                setErrors(formattedErrors);
+                return;  // Ne pas soumettre si la validation échoue
+            }
+                    
+            // Delete former validation errors
+            setErrors({})
 
             const data = await updateCreditNote(creditNote.number,updateCreditNoteFormValues)
             console.log("data renvoyés : "+data)
@@ -160,6 +181,8 @@ const CreditNote = ({ params }: { params: Promise<{ creditNoteNumber: string }>}
                             });
                         }}
                         >
+                        {errors.isSettled && <p style={{ color: "red" }}>{errors.isSettled}</p>}
+
                         <div className="flex gap-4">
                             {/* Option Oui */}
                             <div 
@@ -208,6 +231,8 @@ const CreditNote = ({ params }: { params: Promise<{ creditNoteNumber: string }>}
                     </option>
                 ))}
                 </Select>
+                {errors.reason && <p style={{ color: "red" }}>{errors.reason}</p>}
+
                     <button
                         // type="button" avoid the form to be automatically submitted
                         type="button"

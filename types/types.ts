@@ -617,22 +617,22 @@ enum CreditNoteSettlementTypeEnum {
   COMPENSATION = "Compensation"
 }
 
-enum CreditNoteReasonEnum {
+enum CreditNoteReasonEnumDescription {
     MISTAKE = "Erreur de facturation",
-  CANCELLATION = "Remise exceptionnelle",
-  DISCOUNT = "Remise exceptionnelle",
-  COMPENSATION = "Compensation",
-  DUPLICATE = "Duplication de facture",
-  WRONG_CUSTOMER = "Mauvais client",
-  DEPOSIT_REFUND = "Remboursement d'acompte",
-  DEPOSIT_ADJUSTMENT = "Ajustement d'acompte"
+    CANCELLATION = "Remise exceptionnelle",
+    DISCOUNT = "Remise exceptionnelle",
+    COMPENSATION = "Compensation",
+    DUPLICATE = "Duplication de facture",
+    WRONG_CUSTOMER = "Mauvais client",
+    DEPOSIT_REFUND = "Remboursement d'acompte",
+    DEPOSIT_ADJUSTMENT = "Ajustement d'acompte"
 }
 
 interface CreditNoteType{
     id: string,
     number: string,
     issueDate: Date,
-    reason: CreditNoteReasonEnum,
+    reason: CreditNoteReasonEnumDescription,
     amount: number,
     settlementType?: CreditNoteSettlementTypeEnum,
     isSettled: boolean, 
@@ -643,7 +643,7 @@ interface CreditNoteType{
 interface CreditNoteForListType{
     id: string,
     number: string,
-    reason: CreditNoteReasonEnum,
+    reason: CreditNoteReasonEnumDescription,
     isSettled: boolean,
     bill: BillType,
     issueDate: Date
@@ -652,7 +652,7 @@ interface CreditNoteForListType{
 interface CreateCreditNoteFormValueType{
     amount: number;
     billId: string | null;
-    reason: string | null | CreditNoteReasonEnum;
+    reason: string | CreditNoteReasonEnumDescription;
 }
 
 interface UpdateCreditNoteFormValueType{

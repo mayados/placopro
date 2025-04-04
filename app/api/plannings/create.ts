@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
+import { createPlanningSchema } from "@/validation/planningValidation";
 
 
 // Asynchrone : waits for a promise
@@ -26,14 +27,26 @@ export async function POST(req: NextRequest) {
             }, { status: 401 });
         }
 
+        
+        // Validation avec Zod (sans 'status')
+        const parsedData = createPlanningSchema.safeParse(data);
+        if (!parsedData.success) {
+            console.error("Validation Zod échouée :", parsedData.error.format());
+                
+            return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
+        }
+                        
+        // Validation réussie, traiter les données avec le statut
+        const validatedData = parsedData.data;
+
         // We create the planning thanks to te datas retrieved
         const planning = await db.planning.create({
             data: {
-                task: title,
-                startTime: start,
-                endTime: end,
-                workSiteId: workSiteId,
-                clerkUserId: clerkUserId
+                task: validatedData.title,
+                startTime: validatedData.start,
+                endTime: validatedData.end,
+                workSiteId: validatedData.workSiteId,
+                clerkUserId: validatedData.clerkUserId
             },
         });
 

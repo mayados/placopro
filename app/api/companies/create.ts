@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
+import { createCompanySchema } from "@/validation/companyValidation";
 
 
 // Asynchrone : waits for a promise
@@ -56,6 +57,15 @@ export async function POST(req: NextRequest) {
             }, { status: 401 });
         }
 
+        const parsedData = createCompanySchema.safeParse(data);
+        if (!parsedData.success) {
+            console.error("Validation Zod échouée :", parsedData.error.format());
+                
+            return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
+        }
+                        
+        // Validation réussie, traiter les données avec le statut
+        const validatedData = parsedData.data;
         const slug = name.toLowerCase();
         console.log("Slug de l'entreprise : "+slug)
 
@@ -63,26 +73,26 @@ export async function POST(req: NextRequest) {
         // We create the company thanks to te datas retrieved
         const company = await db.company.create({
             data: {
-                name: name, 
-                type: type, 
-                phone: phone, 
-                mail: email, 
+                name: validatedData.name, 
+                type: validatedData.type, 
+                phone: validatedData.phone, 
+                mail: validatedData.email, 
                 /* JSON.Stringify has been used to send data in the body request. So every property is a 
                     string. Howerver prisma  is expecting capital property to be a float
                 */
-                capital: parseFloat(capital), 
-                rcs: rcs, 
-                siret: siret, 
-                ape: ape, 
-                intraCommunityVat: intraCommunityVat, 
-                addressNumber: addressNumber, 
-                road: road,  
-                additionnalAddress: additionnalAddress, 
-                postalCode: postalCode, 
-                city: city, 
-                decennialInsuranceName: insuranceName, 
-                insuranceContractNumber: insuranceContractNumber ,
-                aeraCoveredByInsurance: insuranceCoveredZone ,
+                capital: parseFloat(validatedData.capital), 
+                rcs: validatedData.rcs, 
+                siret: validatedData.siret, 
+                ape: validatedData.ape, 
+                intraCommunityVat: validatedData.intraCommunityVat, 
+                addressNumber: validatedData.addressNumber, 
+                road: validatedData.road,  
+                additionnalAddress: validatedData.additionnalAddress, 
+                postalCode: validatedData.postalCode, 
+                city: validatedData.city, 
+                decennialInsuranceName: validatedData.insuranceName, 
+                insuranceContractNumber: validatedData.insuranceContractNumber ,
+                aeraCoveredByInsurance: validatedData.insuranceCoveredZone ,
                 slug: slug,
             },
         });

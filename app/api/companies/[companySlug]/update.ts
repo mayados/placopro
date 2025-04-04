@@ -1,5 +1,7 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
+import { updateCompanySchema } from "@/validation/companyValidation";
+
 
 export async function PUT(req: NextRequest) {
   // Retrieve datas from request's body
@@ -27,6 +29,16 @@ export async function PUT(req: NextRequest) {
     } = data;
 
   try {
+
+      const parsedData = updateCompanySchema.safeParse(data);
+      if (!parsedData.success) {
+          console.error("Validation Zod échouée :", parsedData.error.format());
+                
+          return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
+      }
+                        
+      // Validation réussie, traiter les données avec le statut
+      const validatedData = parsedData.data;
 
     /* We have to verify which value(s) has/have changed
         So first, we retrieve the company thanks to the id (unique value which doesn't change)

@@ -2,6 +2,8 @@ import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
 import { slugify } from '@/lib/utils'
+import { createCreditNoteSchema } from "@/validation/creditNoteValidation";
+import { CreditNoteReasonEnum } from "@prisma/client";
 
 
 
@@ -25,6 +27,20 @@ export async function POST(req: NextRequest) {
                 message: "Utilisateur non authentifié." 
             }, { status: 401 });
         }
+
+        const { billId, ...dataWithoutProspectNumber } = data;
+        data.billId = billId;
+
+        // Validation avec Zod (sans 'status')
+        const parsedData = createCreditNoteSchema.safeParse(dataWithoutProspectNumber);
+        if (!parsedData.success) {
+            console.error("Validation Zod échouée :", parsedData.error.format());
+        
+            return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
+        }
+                
+        // Validation réussie, traiter les données avec le statut
+        const validatedData = parsedData.data;
 
               // Generate an unique and chronological number 
       const generateCreditNoteNumber = async (type = "credit-note") => {
@@ -68,9 +84,9 @@ export async function POST(req: NextRequest) {
         const creditNote = await db.creditNote.create({
             data: {
                 number: CreditNoteNumber,
-                amount: amount,
+                amount: validatedData.amount,
                 billId: billId,
-                reason: reason,
+                reason: validatedData.reason as CreditNoteReasonEnum,
                 issueDate: new Date()
             },
         });

@@ -5,6 +5,8 @@ import { Field,Input, Select } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import { createCompany } from "@/services/api/companyService";
 // import toast, { Toaster } from 'react-hot-toast';
+import { createCompanySchema } from "@/validation/companyValidation";
+
 
 const companyCreation = () => {
 
@@ -30,6 +32,8 @@ const companyCreation = () => {
     // Define options for select
     const typeChoices = ["PME","SAS","TPE","SARL"];
     const router = useRouter();
+    const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
+    
       
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -44,7 +48,25 @@ const companyCreation = () => {
 
         const handleCompanyCreation = async () => {
             try{
+            // Validation des données du formulaire en fonction du statut
+            const validationResult = createCompanySchema.safeParse(company);
 
+            if (!validationResult.success) {
+                // Si la validation échoue, afficher les erreurs
+                console.error("Erreurs de validation :", validationResult.error.errors);
+                    // Transformer les erreurs Zod en un format utilisable dans le JSX
+                const formattedErrors = validationResult.error.flatten().fieldErrors;
+
+                // Afficher les erreurs dans la console pour débogage
+                console.log(formattedErrors);
+              
+                // Mettre à jour l'état avec les erreurs
+                setErrors(formattedErrors);
+                return;  // Ne pas soumettre si la validation échoue
+            }
+
+            // Delete former validation errors
+            setErrors({})
     
                 const newCompany = await createCompany(company);
     
@@ -81,6 +103,8 @@ const companyCreation = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.name && <p style={{ color: "red" }}>{errors.name}</p>}
+
                 </div>
                 {/* type of company */}
                 <div>
@@ -96,6 +120,8 @@ const companyCreation = () => {
                             <option key={type} value={type}>{type}</option>
                         ))}
                     </Select>
+                    {errors.type && <p style={{ color: "red" }}>{errors.type}</p>}
+
                 </div>
                 {/* phone */}
                 <div>
@@ -106,6 +132,8 @@ const companyCreation = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.phone && <p style={{ color: "red" }}>{errors.phone}</p>}
+
                 </div>
                 {/* mail */}
                 <div>
@@ -116,6 +144,8 @@ const companyCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.email && <p style={{ color: "red" }}>{errors.email}</p>}
+
                 </div>
                 {/* Company's capital */}
                 <div>
@@ -126,6 +156,8 @@ const companyCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.capital && <p style={{ color: "red" }}>{errors.capital}</p>}
+
                 </div>
                 {/* Company's RCS */}
                 <div>
@@ -136,6 +168,8 @@ const companyCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.rcs && <p style={{ color: "red" }}>{errors.rcs}</p>}
+
                 </div>
                 {/* SIRET number */}
                 <div>
@@ -146,6 +180,8 @@ const companyCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.siret && <p style={{ color: "red" }}>{errors.siret}</p>}
+
                 </div>
                 {/* APE code */}
                 <div>
@@ -156,6 +192,8 @@ const companyCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.ape && <p style={{ color: "red" }}>{errors.ape}</p>}
+
                 </div>
                 {/* Intra community VAT */}
                 <div>
@@ -166,6 +204,8 @@ const companyCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.intraCommunityVat && <p style={{ color: "red" }}>{errors.intraCommunityVat}</p>}
+
                 </div>
                 {/* Address number */}
                 <div>
@@ -176,6 +216,8 @@ const companyCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.addressNumber && <p style={{ color: "red" }}>{errors.addressNumber}</p>}
+
                 </div>
                 {/* Company's road */}
                 <div>
@@ -186,6 +228,8 @@ const companyCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.road && <p style={{ color: "red" }}>{errors.road}</p>}
+
                 </div>
                 {/* Additionnal address */}
                 <div>
@@ -196,6 +240,8 @@ const companyCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.additionnalAddress && <p style={{ color: "red" }}>{errors.additionalAddress}</p>}
+
                 </div>
                 {/* Company's postal code */}
                 <div>
@@ -206,6 +252,8 @@ const companyCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.postalCode && <p style={{ color: "red" }}>{errors.postalCode}</p>}
+
                 </div>
                 {/* Company's city */}
                 <div>
@@ -216,6 +264,8 @@ const companyCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.city && <p style={{ color: "red" }}>{errors.city}</p>}
+
                 </div>
                 {/* Decennial insurance name */}
                 <div>
@@ -226,6 +276,8 @@ const companyCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.insuranceName && <p style={{ color: "red" }}>{errors.insuranceName}</p>}
+
                 </div>
                 {/* Insurance contract number */}
                 <div>
@@ -236,6 +288,8 @@ const companyCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.insuranceContractNumber && <p style={{ color: "red" }}>{errors.insuranceContractNumber}</p>}
+
                 </div>
                 {/* Aera covered by insurance */}
                 <div>
@@ -246,6 +300,8 @@ const companyCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.insuranceCoveredZone && <p style={{ color: "red" }}>{errors.insuranceCoveredZone}</p>}
+
                 </div>
                 <button type="submit">Créer</button>
             </form>

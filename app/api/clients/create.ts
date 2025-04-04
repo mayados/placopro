@@ -47,11 +47,9 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
         }
                 
-                        // Validation réussie, traiter les données avec le statut
-                        const validatedData = parsedData.data;
+        // Validation réussie, traiter les données avec le statut
+        const validatedData = parsedData.data;
                 
-                        // Ajoute le statut aux données validées
-                        data.status = status;
 
         const clientNumber = generateUniqueClientNumber();
         const slug = slugify(validatedData.name+" "+validatedData.firstname+" "+clientNumber)
