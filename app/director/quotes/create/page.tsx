@@ -11,6 +11,7 @@ import { fetchUnits } from "@/services/api/unitService";
 import { createQuote } from "@/services/api/quoteService";
 import { fetchSuggestions } from "@/services/api/suggestionService";
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
+import { createQuoteDraftSchema, createQuoteFinalSchema } from "@/validation/quoteValidation";
 
 // import toast, { Toaster } from 'react-hot-toast';
 
@@ -68,8 +69,8 @@ const CreateQuote = () => {
     const isQuoteFreeChoices = ["Oui","Non"];
     const hasRightOfWithdrawalChoices = ["Oui","Non"];
     const [isOpen, setIsOpen] = useState(false);
+    const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
     
-
 
 
     useEffect(() => {
@@ -226,6 +227,29 @@ const CreateQuote = () => {
                 ...quote,
                 status,
             };
+
+            // Choisir le schéma de validation en fonction du statut
+            const schema = statusReady === "Ready" ? createQuoteFinalSchema : createQuoteDraftSchema;
+            
+            // Validation des données du formulaire en fonction du statut
+            const validationResult = schema.safeParse(createQuoteWithStatus);
+            
+            if (!validationResult.success) {
+                // Si la validation échoue, afficher les erreurs
+                console.error("Erreurs de validation :", validationResult.error.errors);
+                    // Transformer les erreurs Zod en un format utilisable dans le JSX
+                const formattedErrors = validationResult.error.flatten().fieldErrors;
+            
+                // Afficher les erreurs dans la console pour débogage
+                console.log(formattedErrors);
+                          
+                // Mettre à jour l'état avec les erreurs
+                setErrors(formattedErrors);
+                return;  // Ne pas soumettre si la validation échoue
+            }
+            
+            // Delete former validation errors
+            setErrors({})
             const newQuote = await createQuote(createQuoteWithStatus);
     
             console.log("Devis créé avec succès :", newQuote);
@@ -349,7 +373,9 @@ const CreateQuote = () => {
                             onChange={handleInputChange}
                         >
                         </Input>
-                    </Field>    
+                    </Field>   
+                    {errors.clientId && <p style={{ color: "red" }}>{errors.clientId}</p>}
+ 
                     {clientSuggestions && (
                         <ul className="bg-gray-700 rounded-md text-white">
                             {clientSuggestions.map((suggestion) => (
@@ -373,7 +399,9 @@ const CreateQuote = () => {
                             onChange={handleInputChange}
                         >
                         </Input>
-                    </Field>    
+                    </Field>  
+                    {errors.workSiteId && <p style={{ color: "red" }}>{errors.workSiteId}</p>}
+  
                     {workSiteSuggestions && (
                         <ul className="bg-gray-700 rounded-md text-white">
                             {workSiteSuggestions.map((suggestion) => (
@@ -397,6 +425,8 @@ const CreateQuote = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.natureOfWork && <p style={{ color: "red" }}>{errors.natureOfWork}</p>}
+
                 </div>
                 {/* Work description */}
                 <div>
@@ -407,6 +437,8 @@ const CreateQuote = () => {
                         >
                         </Textarea>
                     </Field>
+                    {errors.description && <p style={{ color: "red" }}>{errors.description}</p>}
+
                 </div>
                 {/* Work start date */}
                 <div>
@@ -417,6 +449,8 @@ const CreateQuote = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.workStartDate && <p style={{ color: "red" }}>{errors.workStartDate}</p>}
+
                 </div>
                 {/* Estimated work end date */}
                 <div>
@@ -427,6 +461,8 @@ const CreateQuote = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.estimatedWorkEndDate && <p style={{ color: "red" }}>{errors.estimatedWorkEndDate}</p>}
+
                 </div>
                 {/* Estimated work duration */}
                 <div>
@@ -437,6 +473,8 @@ const CreateQuote = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.estimatedWorkDuration && <p style={{ color: "red" }}>{errors.estimatedWorkDuration}</p>}
+
                 </div>
                 {/* Deposit amount */}
                 <div>
@@ -447,6 +485,8 @@ const CreateQuote = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.depositAmount && <p style={{ color: "red" }}>{errors.depositAmount}</p>}
+
                 </div>
             <h2>Services</h2>
             {quote.services.map((service, index) => (
@@ -551,6 +591,8 @@ const CreateQuote = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.validityEndDate && <p style={{ color: "red" }}>{errors.validityEndDate}</p>}
+
                 </div>
                 <div>
                     <label htmlFor="discountAmount">Montant de la remise, en €</label>
@@ -560,6 +602,8 @@ const CreateQuote = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.discountAmount && <p style={{ color: "red" }}>{errors.discountAmount}</p>}
+
                 </div>
                 <Select
                     name="discountReason"
@@ -572,6 +616,8 @@ const CreateQuote = () => {
                         <option key={discountReasonChoices} value={discountReasonChoices}>{discountReasonChoices}</option>
                     ))}
                 </Select>
+                {errors.discountReason && <p style={{ color: "red" }}>{errors.discountReason}</p>}
+
                 {/* payment Terms */}
                 <div>
                     <label htmlFor="paymentTerms">Conditions de paiement</label>
@@ -582,6 +628,8 @@ const CreateQuote = () => {
                         >
                         </Textarea>
                     </Field>
+                    {errors.paymentTerms && <p style={{ color: "red" }}>{errors.paymentTerms}</p>}
+
                 </div>
                 {/* Payment delay */}
                 <div>
@@ -592,6 +640,8 @@ const CreateQuote = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.paymentDelay && <p style={{ color: "red" }}>{errors.paymentDelay}</p>}
+
                 </div>
                 {/* late payment penalities */}
                  <div>
@@ -602,6 +652,8 @@ const CreateQuote = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.latePaymentPenalities && <p style={{ color: "red" }}>{errors.latePaymentPenalities}</p>}
+
                 </div>
                 {/* travel costs */}
                 <div>
@@ -612,6 +664,8 @@ const CreateQuote = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.travelCosts && <p style={{ color: "red" }}>{errors.travelCosts}</p>}
+
                 </div>
                 <Select
                     name="travelCostsType"
@@ -624,6 +678,8 @@ const CreateQuote = () => {
                         <option key={travelCostsTypeChoices} value={travelCostsTypeChoices}>{travelCostsTypeChoices}</option>
                     ))}
                 </Select>
+                {errors.travelCostsType && <p style={{ color: "red" }}>{errors.travelCostsType}</p>}
+
                 {/* recovery fees */}
                 <div>
                     <label htmlFor="recoveryFees">Frais forfaitaires de recouvrement (HT), en €</label>
@@ -633,6 +689,8 @@ const CreateQuote = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.recoveryFees && <p style={{ color: "red" }}>{errors.recoveryFees}</p>}
+
                 </div>
                 {/* has right of Withdrawal ? */}
                 <Field>
@@ -650,6 +708,8 @@ const CreateQuote = () => {
                         ))}
                     </RadioGroup>
                 </Field>
+                {errors.hasRightOfWithDrawal && <p style={{ color: "red" }}>{errors.hasRightOfWithDrawal}</p>}
+
                 {/* In the case of hasRightOfWithdrawal is true, display form field : Withdrawal period */}
                 <div>
                     <label htmlFor="withdrawalPeriod">Délai de rétractation (en jours)</label>
@@ -659,6 +719,8 @@ const CreateQuote = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.withDrawalPeriod && <p style={{ color: "red" }}>{errors.withDrawalPeriod}</p>}
+
                 </div>
                 <button 
                     className="bg-red-400"

@@ -6,6 +6,7 @@ import DownloadPDF from "@/components/DownloadPDF";
 import { Field, Input, Label, Legend, Radio, RadioGroup, Select } from "@headlessui/react";
 import { fetchQuote, updateClassicQuote } from "@/services/api/quoteService";
 import { fetchCompany } from "@/services/api/companyService";
+import { updateClassicQuoteSchema } from "@/validation/quoteValidation";
 
 // import toast, { Toaster } from 'react-hot-toast';
 // import { useRouter } from "next/navigation";
@@ -24,6 +25,7 @@ const Quote = ({ params }: { params: Promise<{ quoteNumber: string }>}) => {
         isSignedByClient: null,
         signatureDate: null,
     })
+    const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
 
     
         useEffect(() => {
@@ -90,6 +92,26 @@ const Quote = ({ params }: { params: Promise<{ quoteNumber: string }>}) => {
             }        
         
             try{
+
+                // Validation des données du formulaire en fonction du statut
+                const validationResult = updateClassicQuoteSchema.safeParse(formValues);
+
+                if (!validationResult.success) {
+                    // Si la validation échoue, afficher les erreurs
+                    console.error("Erreurs de validation :", validationResult.error.errors);
+                        // Transformer les erreurs Zod en un format utilisable dans le JSX
+                    const formattedErrors = validationResult.error.flatten().fieldErrors;
+
+                    // Afficher les erreurs dans la console pour débogage
+                    console.log(formattedErrors);
+                
+                    // Mettre à jour l'état avec les erreurs
+                    setErrors(formattedErrors);
+                    return;  // Ne pas soumettre si la validation échoue
+                }
+
+                // Delete former validation errors
+                setErrors({})
 
                 const data = await updateClassicQuote(quote.number,formValues)
                 const updatedQuote = data;

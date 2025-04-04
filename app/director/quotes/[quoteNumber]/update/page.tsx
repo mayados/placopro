@@ -12,6 +12,7 @@ import { fetchQuote, updateDraftQuote } from "@/services/api/quoteService";
 import { fetchVatRates } from "@/services/api/vatRateService";
 import { fetchUnits } from "@/services/api/unitService";
 import { fetchSuggestions } from "@/services/api/suggestionService";
+import { updateDraftQuoteSchema, updateDraftFinalQuoteSchema } from "@/validation/quoteValidation";
 
 // import toast, { Toaster } from 'react-hot-toast';
 
@@ -57,6 +58,8 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
     // Allows to know if a quote is registered as a draft or ready (to be send)
     // const [status, setStatus] = useState<"Draft" | "Ready">("Draft");
     const [isOpen, setIsOpen] = useState(false);
+    const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
+    
 
 
     // cont which allows redirection
@@ -271,6 +274,29 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
             if(!quote?.number){
                 return
             }
+
+            // Choisir le schéma de validation en fonction du statut
+            const schema = statusReady === "Ready" ? updateDraftFinalQuoteSchema : updateDraftQuoteSchema;
+
+            // Validation des données du formulaire en fonction du statut
+            const validationResult = schema.safeParse(updatedQuoteWithStatus);
+
+            if (!validationResult.success) {
+                // Si la validation échoue, afficher les erreurs
+                console.error("Erreurs de validation :", validationResult.error.errors);
+                    // Transformer les erreurs Zod en un format utilisable dans le JSX
+                const formattedErrors = validationResult.error.flatten().fieldErrors;
+
+                // Afficher les erreurs dans la console pour débogage
+                console.log(formattedErrors);
+              
+                // Mettre à jour l'état avec les erreurs
+                setErrors(formattedErrors);
+                return;  // Ne pas soumettre si la validation échoue
+            }
+
+            // Delete former validation errors
+            setErrors({})
 
             const data = await updateDraftQuote(quote?.number, updatedQuoteWithStatus)
             console.log("data renvoyés : "+data)
@@ -516,6 +542,8 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                         >
                         </Input>
                     </Field>    
+                    {errors.clientId && <p style={{ color: "red" }}>{errors.clientId}</p>}
+
                     {clientSuggestions && (
                         <ul className="bg-gray-700 rounded-md text-white">
                             {clientSuggestions.map((suggestion) => (
@@ -542,7 +570,9 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                             onChange={handleInputChange}
                         >
                         </Input>
-                    </Field>    
+                    </Field>   
+                    {errors.workSiteId && <p style={{ color: "red" }}>{errors.workSiteId}</p>}
+ 
                     {workSiteSuggestions && (
                         <ul className="bg-gray-700 rounded-md text-white">
                             {workSiteSuggestions.map((suggestion) => (
@@ -569,6 +599,8 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                         >
                         </Input>
                     </Field>
+                    {errors.natureOfWork && <p style={{ color: "red" }}>{errors.natureOfWork}</p>}
+
                 </div>
                 {/* Work description */}
                 <div>
@@ -582,6 +614,8 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                         >
                         </Textarea>
                     </Field>
+                    {errors.description && <p style={{ color: "red" }}>{errors.description}</p>}
+
                 </div>
                 {/* Work start date */}
                 <div>
@@ -593,6 +627,8 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                         >
                         </Input>
                     </Field>
+                    {errors.workStartDate && <p style={{ color: "red" }}>{errors.workStartDate}</p>}
+
                 </div>
                 {/* Estimated work end date */}
                 <div>
@@ -604,6 +640,8 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                         >
                         </Input>
                     </Field>
+                    {errors.estimatedWorkEndDate && <p style={{ color: "red" }}>{errors.estimatedWorkEndDate}</p>}
+
                 </div>
                 {/* Estimated work duration */}
                 <div>
@@ -618,6 +656,8 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                         >
                         </Input>
                     </Field>
+                    {errors.estimatedWorkDuration && <p style={{ color: "red" }}>{errors.estimatedWorkDuration}</p>}
+
                 </div>
                 {/* Deposit amount */}
                 <div>
@@ -632,6 +672,8 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                         >
                         </Input>
                     </Field>
+                    {errors.depositAmount && <p style={{ color: "red" }}>{errors.depositAmount}</p>}
+
                 </div>
                 <div>
                     <label htmlFor="discountAmount">Montant de la remise, en €</label>
@@ -645,6 +687,8 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                         >
                         </Input>
                     </Field>
+                    {errors.discountAmount && <p style={{ color: "red" }}>{errors.discountAmount}</p>}
+
                 </div>
                 <Select
                     name="discountReason"
@@ -660,6 +704,8 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                         <option key={discountReasonChoices} value={discountReasonChoices}>{discountReasonChoices}</option>
                     ))}
                 </Select>
+                {errors.discountReason && <p style={{ color: "red" }}>{errors.discountReason}</p>}
+
             <h2>Services</h2>
             {/* Services retrieved form database (can't be updated, just unlinked from this quote) */}
             {quote.services.map((service, index) => (
@@ -839,6 +885,8 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                         >
                         </Input>
                     </Field>
+                    {errors.validityEndDate && <p style={{ color: "red" }}>{errors.validityEndDate}</p>}
+
                 </div>
                 {/* payment Terms */}
                 <div>
@@ -852,6 +900,8 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                         >
                         </Textarea>
                     </Field>
+                    {errors.paymentTerms && <p style={{ color: "red" }}>{errors.paymentTerms}</p>}
+
                 </div>
                 {/* Payment delay */}
                 <div>
@@ -865,6 +915,8 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                         >
                         </Input>
                     </Field>
+                    {errors.paymentDelay && <p style={{ color: "red" }}>{errors.paymentDelay}</p>}
+
                 </div>
                 {/* late payment penalities */}
                  <div>
@@ -878,6 +930,8 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                         >
                         </Input>
                     </Field>
+                    {errors.latePaymentPenalities && <p style={{ color: "red" }}>{errors.latePaymentPenalities}</p>}
+
                 </div>
                 {/* travel costs */}
                 <div>
@@ -891,6 +945,8 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                         >
                         </Input>
                     </Field>
+                    {errors.travelCosts && <p style={{ color: "red" }}>{errors.travelCosts}</p>}
+
                 </div>
                 <Select
                     name="travelCostsType"
@@ -905,6 +961,8 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                         <option key={travelCostsTypeChoices} value={travelCostsTypeChoices}>{travelCostsTypeChoices}</option>
                     ))}
                 </Select>
+                {errors.travelCostsType && <p style={{ color: "red" }}>{errors.travelCostsType}</p>}
+
                 {/* recovery fees */}
                 <div>
                     <label htmlFor="recoveryFee">Frais forfaitaires de recouvrement (HT), en €</label>
@@ -917,6 +975,8 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                         >
                         </Input>
                     </Field>
+                    {errors.recoveryFee && <p style={{ color: "red" }}>{errors.recoveryFee}</p>}
+
                 </div>
                 {/* has right of Withdrawal ? */}
                 <Field>
@@ -935,6 +995,8 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                         ))}
                     </RadioGroup>
                 </Field>
+                {errors.hasRightOfWithrawal && <p style={{ color: "red" }}>{errors.hasRightOfWithDrawal}</p>}
+
                 {/* In the case of hasRightOfWithdrawal is true, display form field : Withdrawal period */}
                 <div>
                     <label htmlFor="withdrawalPeriod">Délai de rétractation (en jours)</label>
@@ -947,6 +1009,8 @@ const UpdatedDraftQuote = ({ params }: { params: Promise<{ quoteNumber: string }
                         >
                         </Input>
                     </Field>
+                    {errors.withdrawalPeriod && <p style={{ color: "red" }}>{errors.withdrawalPeriod}</p>}
+
                 </div>
 
                 <button 
