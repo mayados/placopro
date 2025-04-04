@@ -22,9 +22,13 @@ const createJestConfig = nextJest({
 
 const customJestConfig = {
   testEnvironment: "jest-environment-jsdom",
+  // Load jest.setup.js before each test
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],  
   transform: {
     "^.+\\.(js|jsx|ts|tsx)$": ["babel-jest", { presets: ["next/babel"] }]
   }
 };
 
 module.exports = createJestConfig(customJestConfig);
+
+
