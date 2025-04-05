@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
 import { slugify } from '@/lib/utils'
+import { createWorkSiteSchema } from "@/validation/workSiteValidation";
 
 
 
@@ -45,14 +46,25 @@ export async function POST(req: NextRequest) {
             }, { status: 401 });
         }
 
-        const slug = slugify(title);
+        // Validation avec Zod (sans 'status')
+        const parsedData = createWorkSiteSchema.safeParse(data);
+        if (!parsedData.success) {
+            console.error("Validation Zod échouée :", parsedData.error.format());
+                
+            return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
+        }
+                        
+        // Validation réussie, traiter les données avec le statut
+        const validatedData = parsedData.data;
+
+        const slug = slugify(validatedData.title);
 
         // We create the company thanks to te datas retrieved
         const workSite = await db.workSite.create({
             data: {
-                title: title,
-                description: description,
-                beginsThe: new Date(beginsThe),
+                title: validatedData.title,
+                description: validatedData.description,
+                beginsThe: validatedData.beginsThe ? new Date(validatedData.beginsThe) : null,
                 status: status,
                 completionDate: null,
                 road: road,

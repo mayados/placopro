@@ -3,7 +3,7 @@ model WorkSite{
     title String @unique
     slug String @unique
     description String
-    beginsThe DateTime
+    beginsThe DateTime?
     status String
     completionDate DateTime?
     // Comme cela faisait des relation OneToOne, on met directement dans l’entité concernée les différents champs pour l’adresse
@@ -12,7 +12,7 @@ model WorkSite{
     addressNumber String
     postalCode String
     city String
-    additionalAddress String
+    additionalAddress String?
 
 
     // One worksite is linked to 1 Client

@@ -157,7 +157,7 @@ interface WorkSiteTypeWithoutQuotesAndPlannings{
     title: string;
     slug: string;
     description: string;
-    beginsThe: Date;
+    beginsThe: Date | null;
     status: string;
     completionDate: Date | null;
     road: string;

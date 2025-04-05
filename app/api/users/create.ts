@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { clerkClient, EmailAddress, User} from "@clerk/express";
+import { createUserSchema } from "@/validation/userValidation";
+
 
 export async function POST(req: NextRequest) {
   // Retrieve datas from request's body
@@ -13,36 +15,48 @@ export async function POST(req: NextRequest) {
 
   try {
 
-    console.log("le prénom : "+firstName)
-    console.log("le nom : "+lastName)
-    console.log("le mail : "+email)
-    console.log("le role : "+role)
+    
+    // Validation avec Zod 
+    const parsedData = createUserSchema.safeParse(data);
+    if (!parsedData.success) {
+        console.error("Validation Zod échouée :", parsedData.error.format());
+            
+        return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
+    }
+                    
+    // Validation réussie, traiter les données avec le statut
+    const validatedData = parsedData.data;
+
+    // console.log("le prénom : "+firstName)
+    // console.log("le nom : "+lastName)
+    // console.log("le mail : "+email)
+    // console.log("le role : "+role)
 
     if (!email) {
       throw new Error("L'adresse email est requise.");
     }
 
-    const slug = lastName.toLowerCase()+"-"+firstName.toLowerCase();
+    const slug = validatedData.lastName.toLowerCase()+"-"+validatedData.firstName.toLowerCase();
     console.log("le slug : "+slug)
 
 
     const userParameters = {
-        firstName: firstName,
-        lastName: lastName,
-        emailAddress: email,
-        publicMetadata: {role: role, slug: slug},
+        firstName: validatedData.firstName,
+        lastName: validatedData.lastName,
+        emailAddress: validatedData.email,
+        publicMetadata: {role: validatedData.role, slug: slug},
         skipPasswordRequirement: true,
     }
 
     // await clerkClient.users.createUser(userParameters)
     const user = await clerkClient.users.createUser({
-        firstName: firstName,
-        lastName: lastName,
-        emailAddress: [email],
+        firstName: validatedData.firstName,
+        lastName: validatedData.lastName,
+        emailAddress: [validatedData.email],
         // Password is not required during creation. The user will be able to set one during his first connexion
         skipPasswordRequirement: true,
         publicMetadata: {
-          role: role,
+          role: validatedData.role,
           slug: slug,
         },
       });

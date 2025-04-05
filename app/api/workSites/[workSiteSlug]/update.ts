@@ -1,6 +1,8 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { slugify } from '@/lib/utils'
+import { updateWorkSiteSchema } from "@/validation/workSiteValidation";
+
 
 export async function PUT(req: NextRequest) {
   // Retrieve datas from request's body
@@ -8,7 +10,7 @@ export async function PUT(req: NextRequest) {
   const { 
         id,
         title,
-        slug,
+        // slug,
         description,
         beginsThe,
         status,
@@ -22,7 +24,23 @@ export async function PUT(req: NextRequest) {
     } = data;
 
   try {
-
+    // Exclure 'id' du schéma de validation Zod
+    const { id, ...dataWithoutId } = data;
+    
+            
+    // Validation avec Zod (sans 'status')
+    const parsedData = updateWorkSiteSchema.safeParse(dataWithoutId);
+    if (!parsedData.success) {
+        console.error("Validation Zod échouée :", parsedData.error.format());
+    
+        return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
+    }
+            
+    // Validation réussie, traiter les données avec le statut
+    const validatedData = parsedData.data;
+            
+    // Ajoute le id aux données validées
+    data.id = id;
     console.log("le client est : "+client.name)
 
     const clientData = await db.client.findUnique({
@@ -63,11 +81,11 @@ export async function PUT(req: NextRequest) {
             slug: originalWorkSite.slug,
             title: originalWorkSite.title, 
             description: originalWorkSite.description,
-            beginsThe: originalWorkSite.beginsThe,
+            beginsThe: originalWorkSite.beginsThe ?? null,
             status: originalWorkSite.status,
             completionDate: originalWorkSite.completionDate,
             road: originalWorkSite.road,  
-            additionnalAddress: originalWorkSite.additionalAddress, 
+            additionnalAddress: originalWorkSite.additionalAddress ?? "", 
             postalCode: originalWorkSite.postalCode, 
             city: originalWorkSite.city, 
             client: originalWorkSite.client,
@@ -76,19 +94,19 @@ export async function PUT(req: NextRequest) {
 
         // We verify if the values have changed by comparing original values and values retrieved from the form
         // If it's the case, we replace const workSite's values by values retrieve from the forms
-        if (originalWorkSite.title !== title) workSite.title = title;
-        if (originalWorkSite.title !== title) workSite.slug = slugify(title);
-        if (originalWorkSite.description !== description) workSite.description = description;
-        if (originalWorkSite.beginsThe !== beginsThe) workSite.beginsThe = beginsThe;
-        if (originalWorkSite.status !== status) workSite.status = status;
-        if (originalWorkSite.completionDate !== completionDate) workSite.completionDate = completionDate;
-        if (originalWorkSite.road !== road) workSite.road = road;
-        if (originalWorkSite.additionalAddress !== additionalAddress) workSite.additionnalAddress = additionalAddress;
-        if (originalWorkSite.postalCode !== postalCode) workSite.postalCode = postalCode;
-        if (originalWorkSite.addressNumber !== addressNumber) workSite.addressNumber = addressNumber;
-        if (originalWorkSite.road !== road) workSite.road = road;
-        if (originalWorkSite.postalCode !== postalCode) workSite.postalCode = postalCode;
-        if (originalWorkSite.city !== city) workSite.city = city;
+        if (originalWorkSite.title !== validatedData.title) workSite.title = validatedData.title;
+        if (originalWorkSite.title !== title) workSite.slug = slugify(validatedData.title);
+        if (originalWorkSite.description !== validatedData.description) workSite.description = validatedData.description;
+        if (originalWorkSite.beginsThe !== validatedData.beginsThe) workSite.beginsThe = validatedData.beginsThe;
+        if (originalWorkSite.status !== validatedData.status) workSite.status = validatedData.status;
+        if (originalWorkSite.completionDate !== validatedData.completionDate) workSite.completionDate = validatedData.completionDate;
+        if (originalWorkSite.road !== validatedData.road) workSite.road = validatedData.road;
+        if (originalWorkSite.additionalAddress !== validatedData.additionalAddress) workSite.additionnalAddress = validatedData.additionalAddress;
+        if (originalWorkSite.postalCode !== validatedData.postalCode) workSite.postalCode = validatedData.postalCode;
+        if (originalWorkSite.addressNumber !== validatedData.addressNumber) workSite.addressNumber = validatedData.addressNumber;
+        if (originalWorkSite.road !== validatedData.road) workSite.road = validatedData.road;
+        // if (originalWorkSite.postalCode !== postalCode) workSite.postalCode = postalCode;
+        if (originalWorkSite.city !== validatedData.city) workSite.city = validatedData.city;
         if (originalWorkSite.client.id !== client.id) workSite.client = clientData;
 
     

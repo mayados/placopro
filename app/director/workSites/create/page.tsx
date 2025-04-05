@@ -5,6 +5,8 @@ import { Field,Input, Select, Textarea } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import { fetchSuggestions } from "@/services/api/suggestionService";
 import { createWorkSite } from "@/services/api/workSiteService";
+import { createWorkSiteSchema } from "@/validation/workSiteValidation";
+
 // import toast, { Toaster } from 'react-hot-toast';
 
 const CreateWorkSite = () => {
@@ -27,6 +29,7 @@ const CreateWorkSite = () => {
     const [suggestions, setSuggestions] = useState<ClientSuggestionType[] | null>(null)
     // text visible in the client field
     const [clientInput, setClientInput] = useState(""); 
+    const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
 
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -104,6 +107,27 @@ const CreateWorkSite = () => {
                 console.log("complément d'adresse : "+workSite.additionnalAddress)
                 console.log("ClientId : "+workSite.clientId)
     
+
+                // Validation des données du formulaire en fonction du statut
+                const validationResult = createWorkSiteSchema.safeParse(workSite);
+
+                if (!validationResult.success) {
+                    // Si la validation échoue, afficher les erreurs
+                    console.error("Erreurs de validation :", validationResult.error.errors);
+                        // Transformer les erreurs Zod en un format utilisable dans le JSX
+                    const formattedErrors = validationResult.error.flatten().fieldErrors;
+
+                    // Afficher les erreurs dans la console pour débogage
+                    console.log(formattedErrors);
+                
+                    // Mettre à jour l'état avec les erreurs
+                    setErrors(formattedErrors);
+                    return;  // Ne pas soumettre si la validation échoue
+                }
+
+                // Delete former validation errors
+                setErrors({})
+
                 const newWorkSite = await createWorkSite(workSite);
   
                 try {
@@ -140,16 +164,20 @@ const CreateWorkSite = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.title && <p style={{ color: "red" }}>{errors.title}</p>}
+
                 </div>
                 {/* WorkSite description */}
                 <div>
                     <label htmlFor="description">Description</label>
                     <Field className="w-full">
-                    <Textarea name="description" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                        onChange={handleInputChange}
-                    >
-                    </Textarea>
+                        <Textarea name="description" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                            onChange={handleInputChange}
+                        >
+                        </Textarea>
                     </Field>
+                    {errors.description && <p style={{ color: "red" }}>{errors.description}</p>}
+
                 </div>
                 {/* WorkSite beginning */}
                 <div>
@@ -160,6 +188,8 @@ const CreateWorkSite = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.beginsThe && <p style={{ color: "red" }}>{errors.beginsThe}</p>}
+
                 </div>
                 {/* type of company */}
                 <div>
@@ -175,6 +205,8 @@ const CreateWorkSite = () => {
                             <option key={status} value={status}>{status}</option>
                         ))}
                     </Select>
+                    {errors.status && <p style={{ color: "red" }}>{errors.status}</p>}
+
                 </div>
                 {/* WorkSite addressNumber */}
                 <div>
@@ -185,6 +217,8 @@ const CreateWorkSite = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.addressNumber && <p style={{ color: "red" }}>{errors.addressNumber}</p>}
+
                 </div>
                 {/* WorkSite road */}
                 <div>
@@ -195,6 +229,8 @@ const CreateWorkSite = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.road && <p style={{ color: "red" }}>{errors.road}</p>}
+
                 </div>
                 {/* WorkSite additionnalAddress */}
                 <div>
@@ -205,6 +241,8 @@ const CreateWorkSite = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.additionnalAddress && <p style={{ color: "red" }}>{errors.additionnalAddress}</p>}
+
                 </div>
                 {/* WorkSite postalCode */}
                 <div>
@@ -215,6 +253,8 @@ const CreateWorkSite = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.postalCode && <p style={{ color: "red" }}>{errors.postalCode}</p>}
+
                 </div>
                 {/* WorkSite city */}
                 <div>
@@ -225,6 +265,8 @@ const CreateWorkSite = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.city && <p style={{ color: "red" }}>{errors.citys}</p>}
+
                 </div>
                 {/* Client who has the workSite */}
                 <div>
@@ -235,6 +277,8 @@ const CreateWorkSite = () => {
                         >
                         </Input>
                     </Field>    
+                    {errors.clientId && <p style={{ color: "red" }}>{errors.clientId}</p>}
+
                     {suggestions && (
                         <ul className="bg-gray-700 rounded-md text-white">
                             {suggestions.map((suggestion) => (

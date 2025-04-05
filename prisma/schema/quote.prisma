@@ -5,11 +5,11 @@ model Quote{
     // Date d’émission
     issueDate DateTime
     // Date limite de validité du devis
-    validityEndDate DateTime 
+    validityEndDate DateTime? 
     // Nature des travaux
     natureOfWork String
     // Description des travaux
-    description String 
+    description String? 
     // Date prévue de début des travaux
     workStartDate DateTime? 
     // Date prévue de fin des travaux
@@ -31,7 +31,8 @@ model Quote{
     // prix HT
     priceHT Float
     // Frais de déplacement
-    travelCosts Float 
+    travelCosts Float @default(0)
+
     // Type de frais de déplacement (forfait unique / journalier...)
     travelCostsType String?
     // Taux horaire de la main-d'œuvre
@@ -39,7 +40,7 @@ model Quote{
     // Conditions de paiement
     paymentTerms String 
     // Délais de paiement (ex. : 30 jours)
-    paymentDelay Int 
+    paymentDelay Int @default(0)
     // Pénalités de retard 
     latePaymentPenalties Float? 
     // Frais forfaitaires de recouvrement

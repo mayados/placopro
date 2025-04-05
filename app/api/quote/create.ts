@@ -278,10 +278,10 @@ export async function POST(req: NextRequest) {
                 depositAmount: validatedData.depositAmount,
                 discountAmount: validatedData.discountAmount,
                 discountReason: validatedData.discountReason,
-                travelCosts: validatedData.travelCosts, 
+                travelCosts: validatedData.travelCosts ?? 0, 
                 hourlyLaborRate: 0, 
-                paymentDelay: validatedData.paymentDelay,
-                paymentTerms: validatedData.paymentTerms,
+                paymentDelay: validatedData.paymentDelay ?? 0,
+                paymentTerms: validatedData.paymentTerms ?? "",
                 latePaymentPenalties: validatedData.latePaymentPenalities,
                 recoveryFee: validatedData.recoveryFees,
                 isSignedByClient: false,
@@ -362,15 +362,15 @@ export async function POST(req: NextRequest) {
       )
 
       // add travelCosts to totalHtQuote (which contains services costs HT)
-      totalHtQuote += validatedData.travelCosts
-      totalHtQuote-= validatedData.discountAmount
+      totalHtQuote += validatedData.travelCosts ?? 0
+      totalHtQuote-= validatedData.discountAmount ?? 0
       // Count vatAmount for travelCosts and add the result to vatAmountQuote
-      const vatAmountForTravelCosts = validatedData.travelCosts * (20 / 100);
+      const vatAmountForTravelCosts = validatedData.travelCosts ?? 0 * (20 / 100);
       console.log("montant tva pour les trajets : "+vatAmountForTravelCosts)
       vatAmountQuote += vatAmountForTravelCosts
       console.log("montant tva du devis : "+vatAmountQuote)
       // add totalTTC travelCosts to totalTTCQuote
-      totalTTCQuote += validatedData.travelCosts + Number(vatAmountForTravelCosts)
+      totalTTCQuote += validatedData.travelCosts ?? 0 + Number(vatAmountForTravelCosts)
       console.log("total du prix du devis : "+totalTTCQuote)
 
         //update Quote
