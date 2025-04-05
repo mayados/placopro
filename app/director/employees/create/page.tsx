@@ -4,6 +4,8 @@ import { useEffect, useState, use } from "react";
 import { Field,Input, Select } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import { createEmployee } from "@/services/api/userService";
+import { createUserSchema } from "@/validation/userValidation";
+
 // import toast, { Toaster } from 'react-hot-toast';
 
 const employeeCreation = () => {
@@ -17,7 +19,8 @@ const employeeCreation = () => {
     // Define options for select
     const roleChoices = ["employé","directeur","secrétaire"];
     const router = useRouter();
-      
+    const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
+    
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -33,6 +36,26 @@ const employeeCreation = () => {
     const handleUserCreation = async () => {
         try{
 
+            
+            // Validation des données du formulaire en fonction du statut
+            const validationResult = createUserSchema.safeParse(employee);
+            
+            if (!validationResult.success) {
+                // Si la validation échoue, afficher les erreurs
+                console.error("Erreurs de validation :", validationResult.error.errors);
+                    // Transformer les erreurs Zod en un format utilisable dans le JSX
+                const formattedErrors = validationResult.error.flatten().fieldErrors;
+            
+                // Afficher les erreurs dans la console pour débogage
+                console.log(formattedErrors);
+                          
+                // Mettre à jour l'état avec les erreurs
+                setErrors(formattedErrors);
+                return;  // Ne pas soumettre si la validation échoue
+            }
+            
+            // Delete former validation errors
+            setErrors({})
             const newEmployee = await createEmployee(employee);
 
             try {
@@ -68,6 +91,8 @@ const employeeCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.lastName && <p style={{ color: "red" }}>{errors.lastName}</p>}
+
                 </div>
                 {/* firstName */}
                 <div>
@@ -79,6 +104,8 @@ const employeeCreation = () => {
                         >
                         </Input>
                     </Field>
+                    {errors.firstName && <p style={{ color: "red" }}>{errors.firstName}</p>}
+
                 </div>
                 {/* role */}
                 <div>
@@ -94,6 +121,8 @@ const employeeCreation = () => {
                             <option key={role} value={role}>{role}</option>
                         ))}
                     </Select>
+                    {errors.role && <p style={{ color: "red" }}>{errors.role}</p>}
+
                 </div>
                 {/* mail */}
                 <div>
@@ -105,6 +134,8 @@ const employeeCreation = () => {
                             >
                         </Input>
                     </Field>
+                    {errors.email && <p style={{ color: "red" }}>{errors.email}</p>}
+
                 </div>
                 <button type="submit">Créer</button>
             </form>

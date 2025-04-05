@@ -4,6 +4,8 @@ import { useEffect, useState, use } from "react";
 import { Field,Input, Select } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import { fetchEmployee, updateUser } from "@/services/api/userService";
+import { updateUserSchema } from "@/validation/userValidation";
+
 // import toast, { Toaster } from 'react-hot-toast';
 // import { useRouter } from "next/navigation";
 
@@ -13,7 +15,8 @@ const ModifyEmployee = ({ params }: { params: Promise<{ employeeSlug: string }>}
     // Define options for select
     const roleChoices = ["employé","directeur","secrétaire"];
     const router = useRouter();
-
+    const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
+    
     
     useEffect(() => {
         async function loadEmployee() {
@@ -59,6 +62,26 @@ const ModifyEmployee = ({ params }: { params: Promise<{ employeeSlug: string }>}
     const handleUsertUpdate = async () => { 
                 
         try{
+
+            // Validation des données du formulaire en fonction du statut
+            const validationResult = updateUserSchema.safeParse(employee);
+                        
+            if (!validationResult.success) {
+                // Si la validation échoue, afficher les erreurs
+                console.error("Erreurs de validation :", validationResult.error.errors);
+                    // Transformer les erreurs Zod en un format utilisable dans le JSX
+                const formattedErrors = validationResult.error.flatten().fieldErrors;
+                        
+                // Afficher les erreurs dans la console pour débogage
+                console.log(formattedErrors);
+                                      
+                // Mettre à jour l'état avec les erreurs
+                setErrors(formattedErrors);
+                return;  // Ne pas soumettre si la validation échoue
+            }
+                        
+            // Delete former validation errors
+            setErrors({})
         
             const data = await updateUser(employee)
             const updatedEmployee = data;
@@ -102,6 +125,8 @@ const ModifyEmployee = ({ params }: { params: Promise<{ employeeSlug: string }>}
                             >
                         </Input>
                     </Field>
+                    {errors.lastName && <p style={{ color: "red" }}>{errors.lastName}</p>}
+
                 </div>
                 {/* firstName */}
                 <div>
@@ -113,6 +138,8 @@ const ModifyEmployee = ({ params }: { params: Promise<{ employeeSlug: string }>}
                         >
                         </Input>
                     </Field>
+                    {errors.firstName && <p style={{ color: "red" }}>{errors.firstName}</p>}
+
                 </div>
                 {/* role */}
                 <div>
@@ -128,6 +155,8 @@ const ModifyEmployee = ({ params }: { params: Promise<{ employeeSlug: string }>}
                             <option key={role} value={role}>{role}</option>
                         ))}
                     </Select>
+                    {errors.role && <p style={{ color: "red" }}>{errors.role}</p>}
+
                 </div>
                 {/* mail */}
                 <div>
@@ -139,6 +168,8 @@ const ModifyEmployee = ({ params }: { params: Promise<{ employeeSlug: string }>}
                             >
                         </Input>
                     </Field>
+                    {errors.email && <p style={{ color: "red" }}>{errors.email}</p>}
+
                 </div>
                 <button type="submit">Modifier</button>
             </form>

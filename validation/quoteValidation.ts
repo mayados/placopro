@@ -30,7 +30,7 @@ const serviceFormQuoteSchema = z.object({
 
 export const createQuoteDraftSchema = z.object({
   validityEndDate: createDateSchemaWithoutMessage().nullable(),
-  natureOfWork: z.string().nullable(),
+  natureOfWork: z.string().min(5, "Le type de travail est requis"),
   description: z.string().nullable(),
   workStartDate: createDateSchemaWithoutMessage().nullable(),
   estimatedWorkEndDate: createDateSchemaWithoutMessage().nullable(),
@@ -48,8 +48,8 @@ export const createQuoteDraftSchema = z.object({
   latePaymentPenalities: z.number().nullable(),
   recoveryFees: z.number().nullable(),
   withdrawalPeriod: z.number().nullable(),
-  clientId: z.string().nullable(),
-  workSiteId: z.string().nullable(),
+  clientId: z.string().min(1, "Le client est requis"),
+  workSiteId: z.string().min(1, "Le chantier est requis"),
   services: z.array(serviceFormQuoteSchema).nullable(),
   servicesToUnlink: z.array(serviceFormQuoteSchema).nullable().optional(),
 
