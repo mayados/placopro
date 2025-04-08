@@ -6,6 +6,10 @@ import {
     capitalizeFirstLetter,
     formatDateForInput
   } from '@/lib/utils';
+
+  import { TextEncoder, TextDecoder } from 'util';
+
+global.TextEncoder = TextEncoder;
   
   describe("Units tests for utils functions", () => {
   

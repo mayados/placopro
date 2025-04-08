@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { updateDraftQuoteSchema, updateDraftFinalQuoteSchema } from "@/validation/quoteValidation";
+import { sanitizeData } from "@/lib/sanitize"; 
 
 
 export async function PUT(req: NextRequest) {
@@ -55,13 +56,16 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
   }
         
+         
   // Validation réussie, traiter les données avec le statut
-  const validatedData = parsedData.data;
-        
+  // Sanitizing datas
+  const sanitizedData = sanitizeData(parsedData.data);
+  console.log("Données nettoyées :", JSON.stringify(sanitizedData));
+     
   // Ajoute le statut aux données validées
-  data.status = status;
-  data.quoteId = quoteId;
-  data.number = number;
+  sanitizedData.status = status;
+  sanitizedData.quoteId = quoteId;
+  sanitizedData.number = number;
 
   console.log(data)
   console.log("valeur de saveMode  : "+data.status)
@@ -254,7 +258,7 @@ const generateQuoteNumber = async (type = "quote", isDraft = false) => {
       ];
 
       // For each simple field, if it's not null, we update it (by placing it into the const updateData)
-      fieldsToUpdate.forEach(field => updateIfNotNull(updateData, field, data[field]));
+      fieldsToUpdate.forEach(field => updateIfNotNull(updateData, field, sanitizedData[field]));
 
       // Manage travelCosts (if data retrieved are ot null)
       if (isNotNull(data.travelCosts)) {
@@ -345,7 +349,7 @@ const generateQuoteNumber = async (type = "quote", isDraft = false) => {
       priceHT: finalTotalHT,  
       vatAmount: finalVatAmount,
       priceTTC: finalTotalTTC,
-      discountReason: validatedData.discountReason
+      discountReason: sanitizedData.discountReason
       // discountAmount is already in updateData thanks to fieldsToUpdate
     });
 

@@ -44,7 +44,7 @@
 
 import { mockDeep, mockReset, DeepMockProxy } from 'jest-mock-extended';
 import { PrismaClient } from '@prisma/client';
-import { db } from "@/lib/db";
+// import { db } from "@/lib/db";
 
 
 // Créer un mock pour PrismaClient

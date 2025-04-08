@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { updatePlanningSchema } from "@/validation/planningValidation";
+import { sanitizeData } from "@/lib/sanitize"; 
 
 
 export async function PUT(req: NextRequest) {
@@ -20,8 +21,14 @@ export async function PUT(req: NextRequest) {
             return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
         }
                         
-        // Validation réussie, traiter les données avec le statut
-        const validatedData = parsedData.data;
+        
+    // Validation réussie, traiter les données avec le statut
+    // Sanitizing datas
+    const sanitizedData = sanitizeData(parsedData.data);
+    console.log("Données nettoyées :", JSON.stringify(sanitizedData));
+    
+    // Ajoute le statut aux données validées
+    sanitizedData.id = id;
     // construct dynamically update's object
     const updateData: Record<string, any> = {};
 
@@ -32,31 +39,31 @@ export async function PUT(req: NextRequest) {
     // console.log("clerkUserId : "+clerkUserId)
     // console.log("workSiteId : "+workSiteId)
     console.log("id : "+id)
-    if (validatedData.start !== null){
-        updateData.startTime = new Date(validatedData.start)
+    if (sanitizedData.start !== null){
+        updateData.startTime = new Date(sanitizedData.start)
         console.log("start n'est pas null")
     }
 
-    if (validatedData.end !== null){
-        updateData.endTime = new Date(validatedData.end)
+    if (sanitizedData.end !== null){
+        updateData.endTime = new Date(sanitizedData.end)
         console.log("end n'est pas null")
 
     }
 
-    if (validatedData.clerkUserId !== null){
-        updateData.clerkUserId = validatedData.clerkUserId
+    if (sanitizedData.clerkUserId !== null){
+        updateData.clerkUserId = sanitizedData.clerkUserId
         console.log("cler user id n'est pas null")
 
     }
 
-    if (validatedData.title !== null){
-        updateData.task = validatedData.title
+    if (sanitizedData.title !== null){
+        updateData.task = sanitizedData.title
         console.log("title n'est pas null")
 
     }
 
-    if (validatedData.workSiteId !== null){
-        updateData.workSiteId = validatedData.workSiteId
+    if (sanitizedData.workSiteId !== null){
+        updateData.workSiteId = sanitizedData.workSiteId
         console.log("worksietid n'est pas null")
 
     }

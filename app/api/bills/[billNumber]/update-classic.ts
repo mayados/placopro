@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { updateClassicBillSchema } from "@/validation/billValidation";
+import { sanitizeData } from "@/lib/sanitize"; 
 
 
 export async function PUT(req: NextRequest) {
@@ -24,8 +25,11 @@ export async function PUT(req: NextRequest) {
             return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
         }
             
-    // Validation réussie, traiter les données avec le statut
-    const validatedData = parsedData.data;
+        // Validation réussie
+    // Sanitizing datas
+    const sanitizedData = sanitizeData(parsedData.data);
+    console.log("Données nettoyées :", JSON.stringify(sanitizedData));
+    
     // construct dynamically update's object
     const updateData: Record<string, any> = {};
 
@@ -40,17 +44,17 @@ export async function PUT(req: NextRequest) {
     }
 
 
-    if (validatedData.paymentDate !== null){
-        const parsedDate = new Date(validatedData.paymentDate);
+    if (sanitizedData.paymentDate !== null){
+        const parsedDate = new Date(sanitizedData.paymentDate);
         updateData.paymentDate = parsedDate;  
         console.log("date parsée : "+parsedDate)
     } 
 
     if (paymentMethod !== null){
-        updateData.paymentMethod = validatedData.paymentMethod
+        updateData.paymentMethod = sanitizedData.paymentMethod
     }
-    if (validatedData.canceledAt !== null){
-      const parsedDate = new Date(validatedData.canceledAt);
+    if (sanitizedData.canceledAt !== null){
+      const parsedDate = new Date(sanitizedData.canceledAt);
       updateData.canceledAt = parsedDate;  
       console.log("date parsée : "+parsedDate)
   } 

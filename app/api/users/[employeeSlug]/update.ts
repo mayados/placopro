@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { clerkClient, EmailAddress, User} from "@clerk/express";
 import { updateUserSchema } from "@/validation/userValidation";
+import { sanitizeData } from "@/lib/sanitize"; 
 
 
 export async function PUT(req: NextRequest) {
@@ -28,10 +29,13 @@ export async function PUT(req: NextRequest) {
     }
             
     // Validation réussie, traiter les données avec le statut
-    const validatedData = parsedData.data;
-            
+    // Sanitizing datas
+    const sanitizedData = sanitizeData(parsedData.data);
+    console.log("Données nettoyées :", JSON.stringify(sanitizedData));
+    
     // Ajoute le statut aux données validées
-    data.id = id;
+    sanitizedData.id = id;
+ 
 
     if (!email) {
       throw new Error("L'adresse email est requise.");
@@ -39,30 +43,30 @@ export async function PUT(req: NextRequest) {
 
     const user = await clerkClient.users.getUser(id)
 
-    const slug = validatedData.lastName.toLowerCase()+"-"+firstName.toLowerCase();
+    const slug = sanitizedData.lastName.toLowerCase()+"-"+sanitizedData.firstName.toLowerCase();
 
     // Clerk doesn't allow us to update all the elements of the user with only one function. We have to use another function for the metadata
     const parametersSimpleUpdate = { firstName: user.firstName as string, lastName: user.lastName as string}
 
     // We verify if the values have changed or not. And if it's the case,
-    if (user.firstName !== validatedData.firstName) parametersSimpleUpdate.firstName = validatedData.firstName;
-    if (user.lastName !== validatedData.lastName) parametersSimpleUpdate.lastName = validatedData.lastName;
+    if (user.firstName !== sanitizedData.firstName) parametersSimpleUpdate.firstName = sanitizedData.firstName;
+    if (user.lastName !== sanitizedData.lastName) parametersSimpleUpdate.lastName = sanitizedData.lastName;
 
     const updatedEmployeeSimple = await clerkClient.users.updateUser(id, parametersSimpleUpdate)
 
     const parametersMetaData = {publicMetadata: { role: user.publicMetadata.role, slug: slug}}
-    if(user.publicMetadata.role !== validatedData.role){
-      parametersMetaData.publicMetadata.role = validatedData.role;
+    if(user.publicMetadata.role !== sanitizedData.role){
+      parametersMetaData.publicMetadata.role = sanitizedData.role;
       
     }
     const updatedEmployeeMetadata = await clerkClient.users.updateUserMetadata(id,parametersMetaData);
     let updatedEmployeeEmail ;
 
     // if the mail has changed, we create a new email address
-    if(user.primaryEmailAddress?.emailAddress !== validatedData.email){
+    if(user.primaryEmailAddress?.emailAddress !== sanitizedData.email){
       updatedEmployeeEmail = await clerkClient.emailAddresses.createEmailAddress({
         userId: id,
-        emailAddress: validatedData.email,
+        emailAddress: sanitizedData.email,
         primary: true,
         verified: true
       })

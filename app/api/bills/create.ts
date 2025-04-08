@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
 import { createBillDraftSchema, createBillFinalSchema } from "@/validation/billValidation";
+import { sanitizeData } from "@/lib/sanitize"; 
 
 
 export async function POST(req: NextRequest) {
@@ -45,25 +46,27 @@ export async function POST(req: NextRequest) {
         // } = data;
 
         // Détecter si la facture est en "brouillon" ou en "final"
-                // Exclure 'status' du schéma de validation Zod
-                const { status, ...dataWithoutStatus } = data;
+        // Exclure 'status' du schéma de validation Zod
+        const { status, ...dataWithoutStatus } = data;
 
-                // Choisir le schéma en fonction du statut (avant ou après validation)
-                const schema = status === "Ready" ? createBillFinalSchema : createBillDraftSchema;
+        // Choisir le schéma en fonction du statut (avant ou après validation)
+        const schema = status === "Ready" ? createBillFinalSchema : createBillDraftSchema;
         
-                // Validation avec Zod (sans 'status')
-                const parsedData = schema.safeParse(dataWithoutStatus);
-                if (!parsedData.success) {
-                    console.error("Validation Zod échouée :", parsedData.error.format());
+        // Validation avec Zod (sans 'status')
+        const parsedData = schema.safeParse(dataWithoutStatus);
+        if (!parsedData.success) {
+            console.error("Validation Zod échouée :", parsedData.error.format());
 
-                    return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
-                }
+            return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
+        }
         
-                // Validation réussie, traiter les données avec le statut
-                const validatedData = parsedData.data;
-        
-                // Ajoute le statut aux données validées
-                data.status = status;
+        // Validation réussie, traiter les données avec le statut
+        // Sanitizing datas
+        const sanitizedData = sanitizeData(parsedData.data);
+        console.log("Données nettoyées :", JSON.stringify(sanitizedData));
+    
+        // Ajoute le statut aux données validées
+        sanitizedData.status = status;
 
         // Execute all operations in one transaction for integrity
         const result = await db.$transaction(async (prisma) => {
@@ -122,18 +125,18 @@ export async function POST(req: NextRequest) {
                     number: billNumber,
                     issueDate: new Date().toISOString(),
                     billType: "INVOICE",
-                    dueDate: validatedData.dueDate ? new Date(validatedData.dueDate).toISOString() : null,
-                    workStartDate: validatedData.workStartDate ? new Date(validatedData.workStartDate).toISOString() : null,
-                    workEndDate: validatedData.workEndDate ? new Date(validatedData.workEndDate).toISOString() : null,
-                    workDuration: validatedData.workDuration || 0,
-                    natureOfWork : validatedData.natureOfWork,
-                    description: validatedData.description,
-                    paymentTerms: validatedData.paymentTerms,
+                    dueDate: sanitizedData.dueDate ? new Date(sanitizedData.dueDate).toISOString() : null,
+                    workStartDate: sanitizedData.workStartDate ? new Date(sanitizedData.workStartDate).toISOString() : null,
+                    workEndDate: sanitizedData.workEndDate ? new Date(sanitizedData.workEndDate).toISOString() : null,
+                    workDuration: sanitizedData.workDuration || 0,
+                    natureOfWork : sanitizedData.natureOfWork,
+                    description: sanitizedData.description,
+                    paymentTerms: sanitizedData.paymentTerms,
                     status: status,
-                    discountAmount: validatedData.discountAmount || 0,
-                    travelCosts: validatedData.travelCosts || 0,
-                    travelCostsType: validatedData.travelCostsType,
-                    discountReason: validatedData.discountReason,
+                    discountAmount: sanitizedData.discountAmount || 0,
+                    travelCosts: sanitizedData.travelCosts || 0,
+                    travelCostsType: sanitizedData.travelCostsType,
+                    discountReason: sanitizedData.discountReason,
                     vatAmount: 0, // Will be calculated later
                     totalTtc: 0,  // Will be calculated later
                     totalHt: 0,   // Will be calculated later
@@ -165,12 +168,12 @@ export async function POST(req: NextRequest) {
             console.log(`Totaux après frais: ${billTotalHT} HT, ${billTotalVAT} TVA, ${billTotalTTC} TTC`);
 
             // Process services
-            if((validatedData.servicesToUnlink ?? []).length === 0 && (validatedData.servicesAdded ?? []).length === 0){
+            if((sanitizedData.servicesToUnlink ?? []).length === 0 && (sanitizedData.servicesAdded ?? []).length === 0){
             // if (validatedData.servicesToUnlink.length === 0 && data.servicesAdded.length === 0) {
                 // Case 1: No modifications - process all services as they are
                 console.log("Aucune modification, création des billServices à partir des quoteServices");
 
-                for (const service of validatedData.services) {
+                for (const service of sanitizedData.services) {
                     // Find the original quoteService
                     const quoteService = await prisma.quoteService.findUnique({
                         where: { id: service.id },
@@ -220,7 +223,7 @@ export async function POST(req: NextRequest) {
                 // Case 2: Services have been modified
                 console.log("Modifications détectées, recalcul des montants");
 
-                for (const service of validatedData.services) {
+                for (const service of sanitizedData.services) {
                     // Skip services that are marked to be unlinked
                     if (data.servicesToUnlink.some((s: ServiceFormQuoteType) => s.id === service.id)) {
                         console.log(`Service ${service.label || service.id} ignoré car marqué pour suppression`);
@@ -308,7 +311,7 @@ export async function POST(req: NextRequest) {
 
             // Log totals before discount and deposits
             console.log(`Totaux bruts: ${billTotalHT} HT, ${billTotalVAT} TVA, ${billTotalTTC} TTC`);
-            console.log(`Remise: ${validatedData.discountAmount || 0}`);
+            console.log(`Remise: ${sanitizedData.discountAmount || 0}`);
             console.log(`Acomptes: ${totalPaidDepositHT} HT, ${totalPaidDepositVAT} TVA, ${totalPaidDepositTTC} TTC`);
 
             // Apply discount to HT amount

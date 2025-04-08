@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { clerkClient, EmailAddress, User} from "@clerk/express";
 import { createUserSchema } from "@/validation/userValidation";
+import { sanitizeData } from "@/lib/sanitize"; 
 
 
 export async function POST(req: NextRequest) {
@@ -25,7 +26,10 @@ export async function POST(req: NextRequest) {
     }
                     
     // Validation réussie, traiter les données avec le statut
-    const validatedData = parsedData.data;
+    // Sanitizing datas
+    const sanitizedData = sanitizeData(parsedData.data);
+    console.log("Données nettoyées :", JSON.stringify(sanitizedData));
+
 
     // console.log("le prénom : "+firstName)
     // console.log("le nom : "+lastName)
@@ -36,27 +40,27 @@ export async function POST(req: NextRequest) {
       throw new Error("L'adresse email est requise.");
     }
 
-    const slug = validatedData.lastName.toLowerCase()+"-"+validatedData.firstName.toLowerCase();
+    const slug = sanitizedData.lastName.toLowerCase()+"-"+sanitizedData.firstName.toLowerCase();
     console.log("le slug : "+slug)
 
 
     const userParameters = {
-        firstName: validatedData.firstName,
-        lastName: validatedData.lastName,
-        emailAddress: validatedData.email,
-        publicMetadata: {role: validatedData.role, slug: slug},
+        firstName: sanitizedData.firstName,
+        lastName: sanitizedData.lastName,
+        emailAddress: sanitizedData.email,
+        publicMetadata: {role: sanitizedData.role, slug: slug},
         skipPasswordRequirement: true,
     }
 
     // await clerkClient.users.createUser(userParameters)
     const user = await clerkClient.users.createUser({
-        firstName: validatedData.firstName,
-        lastName: validatedData.lastName,
-        emailAddress: [validatedData.email],
+        firstName: sanitizedData.firstName,
+        lastName: sanitizedData.lastName,
+        emailAddress: [sanitizedData.email],
         // Password is not required during creation. The user will be able to set one during his first connexion
         skipPasswordRequirement: true,
         publicMetadata: {
-          role: validatedData.role,
+          role: sanitizedData.role,
           slug: slug,
         },
       });

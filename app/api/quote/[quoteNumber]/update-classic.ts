@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { updateClassicQuoteSchema } from "@/validation/quoteValidation";
+import { sanitizeData } from "@/lib/sanitize"; 
 
 
 export async function PUT(req: NextRequest) {
@@ -32,11 +33,14 @@ export async function PUT(req: NextRequest) {
           return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
       }
             
-      // Validation réussie, traiter les données avec le statut
-      const validatedData = parsedData.data;
+    // Validation réussie, traiter les données avec le statut
+    // Sanitizing datas
+    const sanitizedData = sanitizeData(parsedData.data);
+    console.log("Données nettoyées :", JSON.stringify(sanitizedData));
+    
+    // Ajoute le statut aux données validées
+    sanitizedData.id = id;
             
-      // Ajoute le statut aux données validées
-      data.id = id;
     // construct dynamically update's object
     const updateData: Record<string, any> = {};
 
@@ -50,11 +54,11 @@ export async function PUT(req: NextRequest) {
         }
     }
 
-    if (validatedData.isSignedByClient !== null) {
-        updateData.isSignedByClient = validatedData.isSignedByClient === "Oui";
+    if (sanitizedData.isSignedByClient !== null) {
+        updateData.isSignedByClient = sanitizedData.isSignedByClient === "Oui";
       }
-    if (validatedData.signatureDate !== null){
-        const parsedDate = new Date(validatedData.signatureDate);
+    if (sanitizedData.signatureDate !== null){
+        const parsedDate = new Date(sanitizedData.signatureDate);
         updateData.signatureDate = parsedDate;  
         console.log("date parsée : "+parsedDate)
     } 
