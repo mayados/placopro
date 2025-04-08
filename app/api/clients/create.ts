@@ -4,6 +4,7 @@ import { currentUser } from '@clerk/nextjs/server'
 import { slugify } from '@/lib/utils'
 import { generateUniqueClientNumber } from '@/lib/utils'
 import { createClientSchema } from "@/validation/clientValidation";
+import { ClientOrProspectEnum } from "@prisma/client";
 
 
 // Asynchrone : waits for a promise
@@ -11,18 +12,17 @@ export async function POST(req: NextRequest) {
     const data = await req.json();
     console.log("Données reçues dans l'API :", JSON.stringify(data));
 
-    // const { 
-    //         name,
-    //         firstName,
-    //         mail,
-    //         phone,
-    //         road,
-    //         addressNumber,
-    //         postalCode,
-    //         city,
-    //         additionalAddress,
-    //         prospectNumber,
-    //     } = data;
+    const { 
+            name,
+            firstName,
+            mail,
+            phone,
+            road,
+            addressNumber,
+            postalCode,
+            city,
+            additionalAddress,
+        } = data;
             // currentUser() is a founction from Clerk which allows to retrieve the current User
             const user = await currentUser()
 
@@ -30,17 +30,15 @@ export async function POST(req: NextRequest) {
     try {
 
         
-        if (!user) {
-            return NextResponse.json({ 
-                success: false, 
-                message: "Utilisateur non authentifié." 
-            }, { status: 401 });
-        }
-        const { prospectNumber, ...dataWithoutProspectNumber } = data;
-        data.prospectNumber = prospectNumber;
+        // if (!user) {
+        //     return NextResponse.json({ 
+        //         success: false, 
+        //         message: "Utilisateur non authentifié." 
+        //     }, { status: 401 });
+        // }
 
         // Validation avec Zod (sans 'status')
-        const parsedData = createClientSchema.safeParse(dataWithoutProspectNumber);
+        const parsedData = createClientSchema.safeParse(data);
         if (!parsedData.success) {
             console.error("Validation Zod échouée :", parsedData.error.format());
         
@@ -52,7 +50,7 @@ export async function POST(req: NextRequest) {
                 
 
         const clientNumber = generateUniqueClientNumber();
-        const slug = slugify(validatedData.name+" "+validatedData.firstname+" "+clientNumber)
+        const slug = slugify(validatedData.name+" "+validatedData.firstName+" "+clientNumber)
         console.log("Slug du client : "+slug)
         console.log("client number : "+clientNumber)
         console.log("type de clientNumber : "+typeof(clientNumber))
@@ -60,26 +58,13 @@ export async function POST(req: NextRequest) {
         console.log("type de code postal : "+typeof(validatedData.postalCode))
         console.log("type de téléphone : "+typeof(validatedData.phone))
 
-        let prospectId = null;
-        if (prospectNumber && prospectNumber.trim() !== "") {
-            const prospect = await db.prospect.findUnique({
-                where: { prospectNumber },
-            });
-            if (prospect) {
-                prospectId = prospect.id;
-                console.log("Prospect trouvé, ID : ", prospectId);
-            } else {
-                console.log("Aucun prospect trouvé pour le numéro fourni.");
-            }
-        }
-
-        console.log("valeur de prospectId : "+prospectId)
+        console.log("Tentative de création du client...");
 
           // Création du client
           const client = await db.client.create({
               data: {
                 name: validatedData.name,
-                firstName: validatedData.firstname,
+                firstName: validatedData.firstName,
                 mail: validatedData.mail,
                 phone: validatedData.phone,
                 road: validatedData.road,
@@ -90,8 +75,8 @@ export async function POST(req: NextRequest) {
                 slug,
                 clientNumber,
                 isAnonymized: false,
-                prospectId: prospectId,
-                //   ...(prospectId !== null && { prospectId }), // Inclure prospectId uniquement s'il existe
+                convertedAt: null,
+                status: ClientOrProspectEnum.CLIENT
               },
           });
 
