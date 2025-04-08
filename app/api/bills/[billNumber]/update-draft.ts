@@ -2,6 +2,8 @@ import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server';
 import { updateDraftBillSchema, updateDraftFinalBillSchema } from "@/validation/billValidation";
+import { sanitizeData } from "@/lib/sanitize"; 
+
 
 export async function PUT(req: NextRequest) {
     try {
@@ -50,27 +52,29 @@ export async function PUT(req: NextRequest) {
         // } = data;
 
         // Détecter si la facture est enregistrée en tant que "brouillon" ou en "final"
-                // Exclure 'status' du schéma de validation Zod
-                const { status, billId, ...dataWithoutStatus } = data;
-                console.log("Bill ID extrait:", billId); // Vérifie s'il est bien défini
+        // Exclure 'status' du schéma de validation Zod
+        const { status, billId, ...dataWithoutStatus } = data;
+        console.log("Bill ID extrait:", billId); // Vérifie s'il est bien défini
 
-                // Choisir le schéma en fonction du statut (avant ou après validation)
-                const schema = status === "Ready" ? updateDraftFinalBillSchema : updateDraftBillSchema;
+        // Choisir le schéma en fonction du statut (avant ou après validation)
+        const schema = status === "Ready" ? updateDraftFinalBillSchema : updateDraftBillSchema;
         
-                // Validation avec Zod (sans 'status')
-                const parsedData = schema.safeParse(dataWithoutStatus);
-                if (!parsedData.success) {
-                    console.error("Validation Zod échouée :", parsedData.error.format());
+        // Validation avec Zod (sans 'status')
+        const parsedData = schema.safeParse(dataWithoutStatus);
+        if (!parsedData.success) {
+            console.error("Validation Zod échouée :", parsedData.error.format());
 
-                    return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
-                }
+            return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
+        }
         
-                // Validation réussie, traiter les données avec le statut
-                const validatedData = parsedData.data;
-        
-                // Ajoute le statut aux données validées
-                data.status = status;
-                data.billId = billId;
+        // Validation réussie
+        // Sanitizing datas
+        const sanitizedData = sanitizeData(parsedData.data);
+        console.log("Données nettoyées :", JSON.stringify(sanitizedData));
+    
+        // Ajoute le statut aux données validées
+        sanitizedData.status = status;
+        sanitizedData.billId = billId;
 
         // Verify if bill exists
         const existingBill = await db.bill.findUnique({
@@ -92,10 +96,10 @@ export async function PUT(req: NextRequest) {
             let totalPaidDepositHT = 0;
             let totalPaidDepositVAT = 0;
 
-            if (validatedData.quoteId) {
+            if (sanitizedData.quoteId) {
                 const depositBills = await prisma.bill.findMany({
                     where: { 
-                        quoteId: validatedData.quoteId, 
+                        quoteId: sanitizedData.quoteId, 
                         billType: "DEPOSIT",
                         // Exclude this Bill
                         id: { not: billId }
@@ -136,24 +140,24 @@ export async function PUT(req: NextRequest) {
             // Update base's informations of the bill
             const baseUpdateData = {
                 number: billNumber,
-                dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : existingBill.dueDate,
-                workStartDate: validatedData.workStartDate ? new Date(validatedData.workStartDate) : existingBill.workStartDate,
-                workEndDate: validatedData.workEndDate ? new Date(validatedData.workEndDate) : existingBill.workEndDate,
-                workDuration: validatedData.workDuration !== undefined ? validatedData.workDuration : existingBill.workDuration,
-                natureOfWork: validatedData.natureOfWork || existingBill.natureOfWork,
-                description: validatedData.description || existingBill.description,
-                paymentTerms: validatedData.paymentTerms || existingBill.paymentTerms,
+                dueDate: sanitizedData.dueDate ? new Date(sanitizedData.dueDate) : existingBill.dueDate,
+                workStartDate: sanitizedData.workStartDate ? new Date(sanitizedData.workStartDate) : existingBill.workStartDate,
+                workEndDate: sanitizedData.workEndDate ? new Date(sanitizedData.workEndDate) : existingBill.workEndDate,
+                workDuration: sanitizedData.workDuration !== undefined ? sanitizedData.workDuration : existingBill.workDuration,
+                natureOfWork: sanitizedData.natureOfWork || existingBill.natureOfWork,
+                description: sanitizedData.description || existingBill.description,
+                paymentTerms: sanitizedData.paymentTerms || existingBill.paymentTerms,
                 status: status || existingBill.status,
-                discountAmount: validatedData.discountAmount !== undefined ? validatedData.discountAmount : existingBill.discountAmount,
-                discountReason: validatedData.discountReason !== undefined ? validatedData.discountReason : existingBill.discountReason,
-                travelCosts: validatedData.travelCosts !== undefined ? validatedData.travelCosts : existingBill.travelCosts,
-                travelCostsType: validatedData.travelCostsType || existingBill.travelCostsType,
+                discountAmount: sanitizedData.discountAmount !== undefined ? sanitizedData.discountAmount : existingBill.discountAmount,
+                discountReason: sanitizedData.discountReason !== undefined ? sanitizedData.discountReason : existingBill.discountReason,
+                travelCosts: sanitizedData.travelCosts !== undefined ? sanitizedData.travelCosts : existingBill.travelCosts,
+                travelCostsType: sanitizedData.travelCostsType || existingBill.travelCostsType,
                 // canceledAt: isCanceled ? new Date() : existingBill.canceledAt,
             };
 
             // Delete services which are unliked
-            if (validatedData.servicesToUnlink && validatedData.servicesToUnlink.length > 0) {
-                for (const serviceToUnlink of validatedData.servicesToUnlink) {
+            if (sanitizedData.servicesToUnlink && sanitizedData.servicesToUnlink.length > 0) {
+                for (const serviceToUnlink of sanitizedData.servicesToUnlink) {
                     await prisma.billService.delete({
                         where: { id: serviceToUnlink.id }
                     });
@@ -166,8 +170,8 @@ export async function PUT(req: NextRequest) {
             let newTotalTtc = 0;
 
             // Update existing services and add new services
-            if (validatedData.services && validatedData.services.length > 0) {
-                for (const service of validatedData.services) {
+            if (sanitizedData.services && sanitizedData.services.length > 0) {
+                for (const service of sanitizedData.services) {
                     const totalHTService = parseFloat(service.unitPriceHT) * service.quantity;
                     const vatRateService = parseFloat(service.vatRate);
                     const vatAmountService = totalHTService * (vatRateService / 100);
@@ -245,7 +249,7 @@ export async function PUT(req: NextRequest) {
             }
 
             // Apply discount on HT
-            const htAfterDiscount = parseFloat((newTotalHt - (validatedData.discountAmount || 0)).toFixed(2));
+            const htAfterDiscount = parseFloat((newTotalHt - (sanitizedData.discountAmount || 0)).toFixed(2));
             
             // Count TTC after discount
             const ttcAfterDiscount = htAfterDiscount + newVatAmount;

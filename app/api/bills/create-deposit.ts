@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
 import { createDepositBillDraftSchema, createDepositBillFinalSchema } from "@/validation/billValidation";
+import { sanitizeData } from "@/lib/sanitize"; 
 
 
 export async function POST(req: NextRequest) {
@@ -44,27 +45,30 @@ export async function POST(req: NextRequest) {
         // Execute all operations in one transaction for integrity
         const result = await db.$transaction(async (prisma) => {
 
-     // Détecter si la facture est en "brouillon" ou en "final"
-                // Exclure 'status' du schéma de validation Zod
-                const { status,quoteId, ...dataWithoutStatus } = data;
+        // Détecter si la facture est en "brouillon" ou en "final"
+        // Exclure 'status' du schéma de validation Zod
+        const { status,quoteId, ...dataWithoutStatus } = data;
 
-                // Choisir le schéma en fonction du statut (avant ou après validation)
-                const schema = status === "Ready" ? createDepositBillFinalSchema : createDepositBillDraftSchema;
+        // Choisir le schéma en fonction du statut (avant ou après validation)
+        const schema = status === "Ready" ? createDepositBillFinalSchema : createDepositBillDraftSchema;
         
-                // Validation avec Zod (sans 'status')
-                const parsedData = schema.safeParse(dataWithoutStatus);
-                if (!parsedData.success) {
-                    console.error("Validation Zod échouée :", parsedData.error.format());
+        // Validation avec Zod (sans 'status')
+        const parsedData = schema.safeParse(dataWithoutStatus);
+        if (!parsedData.success) {
+            console.error("Validation Zod échouée :", parsedData.error.format());
 
-                    return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
-                }
+            return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
+        }
         
-                // Validation réussie, traiter les données avec le statut
-                const validatedData = parsedData.data;
-        
-                // Ajoute le statut aux données validées
-                data.status = status;
-                data.quoteId = quoteId;
+        // Validation réussie
+        // Sanitizing datas
+        const sanitizedData = sanitizeData(parsedData.data);
+        console.log("Données nettoyées :", JSON.stringify(sanitizedData));
+    
+        // Ajoute le statut aux données validées
+        sanitizedData.status = status;
+        sanitizedData.quoteId = quoteId;
+
 
             // Generate bill number
             let billNumber = "";
@@ -107,7 +111,7 @@ export async function POST(req: NextRequest) {
             }
 
 // Appliquer la remise sur le HT
-const htAfterDiscount = Math.max(0, quote.priceHT - (validatedData.discountAmount || 0));
+const htAfterDiscount = Math.max(0, quote.priceHT - (sanitizedData.discountAmount || 0));
 
 // Définir l'acompte HT
 const depositHt = Math.max(0, quote.depositAmount ?? 0);
@@ -115,7 +119,7 @@ const depositHt = Math.max(0, quote.depositAmount ?? 0);
 // Calculer la TVA de l'acompte
 let depositVat = 0;
 
-for (const service of validatedData.services) {
+for (const service of sanitizedData.services) {
     const serviceTotalHt = Number(service.unitPriceHT) * service.quantity;
     console.log("service totalHt : " + serviceTotalHt + " quote price Ht : " + htAfterDiscount);
 
@@ -144,29 +148,29 @@ const bill = await prisma.bill.create({
         number: billNumber,
         issueDate: new Date().toISOString(),
         billType: "DEPOSIT",
-        dueDate: validatedData.dueDate ? new Date(validatedData.dueDate).toISOString() : new Date().toISOString(),
-        workStartDate: validatedData.workStartDate ? new Date(validatedData.workStartDate).toISOString() : null,
-        workEndDate: validatedData.workEndDate ? new Date(validatedData.workEndDate).toISOString() : null,
-        workDuration: validatedData.workDuration ? validatedData.workDuration : null,
-        natureOfWork: validatedData.natureOfWork,
-        description: validatedData.description,
-        paymentTerms: validatedData.paymentTerms ,
+        dueDate: sanitizedData.dueDate ? new Date(sanitizedData.dueDate).toISOString() : new Date().toISOString(),
+        workStartDate: sanitizedData.workStartDate ? new Date(sanitizedData.workStartDate).toISOString() : null,
+        workEndDate: sanitizedData.workEndDate ? new Date(sanitizedData.workEndDate).toISOString() : null,
+        workDuration: sanitizedData.workDuration ? sanitizedData.workDuration : null,
+        natureOfWork: sanitizedData.natureOfWork,
+        description: sanitizedData.description,
+        paymentTerms: sanitizedData.paymentTerms ,
         status,
-        discountAmount: validatedData.discountAmount || 0,
-        travelCosts: validatedData.travelCosts,
-        travelCostsType : validatedData.travelCostsType,
-        discountReason: validatedData.discountReason,
+        discountAmount: sanitizedData.discountAmount || 0,
+        travelCosts: sanitizedData.travelCosts,
+        travelCostsType : sanitizedData.travelCostsType,
+        discountReason: sanitizedData.discountReason,
         vatAmount: depositVat,
         totalTtc: Number(depositTtc),
         totalHt: Number((depositHt).toFixed(2)),
         userId: user.id,
-        client: { connect: { id: validatedData.clientId } },
-        workSite: { connect: { id: validatedData.workSiteId } },
+        client: { connect: { id: sanitizedData.clientId } },
+        workSite: { connect: { id: sanitizedData.workSiteId } },
         quote: { connect: { id: quoteId } }
     }
 });
 
-for (const service of validatedData.services) {
+for (const service of sanitizedData.services) {
     const serviceTotalHt = Number(service.unitPriceHT) * service.quantity;
     // Avoid division by 0
     const proportion = htAfterDiscount > 0 ? serviceTotalHt / htAfterDiscount : 0;

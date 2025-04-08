@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
 import { slugify } from '@/lib/utils'
 import { createWorkSiteSchema } from "@/validation/workSiteValidation";
-
+import { sanitizeData } from "@/lib/sanitize"; 
 
 
 // Asynchrone : waits for a promise
@@ -54,17 +54,19 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
         }
                         
-        // Validation réussie, traiter les données avec le statut
-        const validatedData = parsedData.data;
+       // Validation réussie, traiter les données avec le statut
+        // Sanitizing datas
+        const sanitizedData = sanitizeData(parsedData.data);
+        console.log("Données nettoyées :", JSON.stringify(sanitizedData));
 
-        const slug = slugify(validatedData.title);
+        const slug = slugify(sanitizedData.title);
 
         // We create the company thanks to te datas retrieved
         const workSite = await db.workSite.create({
             data: {
-                title: validatedData.title,
-                description: validatedData.description,
-                beginsThe: validatedData.beginsThe ? new Date(validatedData.beginsThe) : null,
+                title: sanitizedData.title,
+                description: sanitizedData.description,
+                beginsThe: sanitizedData.beginsThe ? new Date(sanitizedData.beginsThe) : null,
                 status: status,
                 completionDate: null,
                 road: road,

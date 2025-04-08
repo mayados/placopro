@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
 import { createQuoteDraftSchema, createQuoteFinalSchema } from "@/validation/quoteValidation";
-
+import { sanitizeData } from "@/lib/sanitize"; 
 
 
 // Asynchrone : waits for a promise
@@ -68,12 +68,15 @@ export async function POST(req: NextRequest) {
       
             return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
         }
+       
+      // Validation réussie, traiter les données avec le statut
+      // Sanitizing datas
+      const sanitizedData = sanitizeData(parsedData.data);
+      console.log("Données nettoyées :", JSON.stringify(sanitizedData));
+    
+      // Ajoute le statut aux données validées
+      sanitizedData.status = status;
               
-        // Validation réussie, traiter les données avec le statut
-        const validatedData = parsedData.data;
-              
-        // Ajoute le statut aux données validées
-        data.status = status;
 
     //   const sanitizedData = {
     //     ...data,
@@ -264,32 +267,32 @@ export async function POST(req: NextRequest) {
                 number: quoteNumber,
                 status: status,
                 issueDate : new Date().toISOString(), 
-                validityEndDate: validatedData.validityEndDate, 
-                natureOfWork: validatedData.natureOfWork, 
-                description: validatedData.description, 
-                workStartDate: validatedData.workStartDate, 
-                estimatedWorkEndDate: validatedData.estimatedWorkEndDate, 
-                estimatedWorkDuration: validatedData.estimatedWorkDuration, 
-                isQuoteFree: validatedData.isQuoteFree === "Oui" ? true : false, 
+                validityEndDate: sanitizedData.validityEndDate, 
+                natureOfWork: sanitizedData.natureOfWork, 
+                description: sanitizedData.description, 
+                workStartDate: sanitizedData.workStartDate, 
+                estimatedWorkEndDate: sanitizedData.estimatedWorkEndDate, 
+                estimatedWorkDuration: sanitizedData.estimatedWorkDuration, 
+                isQuoteFree: sanitizedData.isQuoteFree === "Oui" ? true : false, 
                 quoteCost: 0, 
                 vatAmount: 0,  
                 priceTTC: 0, 
                 priceHT: 0, 
-                depositAmount: validatedData.depositAmount,
-                discountAmount: validatedData.discountAmount,
-                discountReason: validatedData.discountReason,
-                travelCosts: validatedData.travelCosts ?? 0, 
+                depositAmount: sanitizedData.depositAmount,
+                discountAmount: sanitizedData.discountAmount,
+                discountReason: sanitizedData.discountReason,
+                travelCosts: sanitizedData.travelCosts ?? 0, 
                 hourlyLaborRate: 0, 
-                paymentDelay: validatedData.paymentDelay ?? 0,
-                paymentTerms: validatedData.paymentTerms ?? "",
-                latePaymentPenalties: validatedData.latePaymentPenalities,
-                recoveryFee: validatedData.recoveryFees,
+                paymentDelay: sanitizedData.paymentDelay ?? 0,
+                paymentTerms: sanitizedData.paymentTerms ?? "",
+                latePaymentPenalties: sanitizedData.latePaymentPenalities,
+                recoveryFee: sanitizedData.recoveryFees,
                 isSignedByClient: false,
                 signatureDate: null,
-                hasRightOfWithdrawal: validatedData.hasRightOfWithdrawal=== "Oui" ? true : false,
-                withdrawalPeriod: validatedData.withdrawalPeriod,
-                clientId: validatedData.clientId,
-                workSiteId: validatedData.workSiteId,
+                hasRightOfWithdrawal: sanitizedData.hasRightOfWithdrawal=== "Oui" ? true : false,
+                withdrawalPeriod: sanitizedData.withdrawalPeriod,
+                clientId: sanitizedData.clientId,
+                workSiteId: sanitizedData.workSiteId,
                 userId: user.id,
 
             },
@@ -362,15 +365,15 @@ export async function POST(req: NextRequest) {
       )
 
       // add travelCosts to totalHtQuote (which contains services costs HT)
-      totalHtQuote += validatedData.travelCosts ?? 0
-      totalHtQuote-= validatedData.discountAmount ?? 0
+      totalHtQuote += sanitizedData.travelCosts ?? 0
+      totalHtQuote-= sanitizedData.discountAmount ?? 0
       // Count vatAmount for travelCosts and add the result to vatAmountQuote
-      const vatAmountForTravelCosts = validatedData.travelCosts ?? 0 * (20 / 100);
+      const vatAmountForTravelCosts = sanitizedData.travelCosts ?? 0 * (20 / 100);
       console.log("montant tva pour les trajets : "+vatAmountForTravelCosts)
       vatAmountQuote += vatAmountForTravelCosts
       console.log("montant tva du devis : "+vatAmountQuote)
       // add totalTTC travelCosts to totalTTCQuote
-      totalTTCQuote += validatedData.travelCosts ?? 0 + Number(vatAmountForTravelCosts)
+      totalTTCQuote += sanitizedData.travelCosts ?? 0 + Number(vatAmountForTravelCosts)
       console.log("total du prix du devis : "+totalTTCQuote)
 
         //update Quote

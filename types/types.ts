@@ -739,10 +739,10 @@ interface ClientType{
     mail: string;
     phone: string;
     road: string
-    addressNumber: string;
-    postalCode: string;
-    city: string;
-    additionalAddress: string;
+    addressNumber: string | null;
+    postalCode: string | null;
+    city: string | null;
+    additionalAddress: string | null;
     isAnonymized: boolean;
     prospect?: ProspectType | null;
     workSites?: WorkSiteType[];

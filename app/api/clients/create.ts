@@ -30,12 +30,12 @@ export async function POST(req: NextRequest) {
     try {
 
         
-        // if (!user) {
-        //     return NextResponse.json({ 
-        //         success: false, 
-        //         message: "Utilisateur non authentifié." 
-        //     }, { status: 401 });
-        // }
+        if (!user) {
+            return NextResponse.json({ 
+                success: false, 
+                message: "Utilisateur non authentifié." 
+            }, { status: 401 });
+        }
 
         // Validation avec Zod (sans 'status')
         const parsedData = createClientSchema.safeParse(data);

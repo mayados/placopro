@@ -4,6 +4,7 @@ import { currentUser } from '@clerk/nextjs/server'
 import { slugify } from '@/lib/utils'
 import { createCreditNoteSchema } from "@/validation/creditNoteValidation";
 import { CreditNoteReasonEnum } from "@prisma/client";
+import { sanitizeData } from "@/lib/sanitize"; 
 
 
 
@@ -39,8 +40,13 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
         }
                 
-        // Validation réussie, traiter les données avec le statut
-        const validatedData = parsedData.data;
+        // Validation réussie
+        // Sanitizing datas
+        const sanitizedData = sanitizeData(parsedData.data);
+        console.log("Données nettoyées :", JSON.stringify(sanitizedData));
+    
+        // Ajoute le statut aux données validées
+        sanitizedData.billId = billId;
 
               // Generate an unique and chronological number 
       const generateCreditNoteNumber = async (type = "credit-note") => {
@@ -84,9 +90,9 @@ export async function POST(req: NextRequest) {
         const creditNote = await db.creditNote.create({
             data: {
                 number: CreditNoteNumber,
-                amount: validatedData.amount,
+                amount: sanitizedData.amount,
                 billId: billId,
-                reason: validatedData.reason as CreditNoteReasonEnum,
+                reason: sanitizedData.reason as CreditNoteReasonEnum,
                 issueDate: new Date()
             },
         });

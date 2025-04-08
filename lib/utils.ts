@@ -1,3 +1,7 @@
+/**
+ * @jest-environment jsdom
+ */
+
 import { format } from "date-fns";
 
 // Display date on french format, without hours
@@ -80,4 +84,6 @@ export function formatDateForInput(date: string | Date | null): string {
   const day = String(d.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
+
+
 

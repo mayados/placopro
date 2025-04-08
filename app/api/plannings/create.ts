@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
 import { createPlanningSchema } from "@/validation/planningValidation";
+import { sanitizeData } from "@/lib/sanitize"; 
 
 
 // Asynchrone : waits for a promise
@@ -36,17 +37,20 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
         }
                         
-        // Validation réussie, traiter les données avec le statut
-        const validatedData = parsedData.data;
+        // Validation réussie
+        // Sanitizing datas
+        const sanitizedData = sanitizeData(parsedData.data);
+        console.log("Données nettoyées :", JSON.stringify(sanitizedData));
+
 
         // We create the planning thanks to te datas retrieved
         const planning = await db.planning.create({
             data: {
-                task: validatedData.title,
-                startTime: validatedData.start,
-                endTime: validatedData.end,
-                workSiteId: validatedData.workSiteId,
-                clerkUserId: validatedData.clerkUserId
+                task: sanitizedData.title,
+                startTime: sanitizedData.start,
+                endTime: sanitizedData.end,
+                workSiteId: sanitizedData.workSiteId,
+                clerkUserId: sanitizedData.clerkUserId
             },
         });
 

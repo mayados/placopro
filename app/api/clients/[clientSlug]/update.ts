@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { updateClientSchema } from "@/validation/clientValidation";
+import { sanitizeData } from "@/lib/sanitize"; 
 
 
 export async function PUT(req: NextRequest) {
@@ -17,25 +18,27 @@ export async function PUT(req: NextRequest) {
     postalCode,
     city,
     additionalAddress,
-    prospectNumber,
+    // prospectNumber,
     } = data;
     // let {isAnonymized} = data.isAnonymized
 
   try {
-    const { prospectNumber, ...dataWithoutProspectNumber } = data;
-    data.prospectNumber = prospectNumber;
-    console.log("numéro de prospect récupéré :"+prospectNumber)
+    // const { prospectNumber, ...dataWithoutProspectNumber } = data;
+    // data.prospectNumber = prospectNumber;
+    // console.log("numéro de prospect récupéré :"+prospectNumber)
 
     // Validation avec Zod (sans 'status')
-    const parsedData = updateClientSchema.safeParse(dataWithoutProspectNumber);
+    const parsedData = updateClientSchema.safeParse(data);
     if (!parsedData.success) {
         console.error("Validation Zod échouée :", parsedData.error.format());
         
         return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
     }
                 
-    // Validation réussie, traiter les données avec le statut
-    const validatedData = parsedData.data;
+    // Validation réussie
+    // Sanitizing datas
+    const sanitizedData = sanitizeData(parsedData.data);
+    console.log("Données nettoyées :", JSON.stringify(sanitizedData));
 
     /* We have to verify which value(s) has/have changed
         So first, we retrieve the client thanks to the id (unique value which doesn't change)
@@ -58,7 +61,7 @@ export async function PUT(req: NextRequest) {
             city: true,
             additionalAddress: true,
             isAnonymized: true,
-            prospect: true,
+            // prospect: true,
             workSites: true,
             bills: true,
             quotes: true,
@@ -70,39 +73,6 @@ export async function PUT(req: NextRequest) {
     let prospectData = null;
 
     // console.log("le client est-il anonymisé ? "+isAnonymized)
-
-if ((prospectNumber !== null)&&(prospectNumber !== undefined)) {
-    const prospectUser = await db.prospect.findUnique({
-        where: {
-            prospectNumber: prospectNumber,
-        },
-        select: {
-            id: true,
-            name: true,
-            firstName: true,
-            mail: true,
-            phone: true,
-            prospectNumber: true,
-            slug: true,
-            isConverted: true,
-            client: true,
-        }  
-    });
-
-    if (prospectUser) {
-        prospectData = {
-            id: prospectUser.id,
-            name: prospectUser.name,
-            firstName: prospectUser.firstName,
-            mail: prospectUser.mail,
-            phone: prospectUser.phone || null,
-            prospectNumber: prospectUser.prospectNumber,
-            slug: prospectUser.slug,
-            isConverted: prospectUser.isConverted,
-            client: prospectUser.client,
-        };
-    }
-}
 
     if(originalClient){
         const client : ClientType= {
@@ -119,42 +89,24 @@ if ((prospectNumber !== null)&&(prospectNumber !== undefined)) {
             postalCode: originalClient.postalCode,
             city: originalClient.city,
             additionalAddress: originalClient.additionalAddress,
-            prospect: originalClient.prospect,
 
         }
 
 
-
-        // if (prospectData) {
-        //     await db.client.update({
-        //       where: { id: id },
-        //       data: {
-        //         prospect: {
-        //           connect: {
-        //             prospectNumber: prospectData.prospectNumber,  // ProspectData doit contenir un `id` valide
-        //           }
-        //         }
-        //       }
-        //     });
-        //   }
-          
-
-
         // We verify if the values have changed by comparing original values and values retrieved from the form
         // If it's the case, we replace const client's values by values retrieve from the forms
-        if (originalClient.name !== validatedData.name) client.name = validatedData.name;
+        if (originalClient.name !== sanitizedData.name) client.name = sanitizedData.name;
         if (originalClient.name !== name) client.slug = name.toLowerCase()+"-"+firstName.toLowerCase();
-        if (originalClient.firstName !== validatedData.firstname) client.firstName = validatedData.firstname;
-        if (originalClient.firstName !== validatedData.firstname) client.slug = validatedData.name.toLowerCase()+"-"+validatedData.firstname.toLowerCase();
-        if (originalClient.mail !== validatedData.mail) client.mail = validatedData.mail;
-        if (originalClient.phone !== validatedData.phone) client.phone = validatedData.phone;
-        if (originalClient.prospect?.prospectNumber !== prospectNumber) client.prospect = prospectData;
+        if (originalClient.firstName !== sanitizedData.firstname) client.firstName = sanitizedData.firstname;
+        if (originalClient.firstName !== sanitizedData.firstname) client.slug = sanitizedData.name.toLowerCase()+"-"+sanitizedData.firstname.toLowerCase();
+        if (originalClient.mail !== sanitizedData.mail) client.mail = sanitizedData.mail;
+        if (originalClient.phone !== sanitizedData.phone) client.phone = sanitizedData.phone;
         // if (originalClient.isAnonymized !== isAnonymized) client.isAnonymized = isAnonymized;
-        if (originalClient.road !== validatedData.road) client.road = validatedData.road;
-        if (originalClient.addressNumber !== validatedData.addressNumber) client.addressNumber = validatedData.addressNumber;
-        if (originalClient.postalCode !== validatedData.postalCode) client.postalCode = validatedData.postalCode;
-        if (originalClient.city !== validatedData.city) client.city = validatedData.city;
-        if (originalClient.additionalAddress !== validatedData.additionalAddress) client.additionalAddress = validatedData.additionalAddress;
+        if (originalClient.road !== sanitizedData.road) client.road = sanitizedData.road;
+        if (originalClient.addressNumber !== sanitizedData.addressNumber) client.addressNumber = sanitizedData.addressNumber;
+        if (originalClient.postalCode !== sanitizedData.postalCode) client.postalCode = sanitizedData.postalCode;
+        if (originalClient.city !== sanitizedData.city) client.city = sanitizedData.city;
+        if (originalClient.additionalAddress !== sanitizedData.additionalAddress) client.additionalAddress = sanitizedData.additionalAddress;
 
     
 
@@ -175,10 +127,6 @@ if ((prospectNumber !== null)&&(prospectNumber !== undefined)) {
                 additionalAddress: client.additionalAddress,
                 // prospectId: prospectData?.id
                 // // prospect: client.prospect,
-                prospect: prospectData ? {
-                    connect: { prospectNumber: client.prospect?.prospectNumber } // Assurez-vous que prospectData contient l'id
-                  } : undefined,
-                
                 
             },
           });
@@ -193,7 +141,6 @@ if ((prospectNumber !== null)&&(prospectNumber !== undefined)) {
         console.log("updated Client postalCode : "+updatedClient.postalCode)
         console.log("updated Client city : "+updatedClient.city)
         console.log("updated Client additionnalAddress : "+updatedClient.additionalAddress)
-        console.log("updated Client prospectNumber : "+updatedClient.prospectId)
         console.log("updated Client slug : "+updatedClient.slug)
 
         return NextResponse.json({

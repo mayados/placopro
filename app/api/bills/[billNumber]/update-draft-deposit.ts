@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server';
 import { updateDraftBillDepositSchema, updateDraftFinalDepositBillSchema } from "@/validation/billValidation";
+import { sanitizeData } from "@/lib/sanitize"; 
 
 
 export async function PUT(req: NextRequest) {
@@ -42,12 +43,15 @@ export async function PUT(req: NextRequest) {
             return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
         }
                 
-        // Validation réussie, traiter les données avec le statut
-        const validatedData = parsedData.data;
-                
+        // Validation réussie
+        // Sanitizing datas
+        const sanitizedData = sanitizeData(parsedData.data);
+        console.log("Données nettoyées :", JSON.stringify(sanitizedData));
+    
         // Ajoute le statut aux données validées
-        data.status = status;
-        data.id = id;
+        sanitizedData.status = status;
+        sanitizedData.id = id;
+                
 
         // Verify if bill exists
         const existingBill = await db.bill.findUnique({
@@ -67,12 +71,12 @@ export async function PUT(req: NextRequest) {
         // Préparer l'objet de mise à jour (ignorer les champs absents)
         const updateData: Record<string, string | Date | null> = {};
 
-        if (validatedData.paymentTerms !== null && validatedData.paymentTerms !== existingBill.paymentTerms) {
-            updateData.paymentTerms = validatedData.paymentTerms;
+        if (sanitizedData.paymentTerms !== null && sanitizedData.paymentTerms !== existingBill.paymentTerms) {
+            updateData.paymentTerms = sanitizedData.paymentTerms;
         }
         
-        if (validatedData.dueDate !== null && validatedData.dueDate !== existingBill.paymentDate) {
-            updateData.paymentDate = validatedData.dueDate ? new Date(validatedData.dueDate) : null;
+        if (sanitizedData.dueDate !== null && sanitizedData.dueDate !== existingBill.paymentDate) {
+            updateData.paymentDate = sanitizedData.dueDate ? new Date(sanitizedData.dueDate) : null;
         }
         
         if (status !== null && status !== existingBill.status) {
