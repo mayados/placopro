@@ -1,4 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { createCsrfMiddleware } from '@edge-csrf/nextjs';
 
 // createRouteMatcher => allows to restrict access to routes
 
@@ -12,3 +13,13 @@ export const config = {
     '/(api|trpc)(.*)',
   ],
 };
+
+// initalize csrf protection middleware
+const csrfMiddleware = createCsrfMiddleware({
+  cookie: {
+    // Allows to be sure the cookie is only transmitted  by HTTPS
+    secure: process.env.NODE_ENV === 'production',
+  },
+});
+
+export const middleware = csrfMiddleware;
