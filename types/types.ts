@@ -612,6 +612,11 @@ interface ServiceFormBillType{
     // };
 }
 
+enum ClientOrProspectEnum {
+  CLIENT= 'CLIENT',
+  PROSPECT= 'PROSPECT',
+};
+
 enum CreditNoteSettlementTypeEnum {
   REFUND = "Remboursement",
   COMPENSATION = "Compensation"
@@ -627,6 +632,13 @@ enum CreditNoteReasonEnumDescription {
     DEPOSIT_REFUND = "Remboursement d'acompte",
     DEPOSIT_ADJUSTMENT = "Ajustement d'acompte"
 }
+
+enum BillTypeEnum {
+    DEPOSIT = "DEPOSIT",
+    FINAL = "FINAL",
+    INVOICE = "INVOICE"
+  }
+  
 
 interface CreditNoteType{
     id: string,

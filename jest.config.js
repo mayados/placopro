@@ -26,7 +26,10 @@ const customJestConfig = {
   setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],  
   transform: {
     "^.+\\.(js|jsx|ts|tsx)$": ["babel-jest", { presets: ["next/babel"] }]
-  }
+  },
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/$1', // Résoudre l'alias '@'
+  },
 };
 
 module.exports = createJestConfig(customJestConfig);

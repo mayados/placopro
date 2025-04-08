@@ -18,9 +18,9 @@ model Estimation{
     author User @relation(fields: [authorId], references: [id])
 
 	// One Estimation is linked to 1 Prospect
-    prospectId String @db.ObjectId
-    prospect Prospect @relation(fields: [prospectId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+    clientId String @db.ObjectId
+    client Client @relation(fields: [clientId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
-    @@index([prospectId])
+    @@index([clientId])
     @@index([authorId])
 }
