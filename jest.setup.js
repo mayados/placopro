@@ -1,5 +1,8 @@
 // jest.setup.js
-
+// Chargement des variables d'environnement depuis le fichier .env.test
+// Chargement des variables d'environnement depuis .env.test
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.test' });
 // Mock des appels fetch avec jest-fetch-mock
 import fetchMock from 'jest-fetch-mock';
 
