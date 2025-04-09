@@ -1,10 +1,12 @@
 // Create Credit Note
-export const createCreditNote = async (creditNote : CreateCreditNoteFormValueType): Promise<CreditNoteType> => {
+export const createCreditNote = async (creditNote : CreateCreditNoteFormValueType, csrfToken: string): Promise<CreditNoteType> => {
     try {
         const response = await fetch(`/api/creditNotes`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
+
             },
             body: JSON.stringify(creditNote),
         });
@@ -23,12 +25,14 @@ export const createCreditNote = async (creditNote : CreateCreditNoteFormValueTyp
     }
   };
 
-export const updateCreditNote = async (creditNoteNumber: string, formValues: UpdateCreditNoteFormValueType): Promise<CreditNoteType> => {
+export const updateCreditNote = async (creditNoteNumber: string, formValues: UpdateCreditNoteFormValueType, csrfToken: string): Promise<CreditNoteType> => {
     try {
         const response = await fetch(`/api/creditNotes/${creditNoteNumber}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
+
             },
             body: JSON.stringify(formValues),
         });

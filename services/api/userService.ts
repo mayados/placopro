@@ -44,12 +44,14 @@ export const deleteEmployee = async (employeeSlug: string): Promise<void> => {
 };
 
 // Create employee
-export const createEmployee = async (employee: UserFormValueType): Promise<UserType> => {
+export const createEmployee = async (employee: UserFormValueType, csrfToken: string): Promise<UserType> => {
     try {
         const response = await fetch(`/api/users`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
+
             },
             body: JSON.stringify(employee),
         });
@@ -70,12 +72,14 @@ export const createEmployee = async (employee: UserFormValueType): Promise<UserT
 
 
 // Update employee
-export const updateUser = async (employee: UserType): Promise<UserType> => {
+export const updateUser = async (employee: UserType, csrfToken: string): Promise<UserType> => {
     try {
         const response = await fetch(`/api/users/${employee.slug}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
+
             },
             body: JSON.stringify(employee),
         });

@@ -1,31 +1,16 @@
-"use client";
+// 👇 server file
+import { headers } from 'next/headers'
+// client component
+import Planning from '@/components/Planning' 
 
-import { useEffect, useState } from "react";
-import { formatDate } from '@/lib/utils'
-// import toast, { Toaster } from 'react-hot-toast';
-import {Tab, TabGroup ,TabList, TabPanel, TabPanels } from '@headlessui/react';
-import Link from "next/link";
-import { fetchCreditNotes } from "@/services/api/creditNoteService";
-import PlanningCalendar from "@/components/PlanningCalendar";
+export default async function Page() {
+  const h = await headers()
+  const csrfToken = h.get('X-CSRF-Token') || 'missing'
 
-const Planning = () =>{
-
-
+  // Once we get the csrf token and billNumber, we can give it to the component
   return (
-
-    <>
-    <div className="flex w-screen">
-        {/* <div><Toaster/></div> */}
-
-    <section>
-        <PlanningCalendar role="director" />
-    </section>
-
-    </div>
-    </>
-
+    <Planning
+      csrfToken={csrfToken}
+    />
   )
 }
-
-export default Planning
-
