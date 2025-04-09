@@ -8,6 +8,11 @@ import { sanitizeData } from "@/lib/sanitize";
 export async function PUT(req: NextRequest) {
     try {
         const data = await req.json();
+          // Explicit validation of CSRF token (in addition of the middleware)
+        const csrfToken = req.headers.get("x-csrf-token");
+        if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
+            return new Response("Invalid CSRF token", { status: 403 });
+        }
         console.log("Données reçues dans l'API :", JSON.stringify(data));
 
         const user = await currentUser();

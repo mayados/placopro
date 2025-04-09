@@ -18,9 +18,10 @@ interface PlanningCalendarProps {
   // Filter planning of an employee
   clerkUserId?: string; 
   selectedEmployee?: string;
+  csrfToken: string;
 }
 
-const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }) => {
+const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId, csrfToken }) => {
   // Display form or not
   const [showForm, setShowForm] = useState<boolean>(false);  
   // Event selectionated for modification
@@ -94,12 +95,12 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }
       };
   
       loadPlannings();
-    }, [role, clerkUserId]);
+    }, [role, clerkUserId, csrfToken]);
   
     const handleDeleteEvent = async() => {
       if (selectedEvent?.id) {
         try {
-          const data = await deletePlanning(selectedEvent.id)
+          const data = await deletePlanning(selectedEvent.id, csrfToken)
           setEvents((prevEvents) => prevEvents.filter(event => event.id !== selectedEvent.id));
           setShowDeleteModal(false);
           setShowForm(false);
@@ -215,7 +216,7 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }
                   
           // Delete former validation errors
           setErrors({})
-          const data = await createPlanning(newEvent)
+          const data = await createPlanning(newEvent, csrfToken)
           setEvents(prev => [...prev, { ...newEvent, id: data.id }]);
         } catch (error) {
           console.error("Erreur lors de la création de l'événement :", error);
@@ -252,7 +253,7 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }
                             
           // Delete former validation errors
           setErrors({})
-          const response = await updatePlanning(selectedEvent.id, updatedEvent); 
+          const response = await updatePlanning(selectedEvent.id, updatedEvent, csrfToken); 
           setEvents((prev) =>
             prev.map((event) =>
               event.id === selectedEvent.id
@@ -406,6 +407,8 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId }
                 {errors.end && <p style={{ color: "red" }}>{errors.end}</p>}
 
               </div>
+              <input type="hidden" name="csrf_token" value={csrfToken} />
+              
               {/* delete button, only display on modification mode */}
               {selectedEvent?.id && (
                 <button 

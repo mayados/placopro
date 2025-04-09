@@ -15,12 +15,14 @@ export const fetchPlannings = async (): Promise<PlanningsListType> => {
 };
 
 // Create a Planning
-export const createPlanning = async (planning : CalendarEvent): Promise<PlanningType> => {
+export const createPlanning = async (planning : CalendarEvent, csrfToken: string): Promise<PlanningType> => {
     try {
         const response = await fetch(`/api/plannings`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
+
             },
             body: JSON.stringify(planning),
         });
@@ -39,12 +41,14 @@ export const createPlanning = async (planning : CalendarEvent): Promise<Planning
     }
 };
 
-export const updatePlanning = async (PlanningId: string, formValues: UpdateCalendarEventType): Promise<PlanningType> => {
+export const updatePlanning = async (PlanningId: string, formValues: UpdateCalendarEventType, csrfToken: string): Promise<PlanningType> => {
     try {
         const response = await fetch(`/api/plannings/${PlanningId}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
+
             },
             body: JSON.stringify(formValues),
         });
@@ -64,10 +68,15 @@ export const updatePlanning = async (PlanningId: string, formValues: UpdateCalen
 };
 
 // Delete a planning
-export const deletePlanning = async (PlanningId: string): Promise<void> => {
+export const deletePlanning = async (PlanningId: string, csrfToken: string): Promise<void> => {
     try {
         const response = await fetch(`/api/plannings/${PlanningId}`, {
             method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
+
+            },
         });
         if (!response.ok) {
             throw new Error("Error with planning deletion");

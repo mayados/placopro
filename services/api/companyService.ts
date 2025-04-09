@@ -44,12 +44,14 @@ export const deleteCompany = async (companySlug: string): Promise<void> => {
 };
 
 // Update company
-export const updateCompany = async (company: CompanyType): Promise<CompanyType> => {
+export const updateCompany = async (company: CompanyType, csrfToken: string): Promise<CompanyType> => {
   try {
       const response = await fetch(`/api/companies/${company.slug}`, {
           method: "PUT",
           headers: {
               "Content-Type": "application/json",
+              "X-CSRF-Token": csrfToken,
+
           },
           body: JSON.stringify(company),
       });
@@ -69,12 +71,14 @@ export const updateCompany = async (company: CompanyType): Promise<CompanyType> 
 };
 
 // Create company
-export const createCompany = async (company: CompanyFormValueType): Promise<CompanyType> => {
+export const createCompany = async (company: CompanyFormValueType, csrfToken: string): Promise<CompanyType> => {
   try {
       const response = await fetch(`/api/companies`, {
           method: "POST",
           headers: {
               "Content-Type": "application/json",
+              "X-CSRF-Token": csrfToken,
+
           },
           body: JSON.stringify(company),
       });

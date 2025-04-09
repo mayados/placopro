@@ -44,12 +44,14 @@ export const deleteWorkSite = async (workSiteSlug: string): Promise<void> => {
 };
 
 // Create workSite
-export const createWorkSite = async (workSite: WorkSiteCreationType): Promise<WorkSiteType> => {
+export const createWorkSite = async (workSite: WorkSiteCreationType, csrfToken: string): Promise<WorkSiteType> => {
     try {
         const response = await fetch(`/api/clients`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
+
             },
             body: JSON.stringify(workSite),
         });
@@ -69,12 +71,14 @@ export const createWorkSite = async (workSite: WorkSiteCreationType): Promise<Wo
 };
 
 // Update workSite
-export const updateWorkSite = async (workSite: WorkSiteType): Promise<WorkSiteType> => {
+export const updateWorkSite = async (workSite: WorkSiteType, csrfToken: string): Promise<WorkSiteType> => {
     try {
         const response = await fetch(`/api/workSites/${workSite.slug}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
+
             },
             body: JSON.stringify(workSite),
         });

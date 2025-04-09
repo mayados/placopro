@@ -1,7 +1,7 @@
 "use client";
 
 import { fetchCompany } from "@/services/api/companyService";
-import { useEffect, useState, use } from "react";
+import { useEffect, useState } from "react";
 // import toast, { Toaster } from 'react-hot-toast';
 // import { useRouter } from "next/navigation";
 
