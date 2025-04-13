@@ -3,14 +3,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { updateClassicQuoteSchema } from "@/validation/quoteValidation";
 import { sanitizeData } from "@/lib/sanitize"; 
 
-
 export async function PUT(req: NextRequest) {
+   
   const data = await req.json();
-  // Explicit validation of CSRF token (in addition of the middleware)
-  const csrfToken = req.headers.get("x-csrf-token");
-  if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
-    return new Response("Invalid CSRF token", { status: 403 });
-  }
+    // Explicit validation of CSRF token (in addition of the middleware)
+    // const csrfToken = req.headers.get("x-csrf-token");
+    // if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
+    //   return new Response("Invalid CSRF token", { status: 403 });
+    // }
+  console.log("data "+JSON.stringify(data))
   // const { id, status, isSignedByClient, signatureDate } = data;
 
   // Mapping of french statuts to english
@@ -47,11 +48,11 @@ export async function PUT(req: NextRequest) {
     sanitizedData.id = id;
             
     // construct dynamically update's object
-    const updateData: Record<string, any> = {};
+    const updateData: Record<string, unknown> = {};
 
     // status conversion
-    if (status !== null) {
-        const mappedStatus = statusMapping[status];
+    if (sanitizedData.status !== null) {
+        const mappedStatus = statusMapping[sanitizedData.status];
         if (mappedStatus) {
             updateData.status = mappedStatus;
         } else {

@@ -4,13 +4,16 @@ import { headers } from 'next/headers'
 import CreationBillFromQuote from '@/components/CreationBillFromQuote' 
 
 export default async function Page({ params }: { params: { quoteNumber: string } }) {
+ 
+  const quoteNumberParam = await Promise.resolve(params.quoteNumber);
+
   const h = await headers()
   const csrfToken = h.get('X-CSRF-Token') || 'missing'
 
   // Once we get the csrf token and billNumber, we can give it to the component
   return (
     <CreationBillFromQuote
-      quoteNumber={params.quoteNumber}
+      quoteNumber={quoteNumberParam}
       csrfToken={csrfToken}
     />
   )
