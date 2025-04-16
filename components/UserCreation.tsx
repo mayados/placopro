@@ -5,8 +5,8 @@ import { Field,Input, Select } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import { createEmployee } from "@/services/api/userService";
 import { createUserSchema } from "@/validation/userValidation";
-
-// import toast, { Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
+import Breadcrumb from "@/components/BreadCrumb";
 
 type UserCreationProps = {
     csrfToken: string;
@@ -61,6 +61,7 @@ export default function UserCreation({csrfToken}: UserCreationProps){
             // Delete former validation errors
             setErrors({})
             const newEmployee = await createEmployee(employee, csrfToken);
+            toast.success("Utilisateur créé avec succès");
 
             try {
                 router.push(`/director/employees/${newEmployee.slug}`);
@@ -69,16 +70,22 @@ export default function UserCreation({csrfToken}: UserCreationProps){
             }
         }catch (error) {
             console.error("Erreur lors de la création de l'utilisateur :", error);
-            // toast.error("There was a problem with updating the client. Please try again!");
+            toast.error("Erreur lors de la création de l'utilisateur");
         }
 
     };
 
     return (
         <>
-            {/* <div><Toaster/></div> */}
+            
             <h1 className="text-3xl text-white ml-3 text-center">Création utilisateur : {employee?.firstName} {employee?.lastName}</h1>
-            {/* <div><Toaster /></div> */}
+            <Breadcrumb
+                items={[
+                    { label: "Tableau de bord", href: "/director" },
+                    { label: "Employés", href: "/director/employees" },
+                    { label: "Création d'employé" }, 
+                ]}
+            />
             <form 
                 onSubmit={(e) => {
                     e.preventDefault();
