@@ -7,11 +7,7 @@ import { updateWorkSiteSchema } from "@/validation/workSiteValidation";
 export async function PUT(req: NextRequest) {
   // Retrieve datas from request's body
   const data = await req.json();
-  // Explicit validation of CSRF token (in addition of the middleware)
-  const csrfToken = req.headers.get("x-csrf-token");
-  if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
-    return new Response("Invalid CSRF token", { status: 403 });
-  }
+
   const { 
         id,
         title,
@@ -90,7 +86,7 @@ export async function PUT(req: NextRequest) {
             status: originalWorkSite.status,
             completionDate: originalWorkSite.completionDate,
             road: originalWorkSite.road,  
-            additionnalAddress: originalWorkSite.additionalAddress ?? "", 
+            additionalAddress: originalWorkSite.additionalAddress ?? "", 
             postalCode: originalWorkSite.postalCode, 
             city: originalWorkSite.city, 
             client: originalWorkSite.client,
@@ -106,7 +102,7 @@ export async function PUT(req: NextRequest) {
         if (originalWorkSite.status !== validatedData.status) workSite.status = validatedData.status;
         if (originalWorkSite.completionDate !== validatedData.completionDate) workSite.completionDate = validatedData.completionDate;
         if (originalWorkSite.road !== validatedData.road) workSite.road = validatedData.road;
-        if (originalWorkSite.additionalAddress !== validatedData.additionalAddress) workSite.additionnalAddress = validatedData.additionalAddress;
+        if (originalWorkSite.additionalAddress !== validatedData.additionalAddress) workSite.additionalAddress = validatedData.additionalAddress;
         if (originalWorkSite.postalCode !== validatedData.postalCode) workSite.postalCode = validatedData.postalCode;
         if (originalWorkSite.addressNumber !== validatedData.addressNumber) workSite.addressNumber = validatedData.addressNumber;
         if (originalWorkSite.road !== validatedData.road) workSite.road = validatedData.road;
@@ -127,7 +123,7 @@ export async function PUT(req: NextRequest) {
                 status: workSite.status, 
                 completionDate: workSite.completionDate, 
                 road: workSite.road, 
-                additionalAddress: workSite.additionnalAddress, 
+                additionalAddress: workSite.additionalAddress, 
                 postalCode: workSite.postalCode, 
                 addressNumber: workSite.addressNumber, 
                 city: workSite.city, 
@@ -136,7 +132,7 @@ export async function PUT(req: NextRequest) {
             include: { client: true },
           });
 
-        return NextResponse.json({updatedworkSite }, { status: 200 });
+        return NextResponse.json(updatedworkSite , { status: 200 });
 
     }
 

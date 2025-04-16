@@ -7,11 +7,7 @@ import { sanitizeData } from "@/lib/sanitize";
 export async function PUT(req: NextRequest) {
   // Retrieve datas from request's body
   const data = await req.json();
-  // Explicit validation of CSRF token (in addition of the middleware)
-  const csrfToken = req.headers.get("x-csrf-token");
-  if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
-    return new Response("Invalid CSRF token", { status: 403 });
-  }
+
   const { 
     id,
     firstName,
@@ -86,7 +82,7 @@ export async function PUT(req: NextRequest) {
 
 
 
-      const employee: UserType= {
+      const updatedEmployee: UserType= {
         id: updatedEmployeeSimple.id || user.id,
         email: updatedEmployeeEmail?.emailAddress,
         // first name and lasName are not to put in metadata beacause these properties already exist
@@ -98,7 +94,7 @@ export async function PUT(req: NextRequest) {
     }
 
 
-    return NextResponse.json({updatedEmployee: employee }, { status: 200 });
+    return NextResponse.json(updatedEmployee , { status: 200 });
 
   } catch (error) {
     console.error("Error with employee's update:", error);
