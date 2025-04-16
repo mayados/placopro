@@ -13,8 +13,7 @@ import { fetchVatRates } from "@/services/api/vatRateService";
 import { fetchUnits } from "@/services/api/unitService";
 import { fetchSuggestions } from "@/services/api/suggestionService";
 import { updateDraftQuoteSchema, updateDraftFinalQuoteSchema } from "@/validation/quoteValidation";
-
-// import toast, { Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 type UpdateDraftQuoteProps = {
     csrfToken: string;
@@ -303,6 +302,8 @@ export default function Bill({csrfToken, quoteNumber}: UpdateDraftQuoteProps){
             const data = await updateDraftQuote(quote?.number, updatedQuoteWithStatus, csrfToken)
             console.log("data renvoyés : "+data)
             const updatedQuote = data;
+            toast.success("Le devis a été mis à jour avec succès");
+            
             console.log("voici le devis updaté : "+updatedQuote.number)
             console.log("status du devis updaté "+updatedQuote.status)
             try {
@@ -318,6 +319,7 @@ export default function Bill({csrfToken, quoteNumber}: UpdateDraftQuoteProps){
             }
 
         }catch(error){
+            toast.error("Erreur lors de la modification du devis");
             console.error("Impossible to update the quote :", error);
         }
     }

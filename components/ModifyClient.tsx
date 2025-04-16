@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { fetchClient, updateClient } from "@/services/api/clientService";
 // import toast, { Toaster } from 'react-hot-toast';
 import { updateClientSchema } from "@/validation/clientValidation";
+import { toast } from 'react-hot-toast';
 
 
 type BillProps = {
@@ -86,7 +87,7 @@ const handleClientUpdate = async () => {
         setClient(updatedClient);
         console.log("essai de lecture des données : "+data)
         console.log("updated client :"+updatedClient.slug)
-        // toast.success("Recipe updated successfully !");
+        toast.success("Client mis à jour avec succès");
         try {
             // We redirect because it's possible the slug has changed. So we have to point to the right URL.
             router.push(`/director/clients/${updatedClient.slug}/update`);
@@ -98,6 +99,7 @@ const handleClientUpdate = async () => {
                     
     }catch (error) {
         console.error("Erreur lors de la mise à jour du devis :", error);
+        toast.error("Erreur lors de la mise à jour du client");
     }
         
 };

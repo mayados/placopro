@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
 import { fetchCreditNote, updateCreditNote, deleteCreditNote} from "@/services/api/creditNoteService";
 import { updateCreditNoteSchema } from "@/validation/creditNoteValidation";
+import { toast } from 'react-hot-toast';
 
-// import toast, { Toaster } from 'react-hot-toast';
 type UpdateCreditNoteProps = {
     csrfToken: string;
     creditNoteNumber: string;
@@ -99,6 +99,8 @@ export default function UpdateCreditNote({csrfToken, creditNoteNumber}: UpdateCr
             const data = await updateCreditNote(creditNote.number,updateCreditNoteFormValues, csrfToken)
             console.log("data renvoyés : "+data)
             const updatedCreditNote = data;
+            toast.success("L'avoir a été mis à jour avec succès");
+            
             console.log("voici l'avoir créé : "+updatedCreditNote.number)
             try {
     
@@ -110,6 +112,8 @@ export default function UpdateCreditNote({csrfToken, creditNoteNumber}: UpdateCr
             }
 
         }catch(error){
+            toast.error("Erreur lors de la modification de l'avoir");
+
             console.error("Impossible to update the credit note :", error);
         }
     }

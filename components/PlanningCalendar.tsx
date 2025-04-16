@@ -9,6 +9,7 @@ import frLocale from '@fullcalendar/core/locales/fr';
 import { fetchWorkSites } from "@/services/api/workSiteService";
 import { EventClickArg } from '@fullcalendar/core';
 import { updatePlanningSchema, createPlanningSchema } from "@/validation/planningValidation";
+import { toast } from 'react-hot-toast';
 
 
 
@@ -104,8 +105,12 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId, 
           setEvents((prevEvents) => prevEvents.filter(event => event.id !== selectedEvent.id));
           setShowDeleteModal(false);
           setShowForm(false);
+          toast.success("Evènement supprimé avec succès");
+
         } catch (error) {
-          console.error("Erreur lors de la création de l'événement :", error);
+          toast.error("Erreur lors de la suppression du planning");
+
+          console.error("Erreur lors de la suppression de l'événement :", error);
         }
       }
     };
@@ -219,6 +224,8 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId, 
           const data = await createPlanning(newEvent, csrfToken)
           setEvents(prev => [...prev, { ...newEvent, id: data.id }]);
         } catch (error) {
+          toast.error("Erreur lors de la création du planning");
+
           console.error("Erreur lors de la création de l'événement :", error);
         }
       } 
@@ -270,6 +277,8 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId, 
             )
           );
         } catch (error) {
+          toast.error("Impossible de modifier le planning !");
+
           console.error("Erreur lors de la modification de l'événement :", error);
         }
       }
@@ -281,6 +290,8 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId, 
       setSelectedWorkSite(undefined);
       setSelectedEvent(null);
     } else {
+      toast.error("Tous les champs sont obligatoires pour la création");
+
       console.error("Tous les champs sont obligatoires pour la création !");
     }
   };

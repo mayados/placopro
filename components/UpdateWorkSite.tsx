@@ -7,8 +7,7 @@ import { formatDateToInput } from '@/lib/utils'
 import { fetchWorkSite, updateWorkSite } from "@/services/api/workSiteService";
 import { fetchSuggestions } from "@/services/api/suggestionService";
 import { updateWorkSiteSchema } from "@/validation/workSiteValidation";
-
-// import toast, { Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 type UpdateWorkSiteProps = {
     csrfToken: string;
@@ -34,6 +33,11 @@ export default function UpdateWorkSite({csrfToken, workSiteSlug}: UpdateWorkSite
         try{
             const data = await fetchWorkSite(workSiteSlug)
             setWorkSite(data.workSite);
+            // Initializing clientInput with client's full name
+            const client = data.workSite.client;
+            if (client && client.name && client.firstName) {
+                setClientInput(`${client.name} ${client.firstName} ${client.clientNumber}`);
+            }
 
         }catch (error) {
                 console.error("Impossible to load the workSite :", error);
@@ -117,10 +121,11 @@ export default function UpdateWorkSite({csrfToken, workSiteSlug}: UpdateWorkSite
             setErrors({})
         
             const data = await updateWorkSite(workSite, csrfToken)
+            console.log("les datas reçues : "+JSON.stringify(data))
             const updatedWorkSite = data;
             setWorkSite(updatedWorkSite);
-            console.log("updated worksite :"+updatedWorkSite.slug)
-            // toast.success("Recipe updated successfully !");
+            console.log("updated worksite dddd :"+data.slug)
+            toast.success("Chantier mis à jour avec succès");
             try {
                 // We redirect because it's possible the slug has changed. So we have to point to the right URL.
                 router.push(`/director/workSites/${updatedWorkSite.slug}/update`);
@@ -130,6 +135,8 @@ export default function UpdateWorkSite({csrfToken, workSiteSlug}: UpdateWorkSite
     
                         
         }catch (error) {
+            toast.error("Erreur lors de la mise à jour du chantier");
+
             console.error("Erreur lors de la mise à jour du devis :", error);
         }
             
@@ -230,15 +237,15 @@ export default function UpdateWorkSite({csrfToken, workSiteSlug}: UpdateWorkSite
                 </div>
                 {/* WorkSite additionnalAddress */}
                 <div>
-                    <label htmlFor="additionnalAddress">Complément d'adresse</label>
+                    <label htmlFor="additionalAddress">Complément d'adresse</label>
                     <Field className="w-full">
-                        <Input type="text" name="additionnalAddress" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={workSite.additionnalAddress}
+                        <Input type="text" name="additionalAddress" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                            value={workSite.additionalAddress}
                             onChange={handleInputChange}
                         >
                         </Input>
                     </Field>
-                    {errors.additionnalAddress && <p style={{ color: "red" }}>{errors.additionnalAddress}</p>}
+                    {errors.additionalAddress && <p style={{ color: "red" }}>{errors.additionnalAddress}</p>}
 
                 </div>
                 {/* WorkSite postalCode */}
@@ -273,6 +280,7 @@ export default function UpdateWorkSite({csrfToken, workSiteSlug}: UpdateWorkSite
                     <Field className="w-full">
                         <Input type="text" name="client" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             value={clientInput} 
+                            // value={workSite.client?.name +" "+ workSite.client?.firstName +" "+workSite.client?.clientNumber || clientInput}
                             onChange={handleDisplaySuggestions}
                         >
                         </Input>

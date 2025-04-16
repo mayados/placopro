@@ -12,8 +12,7 @@ import { fetchUnits } from "@/services/api/unitService";
 import { fetchSuggestions } from "@/services/api/suggestionService";
 import { fetchBill, updateDraftBill } from "@/services/api/billService";
 import { updateDraftBillSchema, updateDraftFinalBillSchema } from "@/validation/billValidation";
-
-// import toast, { Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 
 type UpdateBillProps = {
@@ -224,6 +223,8 @@ export default function UpdateBill({csrfToken, billNumber}: UpdateBillProps){
             const createdBill = data;
             console.log("voici la bill crééé : "+createdBill.number)
             console.log("status du devis updaté "+createdBill.status)
+            toast.success("Facture mise à jour avec succès");
+            
             try {
                 if(createdBill.status === "Draft"){
                     // Redirect to the page of bill's update
@@ -237,6 +238,7 @@ export default function UpdateBill({csrfToken, billNumber}: UpdateBillProps){
             }
 
         }catch(error){
+            toast.error("Erreur lors de la modification de la facture");
             console.error("Impossible to create the bill :", error);
         }
     }

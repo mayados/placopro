@@ -14,8 +14,7 @@ import { fetchUnits } from "@/services/api/unitService";
 import { fetchSuggestions } from "@/services/api/suggestionService";
 import { fetchBill, updateDepositDraftBill } from "@/services/api/billService";
 import { updateDraftBillDepositSchema, updateDraftFinalDepositBillSchema } from "@/validation/billValidation";
-
-// import toast, { Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 type UpdateDepositBillProps = {
     csrfToken: string;
@@ -142,6 +141,8 @@ export default function UpdateDepositBill({csrfToken, billNumber}: UpdateDeposit
             const data = await updateDepositDraftBill(bill.number,updateBillWithStatus, csrfToken)
             // console.log("data renvoyés : "+data)
             const updatedBill = data;
+            toast.success("La facture d'accompte a été mise à jour avec succès");
+
             // console.log("voici la bill crééé : "+createdBill.number)
             // console.log("status du devis updaté "+createdBill.status)
             try {
@@ -157,7 +158,9 @@ export default function UpdateDepositBill({csrfToken, billNumber}: UpdateDeposit
             }
 
         }catch(error){
-            console.error("Impossible to create the bill :", error);
+            toast.error("erreur lors de la mise à jour de la facture d'accompte");
+
+            console.error("Impossible to modify the bill :", error);
         }
     }
 

@@ -12,8 +12,7 @@ import { createQuote } from "@/services/api/quoteService";
 import { fetchSuggestions } from "@/services/api/suggestionService";
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
 import { createQuoteDraftSchema, createQuoteFinalSchema } from "@/validation/quoteValidation";
-
-// import toast, { Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 type QuoteCreationProps = {
     csrfToken: string;
@@ -255,7 +254,8 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
             // Delete former validation errors
             setErrors({})
             const newQuote = await createQuote(createQuoteWithStatus, csrfToken);
-    
+            toast.success("Devis créé avec succès");
+
             console.log("Devis créé avec succès :", newQuote);
     
             try {
@@ -265,6 +265,8 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                 console.error("Échec de la redirection :", err);
             }
         } catch (error) {
+            toast.error("Erreur lors de la création du devis");
+
             console.error("Erreur lors de la création du devis :", error);
         }
     };
