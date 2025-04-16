@@ -32,9 +32,8 @@ export async function GET(req: NextRequest, {params}: {params: {employeeSlug: st
         }
 
 
-        return NextResponse.json({
-            employee
-        })
+    return NextResponse.json(employee , { status: 200 });
+
 
     } catch (error) {
         console.log("Impossible de trouver les données de l'employé",error)
