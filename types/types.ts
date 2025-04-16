@@ -133,7 +133,7 @@ interface WorkSiteType{
     addressNumber: string;
     postalCode: string;
     city: string;
-    additionnalAddress: string;
+    additionalAddress: string;
     client: ClientTypeSuggestion;
     quotes: QuoteType[];
     plannings: PlanningType[];
@@ -164,7 +164,7 @@ interface WorkSiteTypeWithoutQuotesAndPlannings{
     addressNumber: string;
     postalCode: string;
     city: string;
-    additionnalAddress: string;
+    additionalAddress: string;
     client: ClientType;
 }
 
