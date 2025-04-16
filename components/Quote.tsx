@@ -7,8 +7,8 @@ import { Field, Input, Label, Legend, Radio, RadioGroup, Select } from "@headles
 import { fetchQuote, updateClassicQuote } from "@/services/api/quoteService";
 import { fetchCompany } from "@/services/api/companyService";
 import { updateClassicQuoteSchema } from "@/validation/quoteValidation";
+import { toast } from 'react-hot-toast';
 
-// import toast, { Toaster } from 'react-hot-toast';
 // import { useRouter } from "next/navigation";
 
 
@@ -119,8 +119,12 @@ export default function Quote({csrfToken, quoteNumber}: QuoteProps){
                 const updatedQuote = data;
                 console.log("voici le devis mis à jour : "+updatedQuote.number)
                 setQuote(updatedQuote)
+                toast.success("Devis mis à jour avec succès");
+       
                 
             }catch (error) {
+                toast.error("Erreur lors de la mise à jour du devis ");
+                
                 console.error("Erreur lors de la mise à jour du devis :", error);
             }
     

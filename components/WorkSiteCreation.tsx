@@ -6,8 +6,7 @@ import { useRouter } from "next/navigation";
 import { fetchSuggestions } from "@/services/api/suggestionService";
 import { createWorkSite } from "@/services/api/workSiteService";
 import { createWorkSiteSchema } from "@/validation/workSiteValidation";
-
-// import toast, { Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 type WorkSiteCreationProps = {
     csrfToken: string;
@@ -133,7 +132,8 @@ export default function WorkSiteCreation({csrfToken}: WorkSiteCreationProps){
                 setErrors({})
 
                 const newWorkSite = await createWorkSite(workSite, csrfToken);
-  
+                toast.success("Le chantier a été créé avec succès");
+
                 try {
                     router.push(`/director/workSites/${newWorkSite.slug}`);
                 } catch (err) {
@@ -141,6 +141,7 @@ export default function WorkSiteCreation({csrfToken}: WorkSiteCreationProps){
                 }
 
             }catch (error) {
+                toast.error("Erreur lors de la création du chantier");
                 console.error("Erreur lors de la création du chantier :", error);
                 // toast.error("There was a problem with updating the client. Please try again!");
             }

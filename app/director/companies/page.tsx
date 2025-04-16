@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Trash2, SendHorizontal } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import Button from "@/components/Button";
 // import toast, { Toaster } from 'react-hot-toast';
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
 import {Input} from '@headlessui/react';
 import Link from "next/link";
 import { deleteCompany, fetchCompanies } from "@/services/api/companyService";
+import Breadcrumb from "@/components/BreadCrumb";
 
 const Companies = () =>{
 
@@ -58,6 +59,12 @@ const Companies = () =>{
 
         <section className="border-2 border-green-800 flex-[8]">
             <h1 className="text-3xl text-white text-center">Entreprises</h1>
+            <Breadcrumb
+                items={[
+                    { label: "Tableau de bord", href: "/director" },
+                    { label: "Entreprises"},
+                ]}
+            />
             <Link href={`/director/companies/create`}>Créer une entreprise</Link>
             <table className="table-auto">
                 <thead>

@@ -5,9 +5,8 @@ import { Field,Input, Select } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import { fetchEmployee, updateUser } from "@/services/api/userService";
 import { updateUserSchema } from "@/validation/userValidation";
-
-// import toast, { Toaster } from 'react-hot-toast';
-// import { useRouter } from "next/navigation";
+import { toast } from 'react-hot-toast';
+import Breadcrumb from "@/components/BreadCrumb";
 
 type UpdateUserProps = {
     csrfToken: string;
@@ -29,6 +28,7 @@ export default function UpdateUser({csrfToken, employeeSlug}: UpdateUserProps){
                     
             try{
                 const data = await fetchEmployee(employeeSlug)
+                console.log("les datas : "+data)
                 setEmployee(data);
 
             }catch (error) {
@@ -88,10 +88,11 @@ export default function UpdateUser({csrfToken, employeeSlug}: UpdateUserProps){
             const data = await updateUser(employee, csrfToken)
             const updatedEmployee = data;
             setEmployee(updatedEmployee);
+            toast.success("Utilisateur mis à jour avec succès");
+
             console.log("essai de lecture des données : "+data)
             console.log("updated employee :"+updatedEmployee.slug)
             
-            // toast.success("L'utilisateur a été modifié avec succès !");
             try {
                 // We redirect because it's possible the slug has changed. So we have to point to the right URL.
                 router.push(`/director/employees/${updatedEmployee.slug}/update`);
@@ -101,6 +102,7 @@ export default function UpdateUser({csrfToken, employeeSlug}: UpdateUserProps){
     
                         
         }catch (error) {
+            toast.error("Erreur avec la mise à jour de l'utilisateur");
             console.error("Erreur lors de la mise à jour de l'utilisateur :", error);
         }
             
@@ -108,9 +110,15 @@ export default function UpdateUser({csrfToken, employeeSlug}: UpdateUserProps){
 
     return (
         <>
-            {/* <div><Toaster/></div> */}
+            
             <h1 className="text-3xl text-white ml-3 text-center">Modification : {employee?.firstName} {employee?.lastName}</h1>
-            {/* <div><Toaster /></div> */}
+            <Breadcrumb
+                items={[
+                    { label: "Tableau de bord", href: "/director" },
+                    { label: "Employés", href: "/director/employees" },
+                    { label: `Modification ${employee.firstName} ${employee.lastName}` }, 
+                ]}
+            />
             <form 
                 onSubmit={(e) => {
                     e.preventDefault();
@@ -122,7 +130,7 @@ export default function UpdateUser({csrfToken, employeeSlug}: UpdateUserProps){
                     <label htmlFor="lastName">Nom</label>
                     <Field className="w-full">
                         <Input type="text" name="lastName" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={employee.lastName}
+                            value={employee.lastName || ""}
                             onChange={handleInputChange}
                             >
                         </Input>
@@ -135,7 +143,7 @@ export default function UpdateUser({csrfToken, employeeSlug}: UpdateUserProps){
                     <label htmlFor="firstName">Prénom</label>
                     <Field className="w-full">
                         <Input type="text" name="firstName" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={employee.firstName}
+                            value={employee.firstName || ""}
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -148,7 +156,7 @@ export default function UpdateUser({csrfToken, employeeSlug}: UpdateUserProps){
                     <label htmlFor="role">Rôle</label>
                     <Select
                         name="role"
-                        value={employee.role}
+                        value={employee.role || ""}
                         onChange={handleInputChange}
                         className="w-full rounded-md bg-gray-700 text-white pl-3"
                     >
@@ -165,7 +173,7 @@ export default function UpdateUser({csrfToken, employeeSlug}: UpdateUserProps){
                     <label htmlFor="email">Mail</label>
                     <Field className="w-full">
                         <Input type="email" name="email" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={employee.email}
+                            value={employee.email || ""}
                             onChange={handleInputChange}
                             >
                         </Input>

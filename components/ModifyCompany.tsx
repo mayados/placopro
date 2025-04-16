@@ -4,7 +4,7 @@ import { useEffect, useState, use } from "react";
 import { Field,Input, Select } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import { fetchCompany, updateCompany } from "@/services/api/companyService";
-// import toast, { Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import { updateCompanySchema } from "@/validation/companyValidation";
 
 
@@ -88,7 +88,7 @@ export default function ModifyCompany({csrfToken, companySlug}: ModifyCompanyPro
             const updatedCompany = data;
             setCompany(updatedCompany);
             console.log("updated company :"+updatedCompany.slug)
-            // toast.success("Recipe updated successfully !");
+            toast.success("Entreprise mise à jour ave succès !");
             try {
                 // We redirect because it's possible the slug has changed. So we have to point to the right URL.
                 router.push(`/director/companies/${updatedCompany.slug}/update`);
@@ -97,6 +97,7 @@ export default function ModifyCompany({csrfToken, companySlug}: ModifyCompanyPro
             }
 
         }catch(error){
+            toast.error("Impossible de metre à jour l'entreprise");
             console.error("Impossible to update the company :", error);
         }
     }

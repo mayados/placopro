@@ -15,33 +15,7 @@ export async function POST(req: NextRequest) {
       }
     console.log("Données reçues dans la requête :", data);
 
-    // const { 
-    //         validityEndDate, 
-    //         natureOfWork, 
-    //         description, 
-    //         workStartDate, 
-    //         estimatedWorkEndDate, 
-    //         estimatedWorkDuration, 
-    //         isQuoteFree, 
-    //         quoteCost, 
-    //         priceTTC, 
-    //         priceHT, 
-    //         travelCosts, 
-    //         hourlyLaborRate, 
-    //         paymentDelay,
-    //         paymentTerms,
-    //         latePaymentPenalities,
-    //         recoveryFees,
-    //         hasRightOfWithdrawal,
-    //         withdrawalPeriod,
-    //         clientId,
-    //         workSiteId,
-    //         services,
-    //         discountAmount,
-    //         depositAmount,
-    //         discountReason,
-    //         status
-    //     } = data;
+  
 
         
     // currentUser() is a founction from Clerk which allows to retrieve the current User
@@ -83,28 +57,7 @@ export async function POST(req: NextRequest) {
       sanitizedData.status = status;
               
 
-    //   const sanitizedData = {
-    //     ...data,
-    //     workStartDate: data.workStartDate ? new Date(data.workStartDate).toISOString() : null,
-    //     validityEndDate: data.validityEndDate ? new Date(data.validityEndDate).toISOString() : null,
-    //     estimatedWorkEndDate: data.estimatedWorkEndDate ? new Date(data.estimatedWorkEndDate).toISOString() : null,
-    //     isQuoteFree: isQuoteFree === "Oui" ? true : false,
-    //     hasRightOfWithdrawal: hasRightOfWithdrawal=== "Oui" ? true : false,
-    //     vatAmount: parseFloat(data.vatAmount) || 0,
-    //     estimatedWorkDuration: parseInt(data.estimatedWorkDuration, 10) || 0,
-    //     priceTTC: parseFloat(data.priceTTC) || 0,
-    //     priceHT: parseFloat(data.priceHT) || 0,
-    //     travelCosts: parseFloat(data.travelCosts) || 0,
-    //     hourlyLaborRate: parseFloat(data.hourlyLaborRate) || 0,
-    //     paymentDelay: parseInt(data.paymentDelay, 10) || 0,
-    //     latePaymentPenalities: parseFloat(data.latePaymentPenalities) || 0,
-    //     recoveryFees: parseFloat(data.recoveryFees) || 0,
-    //     withdrawalPeriod: parseInt(data.withdrawalPeriod, 10) || 0,
-    //     quoteCost: parseFloat(data.quoteCost) || 0,
-    //     discountAmount: parseFloat(data.discountAmount) || 0,
-    //     discountReason: data.discountReason || null,
-    //     status: data.status || "Ready",
-    // };
+
 
 
       // Generate an unique and chronological quote's number if the status is Ready / fictive number if the status is draft

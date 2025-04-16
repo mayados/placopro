@@ -1,7 +1,9 @@
 "use client";
 
 import { fetchEmployee } from "@/services/api/userService";
-import { useEffect, useState, use } from "react";
+import { useEffect, useState } from "react";
+import Breadcrumb from "@/components/BreadCrumb";
+
 // import toast, { Toaster } from 'react-hot-toast';
 // import { useRouter } from "next/navigation";
 
@@ -30,16 +32,21 @@ const Employee = ({ params }: { params: Promise<{ employeeSlug: string }>}) => {
           loadEmployee();
         }, [params]);
       
-        // if (!employee) return <div>Loading...</div>;
+        if (!employee) return <div>Loading...</div>;
       
       
 
 
     return (
         <>
-            {/* <div><Toaster/></div> */}
             <h1 className="text-3xl text-white ml-3 text-center">{employee?.firstName} {employee?.lastName}</h1>
-            {/* <div><Toaster /></div> */}
+            <Breadcrumb
+                items={[
+                    { label: "Tableau de bord", href: "/director" },
+                    { label: "Employés", href: "/director/employees" },
+                    { label: `${employee.firstName} ${employee.lastName}` }, 
+                ]}
+            />
             <p>{employee?.email}</p>
             <p>{employee?.role}</p>
         </>
