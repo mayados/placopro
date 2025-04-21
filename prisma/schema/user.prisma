@@ -5,11 +5,17 @@ model User{
     name String
     firstName String
     password  String
-    role String
+    role UserRoleEnum
     toDos ToDo[]
     reportsDone Report[]
     // billsEstablished Bill[]
     // quotesEstablished Quote[]
     // The user can create Estimation files
     estimationsEstablished Estimation[]
+}
+
+enum UserRoleEnum {
+    DIRECTOR
+    SECRETARY
+    EMPLOYEE
 }

@@ -35,8 +35,6 @@ model Quote{
 
     // Type de frais de déplacement (forfait unique / journalier...)
     travelCostsType String?
-    // Taux horaire de la main-d'œuvre
-    hourlyLaborRate Float? 
     // Conditions de paiement
     paymentTerms String 
     // Délais de paiement (ex. : 30 jours)
@@ -54,7 +52,7 @@ model Quote{
     // Délai de rétractation (en jours)
     withdrawalPeriod Int? 
     userId String
-    discountReason String?
+    discountReason QuoteDiscountReasonEnum?
     // global discount HT amount
     discountAmount Float? @default(0) 
     // in % 
@@ -77,4 +75,17 @@ model Quote{
     // @@index([userId])
     @@index([clientId])
     @@index([workSiteId])
+}
+
+enum QuoteStatusEnum {
+  DRAFT
+  READY
+  ACCEPTED
+  REFUSED
+  CANCELED
+}
+
+enum QuoteDiscountReasonEnum {
+    FIDELITY
+    EXCEPTIONAL
 }
