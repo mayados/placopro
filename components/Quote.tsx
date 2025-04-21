@@ -8,6 +8,8 @@ import { fetchQuote, updateClassicQuote } from "@/services/api/quoteService";
 import { fetchCompany } from "@/services/api/companyService";
 import { updateClassicQuoteSchema } from "@/validation/quoteValidation";
 import { toast } from 'react-hot-toast';
+import Breadcrumb from "@/components/BreadCrumb";
+
 
 // import { useRouter } from "next/navigation";
 
@@ -137,7 +139,13 @@ export default function Quote({csrfToken, quoteNumber}: QuoteProps){
         <>
             {/* <div><Toaster/></div> */}
             <h1 className="text-3xl text-white ml-3 text-center">Devis {quote?.number}</h1>
-            
+                <Breadcrumb
+                items={[
+                    { label: "Tableau de bord", href: "/director" },
+                    { label: "Devis", href: "/director/quotes" },
+                    { label: `${quote.number}` }, 
+                ]}
+                />
             <ul>
                 <li>Statut : {quote.status}</li>
                 <li>Signé par le client ? {quote.isSignedByClient ? "Oui" : 'Non'}</li>
