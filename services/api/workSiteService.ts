@@ -1,7 +1,34 @@
 // Retrieve all the workSites
-export const fetchWorkSites = async (): Promise<WorkSiteWithTotalsAndStatus> => {
+// export const fetchWorkSites = async (): Promise<WorkSiteWithTotalsAndStatus> => {
+//     try {
+//       const response = await fetch(`/api/workSites`);
+//       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
+  
+//       const data: WorkSiteWithTotalsAndStatus = await response.json();
+//       console.log("Données reçues après le fetch :", data);
+//       return data;
+//     } catch (error) {
+//       console.error("Erreur lors de la récupération des chantiers :", error);
+//       throw error;
+//     }
+// };
+
+// Retrieve all the workSites with pagination
+export const fetchWorkSites = async ({
+    page,
+    pageComming,
+    pageCompleted,
+    pageInProgress,
+    limit,
+  }: {
+    page: number;
+    pageComming: number;
+    pageCompleted: number;
+    pageInProgress: number;
+    limit: number;
+  }): Promise<WorkSiteWithTotalsAndStatus> => {
     try {
-      const response = await fetch(`/api/workSites`);
+      const response = await fetch(`/api/workSites?page=${page}&pageComming=${pageComming}&pageCompleted=${pageCompleted}&pageInProgress=${pageInProgress}&limit=${limit}`);
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
       const data: WorkSiteWithTotalsAndStatus = await response.json();
@@ -11,7 +38,8 @@ export const fetchWorkSites = async (): Promise<WorkSiteWithTotalsAndStatus> => 
       console.error("Erreur lors de la récupération des chantiers :", error);
       throw error;
     }
-};
+  };
+  
 
 // Retrieve a specific WorkSite
 export const fetchWorkSite = async (workSiteSlug: string): Promise<WorkSiteTypeSingle> => {

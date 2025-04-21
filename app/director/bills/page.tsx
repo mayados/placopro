@@ -8,8 +8,20 @@ import { formatDate } from '@/lib/utils'
 import { Dialog, DialogTitle, DialogPanel, Description, Tab, TabGroup ,TabList, TabPanel, TabPanels } from '@headlessui/react';
 import Link from "next/link";
 import { deleteBill, fetchBills } from "@/services/api/billService";
+import { useSearchParams } from "next/navigation";
+import { Pagination } from "@/components/Pagination";
+
+const LIMIT = 15;
+
 
 const Bills = () =>{
+    const searchParams = useSearchParams();
+  
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const pageReadyToBeSent = parseInt(searchParams.get("pageReadyToBeSent") || "1", 10);
+    const pageSent = parseInt(searchParams.get("pageSent") || "1", 10);
+    const pageDraft = parseInt(searchParams.get("pageDraft") || "1", 10);
+    const pageCanceled = parseInt(searchParams.get("pageCanceled") || "1", 10);
 
     // a const for each quote status
     const [bills, setBills] = useState<BillForListType[]>([])
@@ -36,7 +48,14 @@ const Bills = () =>{
         const loadBills = async () => {
             try {
                 // We call API method which is contained in services/api/quoeService
-              const data = await fetchBills();
+              const data = await fetchBills({
+                page,
+                pageReadyToBeSent,
+                pageSent,
+                pageDraft,
+                pageCanceled,
+                limit: LIMIT,
+            });
               
               setBills(data.bills);
               setDraftBills(data.draftBills);
@@ -56,7 +75,7 @@ const Bills = () =>{
           };
       
           loadBills();
-    },[]);
+    },[page, pageReadyToBeSent, pageSent, pageDraft, pageCanceled]);
 
     // Delete a bill
     const handleDelete = async (billId: string) => {
@@ -78,15 +97,21 @@ const Bills = () =>{
         setIsOpen(false);  
     };
 
+    const renderPagination = (total: number, pageParam: string) => {
+        if (total > 0) {
+          return <Pagination pageParam={pageParam} total={total} limit={LIMIT} />;
+        }
+        // Don't display anything it there are no datas
+        return null; 
+    };
+
   return (
 
     <>
     <div className="flex w-screen">
-        {/* <div><Toaster/></div> */}
 
         <section className="border-2 border-green-800 flex-[8]">
             <h1 className="text-3xl text-white text-center">Factures</h1>
-            <Link href={`/director/bills/create`}>Créer une facture</Link>
             <TabGroup className="flex flex-col items-center lg:block my-3">
                 <TabList className="my-3 flex gap-3">
                     <Tab className="text-lg lg:text-base flex data-[selected]:bg-pink-600  data-[hover]:bg-pink-500 p-2 rounded-md">Tous ({totalBills})</Tab>
@@ -133,7 +158,9 @@ const Bills = () =>{
                                 })
                             }
                             </tbody>
-                        </table>  
+                        </table> 
+                        {renderPagination(totalBills, "page")}
+ 
                     </TabPanel>
                     {/* Drafts */}
                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
@@ -174,7 +201,9 @@ const Bills = () =>{
                                 })
                             }
                             </tbody>
-                        </table>    
+                        </table>   
+                        {renderPagination(totalDraftBills, "page")}
+ 
                     </TabPanel>
                     {/* Ready */}
                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
@@ -211,7 +240,9 @@ const Bills = () =>{
                                 })
                             }
                             </tbody>
-                        </table>   
+                        </table>  
+                        {renderPagination(totalReadyToBeSentBills, "page")}
+ 
                     </TabPanel>
                     {/* Sent */}
                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
@@ -248,7 +279,9 @@ const Bills = () =>{
                                 })
                             }
                             </tbody>
-                        </table>     
+                        </table>   
+                        {renderPagination(totalSentBills, "page")}
+  
                     </TabPanel>
                     {/* Canceled */}
                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
@@ -284,7 +317,9 @@ const Bills = () =>{
                                 })
                             }
                             </tbody>
-                        </table>     
+                        </table>  
+                        {renderPagination(totalCanceledBills, "page")}
+   
                     </TabPanel>
                 </TabPanels>
             </TabGroup>  

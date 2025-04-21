@@ -1,8 +1,22 @@
 // Retrieve all the bills
 // Return a promise with object of type BillsWithTotalsAndStatus
-export const fetchBills = async (): Promise<BillsWithTotalsAndStatus> => {
+export const fetchBills = async ({
+    page,
+    pageReadyToBeSent,
+    pageSent,
+    pageDraft,
+    pageCanceled,
+    limit,
+} : {
+    page: number,
+    pageReadyToBeSent: number,
+    pageSent: number,
+    pageDraft: number,
+    pageCanceled: number,
+    limit: number,
+}): Promise<BillsWithTotalsAndStatus> => {
     try {
-      const response = await fetch(`/api/bills`);
+      const response = await fetch(`/api/bills?page=${page}&pageReadyToBeSent=${pageReadyToBeSent}&pageSent=${pageSent}&pageDraft=${pageDraft}&pageCanceled=${pageCanceled}&limit=${limit}`);
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
       const data: BillsWithTotalsAndStatus = await response.json();

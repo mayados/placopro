@@ -1,8 +1,24 @@
 // Retrieve all the quotes
 // Return a promise with object of type QuoteWithTotalsAndStatus
-export const fetchQuotes = async (): Promise<QuotesWithTotalsAndStatus> => {
+export const fetchQuotes = async ({
+    page,
+    pageDraft,
+    pageReadyToBeSent,
+    pageSent,
+    pageAccepted,
+    pageRefused,
+    limit,
+  }: {
+    page: number;
+    pageDraft: number;
+    pageReadyToBeSent: number;
+    pageSent: number;
+    pageAccepted: number;
+    pageRefused: number;
+    limit: number;
+}): Promise<QuotesWithTotalsAndStatus> => {
     try {
-      const response = await fetch(`/api/quote`);
+      const response = await fetch(`/api/quote?page=${page}&pageDraft=${pageDraft}&pageReadyToBeSent=${pageReadyToBeSent}&pageSent=${pageSent}&pageAccepted=${pageAccepted}&pageRefused=${pageRefused}&limit=${limit}`);
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
       const data: QuotesWithTotalsAndStatus = await response.json();
