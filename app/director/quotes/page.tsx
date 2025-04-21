@@ -8,8 +8,22 @@ import { formatDate } from '@/lib/utils'
 import { Dialog, DialogTitle, DialogPanel, Description, Tab, TabGroup ,TabList, TabPanel, TabPanels } from '@headlessui/react';
 import Link from "next/link";
 import { deleteQuote, fetchQuotes } from "@/services/api/quoteService";
+import { useSearchParams } from "next/navigation";
+import { Pagination } from "@/components/Pagination";
+
+
+const LIMIT = 15;
 
 const Quotes = () =>{
+
+    const searchParams = useSearchParams();
+  
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const pageDraft = parseInt(searchParams.get("pageDraft") || "1", 10);
+    const pageReadyToBeSent = parseInt(searchParams.get("pageReadyToBeSent") || "1", 10);
+    const pageSent = parseInt(searchParams.get("pageSent") || "1", 10);
+    const pageAccepted = parseInt(searchParams.get("pageAccepted") || "1", 10);
+    const pageRefused = parseInt(searchParams.get("pageRefused") || "1", 10);
 
     // a const for each quote status
     const [quotes, setQuotes] = useState<QuoteForListType[]>([])
@@ -39,7 +53,15 @@ const Quotes = () =>{
         const loadQuotes = async () => {
             try {
                 // We call API method which is contained in services/api/quoeService
-              const data = await fetchQuotes();
+              const data = await fetchQuotes({
+                page,
+                pageDraft,
+                pageReadyToBeSent,
+                pageSent,
+                pageAccepted,
+                pageRefused,
+                limit: LIMIT,
+              });
               
               setQuotes(data.quotes);
               setDraftQuotes(data.draftQuotes);
@@ -61,7 +83,7 @@ const Quotes = () =>{
           };
       
           loadQuotes();
-    },[]);
+    },[page, pageDraft, pageReadyToBeSent, pageSent, pageAccepted,pageRefused]);
 
     // Delete a quote
     const handleDelete = async (quoteId: string) => {
@@ -82,11 +104,18 @@ const Quotes = () =>{
         setIsOpen(false);  
     };
 
+    const renderPagination = (total: number, pageParam: string) => {
+        if (total > 0) {
+            return <Pagination pageParam={pageParam} total={total} limit={LIMIT} />;
+        }
+        // Don't display anything it there are no datas
+        return null; 
+    };
+
   return (
 
     <>
     <div className="flex w-screen">
-        {/* <div><Toaster/></div> */}
 
         <section className="border-2 border-green-800 flex-[8]">
             <h1 className="text-3xl text-white text-center">Devis</h1>
@@ -137,6 +166,7 @@ const Quotes = () =>{
                             }
                             </tbody>
                         </table>  
+                        {renderPagination(totalQuotes, "page")}
                     </TabPanel>
                     {/* Drafts */}
                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
@@ -179,7 +209,8 @@ const Quotes = () =>{
                                 })
                             }
                             </tbody>
-                        </table>    
+                        </table>  
+                        {renderPagination(totalDraftQuotes, "page")}
                     </TabPanel>
                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
                         <table className="table-auto">
@@ -215,7 +246,8 @@ const Quotes = () =>{
                                 })
                             }
                             </tbody>
-                        </table>   
+                        </table>  
+                        {renderPagination(totalReadyToBeSentQuotes, "page")}
                     </TabPanel>
                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
                         <table className="table-auto">
@@ -251,7 +283,9 @@ const Quotes = () =>{
                                 })
                             }
                             </tbody>
-                        </table>     
+                        </table>  
+                        {renderPagination(totalSentQuotes, "page")}
+
                     </TabPanel>
                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
                         <table className="table-auto">
@@ -287,7 +321,9 @@ const Quotes = () =>{
                                 })
                             }
                             </tbody>
-                        </table>     
+                        </table> 
+                        {renderPagination(totalAcceptedQuotes, "page")}
+    
                     </TabPanel>
                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
                         <table className="table-auto">
@@ -323,7 +359,9 @@ const Quotes = () =>{
                                 })
                             }
                             </tbody>
-                        </table>     
+                        </table> 
+                        {renderPagination(totalRefusedQuotes, "page")}
+    
                     </TabPanel>
                 </TabPanels>
             </TabGroup>  

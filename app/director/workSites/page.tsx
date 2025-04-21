@@ -4,12 +4,22 @@ import { useEffect, useState } from "react";
 import { Trash2 } from 'lucide-react';
 import Button from "@/components/Button";
 import { formatDate } from '@/lib/utils'
-// import toast, { Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import { Dialog, DialogTitle, DialogPanel, Description, Tab, TabGroup ,TabList, TabPanel, TabPanels } from '@headlessui/react';
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { deleteWorkSite, fetchWorkSites } from "@/services/api/workSiteService";
+import { Pagination } from "@/components/Pagination";
+
+const LIMIT = 15;
 
 const WorkSites = () =>{
+    const searchParams = useSearchParams();
+  
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const pageComming = parseInt(searchParams.get("pageComming") || "1", 10);
+    const pageCompleted = parseInt(searchParams.get("pageCompleted") || "1", 10);
+    const pageInProgress = parseInt(searchParams.get("pageInProgress") || "1", 10);
 
     // a const for each workSite status
     const [workSites, setWorkSites] = useState<WorkSiteForListType[]>([])
@@ -29,7 +39,13 @@ const WorkSites = () =>{
     useEffect(() => {
         const loadWorkSites = async () => {
             try{
-                const data = await fetchWorkSites();
+                const data = await fetchWorkSites({
+                    page,
+                    pageComming,
+                    pageCompleted,
+                    pageInProgress,
+                    limit: LIMIT,
+                });
                 console.log("données reçues après le fetch : "+data)
                 console.log("exemple d'un worksite reçu : "+data['workSites'][0])
                 // We hydrate each const with the datas
@@ -43,22 +59,23 @@ const WorkSites = () =>{
                 setTotalInProgressWorkSites(data['totalInProgressWorkSites'] || 0)
                 setTotalCompletedWorkSites(data['totalCompletedWorkSites'] || 0)               
             }catch(error){
-                console.error("Impossible to load companies :", error);
+                console.error("Impossible to load workSites :", error);
             }
         }
             
         loadWorkSites()
-    },[]);
+    }, [page, pageComming, pageCompleted, pageInProgress]);
 
     // Delete a workSite
     const handleWorkSiteDeletion = async (workSiteSlug: string) => {
         try {
             await deleteWorkSite(workSiteSlug);
             setIsOpen(false);  
-            // toast.success('Entreprise supprimée avec succès');                 
+            toast.success('Chantier supprimé avec succès');                 
             setWorkSites(prevWorkSites => prevWorkSites.filter(workSite => workSite.slug !== workSiteSlug));
 
         } catch (error) {
+            toast.error('Erreur lors de la suppression du chantier');                 
             console.error("Erreur avec la suppression du chantier", error);
         }
     };
@@ -73,11 +90,18 @@ const WorkSites = () =>{
         setIsOpen(false);  
     };
 
+    const renderPagination = (total: number, pageParam: string) => {
+        if (total > 0) {
+          return <Pagination pageParam={pageParam} total={total} limit={LIMIT} />;
+        }
+        // Don't display anything it there are no datas
+        return null; 
+      };
+
   return (
 
     <>
     <div className="flex w-screen">
-        {/* <div><Toaster/></div> */}
 
         <section className="border-2 border-green-800 flex-[8]">
             <h1 className="text-3xl text-white text-center">Chantiers</h1>
@@ -131,6 +155,8 @@ const WorkSites = () =>{
                             }
                             </tbody>
                         </table>  
+                        {renderPagination(totalWorkSites, "page")}
+
                     </TabPanel>
                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
                         <table className="table-auto">
@@ -172,7 +198,9 @@ const WorkSites = () =>{
                                 })
                             }
                             </tbody>
-                        </table>    
+                        </table>   
+                        {renderPagination(totalInProgressWorkSites, "pageInProgress")}
+
                     </TabPanel>
                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
                         <table className="table-auto">
@@ -214,7 +242,9 @@ const WorkSites = () =>{
                                 })
                             }
                             </tbody>
-                        </table>   
+                        </table> 
+                        {renderPagination(totalCommingWorkSites, "pageComming")}
+
                     </TabPanel>
                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
                         <table className="table-auto">
@@ -256,7 +286,9 @@ const WorkSites = () =>{
                                 })
                             }
                             </tbody>
-                        </table>     
+                        </table>
+                        {renderPagination(totalCompletedWorkSites, "pageCompleted")}
+
                     </TabPanel>
                 </TabPanels>
             </TabGroup>  

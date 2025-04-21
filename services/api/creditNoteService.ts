@@ -68,11 +68,22 @@ export const fetchCreditNote = async (creditNoteNumber: string): Promise<CreditN
 
 // Retrieve all the credit notes
 // Return a promise with object of type CreditNotesWithTotalsAndStatus
-export const fetchCreditNotes = async (): Promise<CreditNotesWithTotalsAndStatus> => {
+export const fetchCreditNotes = async ({
+    page,
+    pageSettled,
+    pageNotSettled,
+    limit,  
+    }: {
+    page: number;
+    pageSettled: number;
+    pageNotSettled: number;
+    limit: number;
+  }): Promise<CreditNotesWithTotalsAndStatus> => {
     try {
-      const response = await fetch(`/api/creditNote`);
+      const response = await fetch(`/api/creditNotes?page=${page}&pageSettled=${pageSettled}&pageNotSettled=${pageNotSettled}&limit=${limit}`);
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
+      
       const data: CreditNotesWithTotalsAndStatus = await response.json();
       console.log("Données reçues après le fetch :", data);
       return data;

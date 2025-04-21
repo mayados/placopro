@@ -21,12 +21,12 @@ export default function Planning({csrfToken}: PlanningProps){
 
     <>
     <div className="flex w-screen">
-    <Breadcrumb
-      items={[
-        { label: "Tableau de bord", href: "/director" },
-        { label: "Plannings" }, 
-      ]}
-    />
+      <Breadcrumb
+        items={[
+          { label: "Tableau de bord", href: "/director" },
+          { label: "Plannings" }, 
+        ]}
+      />
 
     <section>
         <PlanningCalendar role="director" csrfToken={csrfToken}/>

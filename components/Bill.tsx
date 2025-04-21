@@ -141,7 +141,6 @@ export default function Bill({csrfToken, billNumber}: BillProps){
 
     return (
         <>
-            {/* <div><Toaster/></div> */}
             <h1 className="text-3xl text-white ml-3 text-center">  
                 {bill.billType === "DEPOSIT" 
                     ? `Facture d'acompte n° ${bill.number}`  
@@ -154,7 +153,7 @@ export default function Bill({csrfToken, billNumber}: BillProps){
 
             </ul>
             {/* If the bill's status is different from draft, we can display the form */}
-                {bill.status !== "Draft" && (
+                {bill.status !== "DRAFT" && (
                     <section>
                         <h2>Modifier les informations</h2>
                         <form 
@@ -171,10 +170,15 @@ export default function Bill({csrfToken, billNumber}: BillProps){
                                     value={formValues.status ?? bill.status ?? ""}
                                     className="w-full rounded-md bg-gray-700 text-white pl-3"
                                 >
-                                <option value="" disabled>Statut</option>
+                                {/* <option value="" disabled>Statut</option>
                                     {billStatusChoices.map((status) => (
                                         <option key={status} value={status}>{status}</option>
-                                    ))}
+                                    ))} */}
+                                      {Object.entries(UpdateClassicBillStatusEnumDescription).map(([value, label]) => (
+    <option key={value} value={value}>
+      {label}
+    </option>
+  ))}
                                 </Select>
                                 {errors.status && <p style={{ color: "red" }}>{errors.status}</p>}
 
@@ -204,9 +208,15 @@ export default function Bill({csrfToken, billNumber}: BillProps){
                                     value={formValues.paymentMethod ?? bill.paymentMethod ?? ""}
                                     className="w-full rounded-md bg-gray-700 text-white pl-3"
                                 >
-                                <option value="" >Méthode de paiement</option>
+                                {/* <option value="" >Méthode de paiement</option>
                                     {paymentMethodChoices.map((methode) => (
                                         <option key={methode} value={methode}>{methode}</option>
+                                    ))} */}
+                                                                        <option value="" disabled>-- Sélectionner un motif de règlement --</option>
+                                        {Object.values(PaymentMethodEnumDescription).map((reasonKey) => (
+                                    <option key={reasonKey} value={reasonKey}>
+                                        {reasonKey}
+                                    </option>
                                     ))}
                                 </Select>
                                 {errors.paymentMethod && <p style={{ color: "red" }}>{errors.paymentMethod}</p>}
@@ -257,7 +267,7 @@ export default function Bill({csrfToken, billNumber}: BillProps){
                 </div>
             </section>
             <section>
-                <p>Chantier : {bill?.workSite.addressNumber} {bill?.workSite.road} {bill?.workSite.postalCode} {bill?.workSite.city} {bill?.workSite.additionnalAddress}</p>
+                <p>Chantier : {bill?.workSite.addressNumber} {bill?.workSite.road} {bill?.workSite.postalCode} {bill?.workSite.city} {bill?.workSite.additionalAddress}</p>
                 <p>Date de début estimée : {formatDate(bill.workStartDate)}</p>
                 <p>Date de fin estimée : {formatDate(bill.workEndDate)}</p>
                 <p>Durée estimée des travaux : {bill.workDuration} jours</p>

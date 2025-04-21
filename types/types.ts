@@ -612,10 +612,53 @@ interface ServiceFormBillType{
     // };
 }
 
+enum EstimationStatusEnumDescription {
+    DRAFT = "Brouillon",
+    READY = "Prêt à l'envoi",
+    SENT  = "Envoyé",
+}
+
+enum UpdateClassicEstimationStatusEnumDescription {
+    READY = "Prêt à l'envoi",
+    SENT  = "Envoyé",
+}
+
+enum QuoteStatusEnumDescription {
+    DRAFT = "Brouillon",
+    READY = "Prêt à l'envoi",
+    ACCEPTED = "Accepté",
+    REFUSED = "Refusé",
+    CANCELED = "Clos"
+}
+enum PaymentMethodEnumDescription {
+    CREDIT_CARD = "Carte bancaire",
+    BANK_TRANSFER = "Virement",
+    CASH = "Espèces",
+    CHECK = "Chèque"
+  }
+
+enum UpdateClassicQuoteStatusEnumDescription {
+    READY = "Prêt à l'envoi",
+    ACCEPTED = "Accepté",
+    REFUSED = "Refusé",
+    CANCELED = "Clos"
+}
+
+enum ReportMaterialStatusEnumDescription {
+    TREATED = "Traité",
+    UNTREATED = "Non traité"
+}
+
 enum ClientOrProspectEnum {
-  CLIENT= 'CLIENT',
-  PROSPECT= 'PROSPECT',
+  CLIENT= 'Client',
+  PROSPECT= 'Prospect',
 };
+
+enum UserRoleEnumDescription {
+    DIRECTOR = "Directeur",
+    SECRETARY = "Secrétaire",
+    EMPLOYEE = "Employé"
+}
 
 enum CreditNoteSettlementTypeEnum {
   REFUND = "Remboursement",
@@ -624,7 +667,7 @@ enum CreditNoteSettlementTypeEnum {
 
 enum CreditNoteReasonEnumDescription {
     MISTAKE = "Erreur de facturation",
-    CANCELLATION = "Remise exceptionnelle",
+    CANCELLATION = "Annulation",
     DISCOUNT = "Remise exceptionnelle",
     COMPENSATION = "Compensation",
     DUPLICATE = "Duplication de facture",
@@ -636,9 +679,27 @@ enum CreditNoteReasonEnumDescription {
 enum BillTypeEnum {
     DEPOSIT = "DEPOSIT",
     FINAL = "FINAL",
-    INVOICE = "INVOICE"
-  }
+}
+
+enum BillStatusEnumDescription{
+    DRAFT = "Brouillon",
+    READY = "Prêt à l'envoi",
+    SENT = "Envoyé",
+    CANCELED = "Clos"
+}
+
+
+// to not have the possibility to re put in DRAFT
+enum UpdateClassicBillStatusEnumDescription{
+    READY = "Prêt à l'envoi",
+    SENT = "Envoyé",
+    CANCELED = "Clos"
+}
   
+enum QuoteDiscountReasonEnumDescription {
+    FIDELITY = "Fidélité",
+    EXCEPTIONAL = "Exceptionnelle"
+}
 
 interface CreditNoteType{
     id: string,

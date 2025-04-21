@@ -6,8 +6,18 @@ import { formatDate } from '@/lib/utils'
 import {Tab, TabGroup ,TabList, TabPanel, TabPanels } from '@headlessui/react';
 import Link from "next/link";
 import { fetchCreditNotes } from "@/services/api/creditNoteService";
+import { useSearchParams } from "next/navigation";
+import { Pagination } from "@/components/Pagination";
+
+const LIMIT = 15;
 
 const CreditNotes = () =>{
+
+    const searchParams = useSearchParams();
+  
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const pageSettled = parseInt(searchParams.get("pageSettled") || "1", 10);
+    const pageNotSettled = parseInt(searchParams.get("pageNotSettled") || "1", 10);
 
     // a const for each workSite status
     const [creditNotes, setCreditNotes] = useState<CreditNoteForListType[]>([])
@@ -22,7 +32,12 @@ const CreditNotes = () =>{
     useEffect(() => {
         const loadCreditNotes = async () => {
             try{
-                const data = await fetchCreditNotes();
+                const data = await fetchCreditNotes({
+                    page,
+                    pageSettled,
+                    pageNotSettled,
+                    limit: LIMIT,  
+                });
                 console.log("données reçues après le fetch : "+data)
                 // We hydrate each const with the datas
                 setCreditNotes(data['creditNotes'])
@@ -38,18 +53,23 @@ const CreditNotes = () =>{
         }
             
         loadCreditNotes()
-    },[]);
+    },[page, pageSettled, pageNotSettled]);
 
+    const renderPagination = (total: number, pageParam: string) => {
+        if (total > 0) {
+            return <Pagination pageParam={pageParam} total={total} limit={LIMIT} />;
+         }
+            // Don't display anything it there are no datas
+        return null; 
+    };
 
   return (
 
     <>
     <div className="flex w-screen">
-        {/* <div><Toaster/></div> */}
 
         <section className="border-2 border-green-800 flex-[8]">
             <h1 className="text-3xl text-white text-center">Avoirs</h1>
-            <Link href={`/director/creditNotes/create`}>Créer un avoir</Link>
             <TabGroup className="flex flex-col items-center lg:block my-3">
                 <TabList className="my-3 flex gap-3">
                     <Tab className="text-lg lg:text-base flex data-[selected]:bg-pink-600  data-[hover]:bg-pink-500 p-2 rounded-md">Tous ({totalCreditNotes})</Tab>
@@ -96,7 +116,9 @@ const CreditNotes = () =>{
                                 })
                             }
                             </tbody>
-                        </table>  
+                        </table> 
+                        {renderPagination(totalCreditNotes, "page")}
+ 
                     </TabPanel>
                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
                         <table className="table-auto">
@@ -136,6 +158,8 @@ const CreditNotes = () =>{
                                 }
                                 </tbody>
                         </table>   
+                        {renderPagination(totalSettledCreditNotes, "page")}
+
                     </TabPanel>
                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
                     <table className="table-auto">
@@ -175,6 +199,7 @@ const CreditNotes = () =>{
                                 }
                                 </tbody>
                         </table>    
+                        {renderPagination(totalNotSettledCreditNotes, "page")}
                     </TabPanel>
                 </TabPanels>
             </TabGroup>  

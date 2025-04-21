@@ -6,11 +6,7 @@ import { db } from "@/lib/db";
 export async function DELETE(req: NextRequest, {params}: {params: {planningId: string}})
 {
     const resolvedParams = await params;
-    // Explicit validation of CSRF token (in addition of the middleware)
-    const csrfToken = req.headers.get("x-csrf-token");
-    if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
-        return new Response("Invalid CSRF token", { status: 403 });
-    }
+
     const planningId = resolvedParams.planningId;
 
     try{

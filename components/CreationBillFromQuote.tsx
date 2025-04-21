@@ -58,7 +58,7 @@ export default function CreationBillFromQuote({csrfToken, quoteNumber}: Creation
     const [vatRateChoices, setVatRateChoices] = useState<VatRateChoiceType[]>([])
     const [unitChoices, setUnitChoices] = useState<UnitChoiceType[]>([])
     // Allows to know if a bill is registered as a draft or ready (to be send)
-    const [status, setStatus] = useState<"Draft" | "Ready">("Draft");
+    // const [status, setStatus] = useState<"Draft" | "Ready">("Draft");
     const [isOpen, setIsOpen] = useState(false);
     // For zod validation errors
     const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
@@ -188,7 +188,7 @@ export default function CreationBillFromQuote({csrfToken, quoteNumber}: Creation
     const handleBillCreation = async (statusReady?: string) => {
         console.log("Le quote intial : "+JSON.stringify(quote?.services))        
 
-        const status = statusReady ? "Ready": "Draft"
+        const status = statusReady ? "READY": "DRAFT"
         const quoteId = quote?.id
         console.log("lors du submit, le status est : "+status)
 
@@ -206,7 +206,7 @@ export default function CreationBillFromQuote({csrfToken, quoteNumber}: Creation
             }
 
             // Choisir le schéma de validation en fonction du statut
-            const schema = statusReady === "Ready" ? createBillFinalSchema : createBillDraftSchema;
+            const schema = statusReady === "READY" ? createBillFinalSchema : createBillDraftSchema;
 
             // Validation des données du formulaire en fonction du statut
             const validationResult = schema.safeParse(createBillFormValues);
@@ -235,7 +235,7 @@ export default function CreationBillFromQuote({csrfToken, quoteNumber}: Creation
             console.log("status du devis updaté "+createdBill.status)
 
             try {
-                if(createdBill.status === "Draft"){
+                if(createdBill.status === "DRAFT"){
                     // Redirect to the page of bill's update
                     router.push(`/director/bills/${createdBill.number}/update`);                        
                 }else{
@@ -805,7 +805,7 @@ const addService = () => {
                         <button
                         // choice to to finalize quote
                             onClick={() => {
-                                handleBillCreation("Ready"); 
+                                handleBillCreation("READY"); 
                                 closeChoiceDialog(); 
                             }}
                             className="bg-green-600 text-white px-4 py-2 rounded-md"

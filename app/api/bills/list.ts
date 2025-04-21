@@ -1,9 +1,27 @@
 import { db } from "@/lib/db";
+import { BillStatusEnum } from "@prisma/client";
 import { NextResponse, NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
 
     try{
+
+        const { searchParams } = new URL(req.url);
+
+        // Retrieve parameters
+        const page = parseInt(searchParams.get("page") || "1", 10);
+        const pageReadyToBeSent = parseInt(searchParams.get("pageReadyToBeSent") || "1", 10);
+        const pageSent = parseInt(searchParams.get("pageSent") || "1", 10);
+        const pageDraft = parseInt(searchParams.get("pageDraft") || "1", 10);
+        const pageCanceled = parseInt(searchParams.get("pageCanceled") || "1", 10);
+        const limit = parseInt(searchParams.get("limit") || "10", 10);
+    
+        const skip = (page - 1) * limit;
+        const skipReadyToBeSent = (pageReadyToBeSent - 1) * limit;
+        const skipSent = (pageSent - 1) * limit;
+        const skipDraft = (pageDraft - 1) * limit;
+        const skipCanceled = (pageCanceled - 1) * limit;
+
         const bills = await db.bill.findMany({
             select: {
                 id: true,
@@ -14,18 +32,17 @@ export async function GET(req: NextRequest) {
                 workStartDate: true,
                 dueDate: true,
                 issueDate: true
-              },
-              orderBy: {
-                issueDate: 'asc',
-              },
+            },
+            skip,
+            take: limit,
+            orderBy: {
+                issueDate: "asc",
+            },
         });
 
           const readyToBeSentBills = await db.bill.findMany({
             where: {
-                status: {
-                    contains: "Ready",
-                    mode: 'insensitive',
-                }
+                status: BillStatusEnum.READY
             },
             select: {
                 id: true,
@@ -37,14 +54,16 @@ export async function GET(req: NextRequest) {
                 dueDate: true,
                 issueDate: true
             },
+            skip : skipReadyToBeSent,
+            take: limit,
             orderBy: {
-                issueDate: 'asc',
-              },
+                issueDate: "asc",
+            },
         })
 
           const sentBills = await db.bill.findMany({
             where: {
-                status: "Sent",
+                status: BillStatusEnum.SENT,
             },
             select: {
                 id: true,
@@ -56,17 +75,16 @@ export async function GET(req: NextRequest) {
                 dueDate: true,
                 issueDate: true
             },
+            skip: skipSent,
+            take: limit,
             orderBy: {
-                issueDate: 'asc',
-              },
+                issueDate: "asc",
+            },
         })
 
           const draftBills = await db.bill.findMany({
             where: {
-                status: {
-                    contains: "draft",
-                    mode: 'insensitive',
-                }
+                status: BillStatusEnum.DRAFT
             },
             select: {
                 id: true,
@@ -78,17 +96,16 @@ export async function GET(req: NextRequest) {
                 dueDate: true,
                 issueDate: true
             },
+            skip: skipDraft,
+            take: limit,
             orderBy: {
-                issueDate: 'asc',
-              },
+                issueDate: "asc",
+            },
         })
 
           const canceledBills = await db.bill.findMany({
             where: {
-                status: {
-                    contains: "canceled",
-                    mode: 'insensitive',
-                }
+                status: BillStatusEnum.CANCELED
             },
             select: {
                 id: true,
@@ -100,9 +117,11 @@ export async function GET(req: NextRequest) {
                 dueDate: true,
                 issueDate: true
             },
+            skip: skipCanceled,
+            take: limit,
             orderBy: {
-                issueDate: 'asc',
-              },
+                issueDate: "asc",
+            },
         })
 
 
@@ -110,20 +129,20 @@ export async function GET(req: NextRequest) {
         const totalBills: number = await db.bill.count();
         
         const totalDraftBills: number = await db.bill.count({ 
-                where: { status: { contains: "draft", mode: 'insensitive' } }
+                where: { status: BillStatusEnum.DRAFT }
         });
 
         const totalReadyToBeSentBills: number = await db.bill.count({ 
-            where: { status: { contains: "Ready", mode: 'insensitive' } }
+            where: { status: BillStatusEnum.READY }
         });
 
         const totalSentBills: number = await db.bill.count({ 
-            where: { status: { contains: "Sent", mode: 'insensitive' } }
+            where: { status: BillStatusEnum.SENT }
         });
 
 
         const totalCanceledBills: number = await db.bill.count({ 
-            where: { status: { contains: "Canceled", mode: 'insensitive' } }
+            where: { status: BillStatusEnum.CANCELED }
         });
 
         console.log("les bills retrieved : "+bills)
@@ -144,7 +163,8 @@ export async function GET(req: NextRequest) {
         })
 
     } catch (error) {
-        return new NextResponse("Internal error, {status: 500}")
+        console.error("Erreur dans l'API GET /api/workSites :", error);
+        return new NextResponse("Internal Server Error", { status: 500 });
     }
 
 }
