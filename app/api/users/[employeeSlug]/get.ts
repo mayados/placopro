@@ -1,5 +1,5 @@
 // allows to get all the users
-import { clerkClient, User} from "@clerk/express";
+import { clerkClient} from "@clerk/express";
 import { NextResponse, NextRequest } from "next/server";
 
 export async function GET(req: NextRequest, {params}: {params: {employeeSlug: string}}){
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest, {params}: {params: {employeeSlug: st
         const clerkUsersResponse = await clerkClient.users.getUserList()
         const clerkUsers = clerkUsersResponse.data;
         // to access the plain user's array, we have to access "data"
-        let employeeRetrieved: GetUserType | undefined = clerkUsers.find(
+        const employeeRetrieved: GetUserType | undefined = clerkUsers.find(
             (user) => user.publicMetadata?.slug === employeeSlug
           );
         
