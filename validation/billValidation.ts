@@ -1,4 +1,5 @@
 // /validation/billValidation.ts
+import { BillStatusEnum, PaymentMethodEnum } from '@prisma/client';
 import { z } from 'zod';
 
 // Transformation of string into Date with personnalized message (Because when retrieving Date in JSON in API route they became string)
@@ -84,8 +85,8 @@ export const createBillFinalSchema = z.object({
   })
 
 export const updateClassicBillSchema = z.object({
-    status: z.string().nullable(),
-    paymentMethod: z.string().nullable(),
+    status: z.nativeEnum(BillStatusEnum),
+    paymentMethod: z.nativeEnum(PaymentMethodEnum).nullable(),
     paymentDate: createDateSchemaWithoutMessage(),
     canceledAt: createDateSchemaWithoutMessage(),
 })

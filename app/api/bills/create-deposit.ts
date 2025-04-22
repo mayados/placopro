@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
 import { createDepositBillDraftSchema, createDepositBillFinalSchema } from "@/validation/billValidation";
 import { sanitizeData } from "@/lib/sanitize"; 
+import { BillStatusEnum } from "@prisma/client";
 
 
 export async function POST(req: NextRequest) {
@@ -55,7 +56,7 @@ export async function POST(req: NextRequest) {
         const { status,quoteId, ...dataWithoutStatus } = data;
 
         // Choisir le schéma en fonction du statut (avant ou après validation)
-        const schema = status === "Ready" ? createDepositBillFinalSchema : createDepositBillDraftSchema;
+        const schema = status === BillStatusEnum.READY ? createDepositBillFinalSchema : createDepositBillDraftSchema;
         
         // Validation avec Zod (sans 'status')
         const parsedData = schema.safeParse(dataWithoutStatus);
@@ -78,13 +79,13 @@ export async function POST(req: NextRequest) {
             // Generate bill number
             let billNumber = "";
 
-            if (status === "Ready") {
+            if (status === BillStatusEnum.READY) {
                 const currentYear = new Date().getFullYear();
                 const counter = await prisma.documentCounter.upsert({
                     where: {
                         year_type: {
                             year: currentYear,
-                            type: "deposit"
+                            type: BillTypeEnum.DEPOSIT
                         }
                     },
                     update: {
@@ -94,7 +95,7 @@ export async function POST(req: NextRequest) {
                     },
                     create: {
                         year: currentYear,
-                        type: "deposit",
+                        type: BillTypeEnum.DEPOSIT,
                         current_number: currentYear === 2025 ? 3 : 1
                     }
                 });
@@ -152,7 +153,7 @@ const bill = await prisma.bill.create({
     data: {
         number: billNumber,
         issueDate: new Date().toISOString(),
-        billType: "DEPOSIT",
+        billType: BillTypeEnum.DEPOSIT,
         dueDate: sanitizedData.dueDate ? new Date(sanitizedData.dueDate).toISOString() : new Date().toISOString(),
         workStartDate: sanitizedData.workStartDate ? new Date(sanitizedData.workStartDate).toISOString() : null,
         workEndDate: sanitizedData.workEndDate ? new Date(sanitizedData.workEndDate).toISOString() : null,

@@ -2,22 +2,23 @@ import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { updateClassicBillSchema } from "@/validation/billValidation";
 import { sanitizeData } from "@/lib/sanitize";
+import { BillStatusEnum } from "@prisma/client";
 
 export async function PUT(req: NextRequest) {
   const data = await req.json();
   // Explicit validation of CSRF token (in addition of the middleware)
-  const csrfToken = req.headers.get("x-csrf-token");
-  if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
-    return new Response("Invalid CSRF token", { status: 403 });
-  }
-  const { id, status, paymentMethod, paymentDate, canceledAt } = data;
+  // const csrfToken = req.headers.get("x-csrf-token");
+  // if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
+  //   return new Response("Invalid CSRF token", { status: 403 });
+  // }
+  // const { id, status, paymentMethod, paymentDate, canceledAt } = data;
 
   // Mapping of french statuts to english
   const statusMapping: Record<string, string> = {
-    "Prêt à l'envoi": "ready",
-    "Envoyé": "sent",
-    "Clos": "canceled",
-    "Payé": "paid",
+    "Prêt à l'envoi": BillStatusEnum.READY,
+    "Envoyé": BillStatusEnum.SENT,
+    "Clos": BillStatusEnum.CANCELED,
+    "Payé": BillStatusEnum.PAID,
   };
 
   try {
@@ -35,11 +36,11 @@ export async function PUT(req: NextRequest) {
     console.log("Données nettoyées :", JSON.stringify(sanitizedData));
     
     // construct dynamically update's object
-    const updateData: Record<string, any> = {};
+    const updateData: Record<string, unknown> = {};
 
     // status conversion
-    if (status !== null) {
-        const mappedStatus = statusMapping[status];
+    if (sanitizedData.status !== null) {
+        const mappedStatus = statusMapping[sanitizedData.status];
         if (mappedStatus) {
             updateData.status = mappedStatus;
         } else {
@@ -54,7 +55,7 @@ export async function PUT(req: NextRequest) {
         console.log("date parsée : "+parsedDate)
     } 
 
-    if (paymentMethod !== null){
+    if (sanitizedData.paymentMethod !== null){
         updateData.paymentMethod = sanitizedData.paymentMethod
     }
     if (sanitizedData.canceledAt !== null){
@@ -70,7 +71,7 @@ export async function PUT(req: NextRequest) {
 
     // Update in database
     const updatedBill = await db.bill.update({
-      where: { id: id },
+      where: { id: sanitizedData.id },
       data: updateData,
       include: {
         client: true, 

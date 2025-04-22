@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { updateClassicQuoteSchema } from "@/validation/quoteValidation";
 import { sanitizeData } from "@/lib/sanitize"; 
+import { QuoteStatusEnum } from "@prisma/client";
 
 export async function PUT(req: NextRequest) {
    
@@ -16,10 +17,11 @@ export async function PUT(req: NextRequest) {
 
   // Mapping of french statuts to english
   const statusMapping: Record<string, string> = {
-    "Prêt à l'envoi": "Ready to be send",
-    "Envoyé": "Sent",
-    "Accepté": "Accepted",
-    "Refusé": "Refused",
+    "Prêt à l'envoi": QuoteStatusEnum.READY,
+    "Envoyé": QuoteStatusEnum.SENT,
+    "Accepté": QuoteStatusEnum.ACCEPTED,
+    "Refusé": QuoteStatusEnum.REFUSED,
+    "Clos" : QuoteStatusEnum.CANCELED
   };
 
   try {

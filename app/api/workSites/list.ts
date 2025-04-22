@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { WorkSiteStatusEnum } from "@prisma/client";
 import { NextResponse, NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -37,10 +38,7 @@ export async function GET(req: NextRequest) {
     // Coming workSites
     const commingWorkSites = await db.workSite.findMany({
       where: {
-        status: {
-          contains: "A venir",
-          mode: "insensitive",
-        },
+        status: WorkSiteStatusEnum.COMING,
       },
       select: {
         id: true,
@@ -60,10 +58,7 @@ export async function GET(req: NextRequest) {
     // Completed workSites
     const completedWorkSites = await db.workSite.findMany({
       where: {
-        status: {
-          contains: "Terminé",
-          mode: "insensitive",
-        },
+        status: WorkSiteStatusEnum.COMPLETED,
       },
       select: {
         id: true,
@@ -83,10 +78,7 @@ export async function GET(req: NextRequest) {
     // In progress workSites
     const inProgressWorkSites = await db.workSite.findMany({
       where: {
-        status: {
-          contains: "En cours",
-          mode: "insensitive",
-        },
+        status: WorkSiteStatusEnum.PROGRESS,
       },
       select: {
         id: true,
@@ -107,26 +99,17 @@ export async function GET(req: NextRequest) {
     const totalWorkSites = await db.workSite.count();
     const totalCommingWorkSites = await db.workSite.count({
       where: {
-        status: {
-          contains: "A venir",
-          mode: "insensitive",
-        },
+        status: WorkSiteStatusEnum.COMING,
       },
     });
     const totalCompletedWorkSites = await db.workSite.count({
       where: {
-        status: {
-          contains: "Terminé",
-          mode: "insensitive",
-        },
+        status: WorkSiteStatusEnum.COMPLETED,
       },
     });
     const totalInProgressWorkSites = await db.workSite.count({
       where: {
-        status: {
-          contains: "En cours",
-          mode: "insensitive",
-        },
+        status: WorkSiteStatusEnum.PROGRESS,
       },
     });
 
