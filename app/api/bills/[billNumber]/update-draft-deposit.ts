@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server';
 import { updateDraftBillDepositSchema, updateDraftFinalDepositBillSchema } from "@/validation/billValidation";
 import { sanitizeData } from "@/lib/sanitize"; 
+import { BillStatusEnum } from "@prisma/client";
 
 
 export async function PUT(req: NextRequest) {
@@ -12,10 +13,10 @@ export async function PUT(req: NextRequest) {
         const data = await req.json();
         const user = await currentUser();
         // Explicit validation of CSRF token (in addition of the middleware)
-        const csrfToken = req.headers.get("x-csrf-token");
-        if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
-            return new Response("Invalid CSRF token", { status: 403 });
-        }
+        // const csrfToken = req.headers.get("x-csrf-token");
+        // if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
+        //     return new Response("Invalid CSRF token", { status: 403 });
+        // }
 
         if (!data) {
             return NextResponse.json({ success: false, message: "Aucune donnée reçue." }, { status: 400 });
@@ -38,7 +39,7 @@ export async function PUT(req: NextRequest) {
         console.log("Bill ID extrait:", id); // Vérifie s'il est bien défini
         
         // Choisir le schéma en fonction du statut (avant ou après validation)
-        const schema = status === "Ready" ? updateDraftFinalDepositBillSchema : updateDraftBillDepositSchema;
+        const schema = status === BillStatusEnum.READY ? updateDraftFinalDepositBillSchema : updateDraftBillDepositSchema;
                 
         // Validation avec Zod (sans 'status')
         const parsedData = schema.safeParse(dataWithoutStatus);
@@ -94,7 +95,7 @@ export async function PUT(req: NextRequest) {
 
             // Generate a unique number when status changes from draft to ready
             let billNumber = existingBill.number;
-            if (status === 'Ready' && existingBill.status === 'draft') {
+            if (status === BillStatusEnum.READY && existingBill.status === BillStatusEnum.DRAFT) {
                 const currentYear = new Date().getFullYear();
                 const counter = await prisma.documentCounter.upsert({
                     where: {

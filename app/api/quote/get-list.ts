@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { QuoteStatusEnum } from "@prisma/client";
 import { NextResponse, NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -42,10 +43,7 @@ export async function GET(req: NextRequest) {
 
           const draftQuotes = await db.quote.findMany({
             where: {
-                status: {
-                    contains: "Draft",
-                    mode: 'insensitive',
-                }
+                status: QuoteStatusEnum.DRAFT
             },
             select: {
                 id: true,
@@ -65,10 +63,7 @@ export async function GET(req: NextRequest) {
 
           const readyToBeSentQuotes = await db.quote.findMany({
             where: {
-                status: {
-                    contains: "Ready",
-                    mode: 'insensitive',
-                }
+                status: QuoteStatusEnum.READY
             },
             select: {
                 id: true,
@@ -88,7 +83,7 @@ export async function GET(req: NextRequest) {
 
           const sentQuotes = await db.quote.findMany({
             where: {
-                status: "Sent",
+                status: QuoteStatusEnum.SENT,
             },
             select: {
                 id: true,
@@ -108,10 +103,7 @@ export async function GET(req: NextRequest) {
 
           const acceptedQuotes = await db.quote.findMany({
             where: {
-                status: {
-                    contains: "Accepted",
-                    mode: 'insensitive',
-                }
+                status: QuoteStatusEnum.ACCEPTED
             },
             select: {
                 id: true,
@@ -131,10 +123,7 @@ export async function GET(req: NextRequest) {
 
           const refusedQuotes = await db.quote.findMany({
             where: {
-                status: {
-                    contains: "Refused",
-                    mode: 'insensitive',
-                }
+                status: QuoteStatusEnum.REFUSED
             },
             select: {
                 id: true,
@@ -157,23 +146,23 @@ export async function GET(req: NextRequest) {
         const totalQuotes: number = await db.quote.count();
         
         const totalDraftQuotes: number = await db.quote.count({ 
-                where: { status: { contains: "Draft", mode: 'insensitive' } }
+                where: { status: QuoteStatusEnum.DRAFT }
         });
 
         const totalReadyToBeSentQuotes: number = await db.quote.count({ 
-            where: { status: { contains: "Ready", mode: 'insensitive' } }
+            where: { status: QuoteStatusEnum.READY }
         });
 
         const totalSentQuotes: number = await db.quote.count({ 
-            where: { status: { contains: "Sent", mode: 'insensitive' } }
+            where: { status: QuoteStatusEnum.SENT }
         });
 
         const totalAcceptedQuotes: number = await db.quote.count({ 
-            where: { status: { contains: "Accepted", mode: 'insensitive' } }
+            where: { status: QuoteStatusEnum.ACCEPTED }
         });
 
         const totalRefusedQuotes: number = await db.quote.count({ 
-            where: { status: { contains: "Refused", mode: 'insensitive' } }
+            where: { status: QuoteStatusEnum.REFUSED }
         });
 
         console.log("les quotes retrieved : "+quotes)
@@ -196,7 +185,7 @@ export async function GET(req: NextRequest) {
         })
 
     } catch (error) {
-        console.error("Erreur dans l'API GET /api/workSites :", error);
+        console.error("Erreur dans l'API GET /api/quotes :", error);
         return new NextResponse("Internal Server Error", { status: 500 });
     }
 

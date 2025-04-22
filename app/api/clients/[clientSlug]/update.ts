@@ -12,19 +12,19 @@ export async function PUT(req: NextRequest) {
   if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
      return new Response("Invalid CSRF token", { status: 403 });
   }
-  const { 
-    id,
-    name,
-    firstName,
-    mail,
-    phone,
-    road,
-    addressNumber,
-    postalCode,
-    city,
-    additionalAddress,
-    // prospectNumber,
-    } = data;
+  // const { 
+  //   id,
+  //   name,
+  //   firstName,
+  //   mail,
+  //   phone,
+  //   road,
+  //   addressNumber,
+  //   postalCode,
+  //   city,
+  //   additionalAddress,
+  //   // prospectNumber,
+  //   } = data;
     // let {isAnonymized} = data.isAnonymized
 
   try {
@@ -50,7 +50,7 @@ export async function PUT(req: NextRequest) {
     */
     const originalClient = await db.client.findUnique({
         where: {
-            id: id
+            id: sanitizedData.id
         }, 
         select: {
             id: true,
@@ -75,13 +75,13 @@ export async function PUT(req: NextRequest) {
     })
 
 
-    let prospectData = null;
+    // let prospectData = null;
 
     // console.log("le client est-il anonymisé ? "+isAnonymized)
 
     if(originalClient){
         const client : ClientType= {
-            id: id,
+            id: sanitizedData.id,
             name: originalClient.name,
             firstName: originalClient.firstName,
             slug: originalClient.slug,
@@ -101,7 +101,7 @@ export async function PUT(req: NextRequest) {
         // We verify if the values have changed by comparing original values and values retrieved from the form
         // If it's the case, we replace const client's values by values retrieve from the forms
         if (originalClient.name !== sanitizedData.name) client.name = sanitizedData.name;
-        if (originalClient.name !== name) client.slug = name.toLowerCase()+"-"+firstName.toLowerCase();
+        if (originalClient.name !== sanitizedData.name) client.slug = sanitizedData.name.toLowerCase()+"-"+sanitizedData.firstName.toLowerCase();
         if (originalClient.firstName !== sanitizedData.firstname) client.firstName = sanitizedData.firstname;
         if (originalClient.firstName !== sanitizedData.firstname) client.slug = sanitizedData.name.toLowerCase()+"-"+sanitizedData.firstname.toLowerCase();
         if (originalClient.mail !== sanitizedData.mail) client.mail = sanitizedData.mail;
@@ -117,7 +117,7 @@ export async function PUT(req: NextRequest) {
 
         // We update the values in the database
         const updatedClient = await db.client.update({
-            where: { id: id },
+            where: { id: sanitizedData.id },
             data: {
                 name: client.name,
                 firstName: client.firstName,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { clerkClient, EmailAddress, User} from "@clerk/express";
+import { clerkClient} from "@clerk/express";
 import { updateUserSchema } from "@/validation/userValidation";
 import { sanitizeData } from "@/lib/sanitize"; 
 
@@ -8,13 +8,13 @@ export async function PUT(req: NextRequest) {
   // Retrieve datas from request's body
   const data = await req.json();
 
-  const { 
-    id,
-    firstName,
-    lastName,
-    email,
-    role
-  } = data;
+  // const { 
+  //   id,
+  //   firstName,
+  //   lastName,
+  //   email,
+  //   role
+  // } = data;
 
   try {
     // Exclure 'status' du schéma de validation Zod
@@ -38,7 +38,7 @@ export async function PUT(req: NextRequest) {
     sanitizedData.id = id;
  
 
-    if (!email) {
+    if (!sanitizedData.email) {
       throw new Error("L'adresse email est requise.");
     }
 
@@ -76,7 +76,7 @@ export async function PUT(req: NextRequest) {
       await clerkClient.emailAddresses.deleteEmailAddress(formerEmailAddressId as string)      
     }else{
       // If it has'nt changed, we just put the same mail address
-      updatedEmployeeEmail = {emailAddress: email}
+      updatedEmployeeEmail = {emailAddress: sanitizedData.email}
 
     }
 

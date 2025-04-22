@@ -1,4 +1,5 @@
 // /validation/billValidation.ts
+import { QuoteDiscountReasonEnum, QuoteStatusEnum } from '@prisma/client';
 import { z } from 'zod';
 
 // Transformation of string into Date with personnalized message (Because when retrieving Date in JSON in API route they became string)
@@ -41,7 +42,7 @@ export const createQuoteDraftSchema = z.object({
   travelCostsType: z.string().nullable(),
   depositAmount: z.number().nullable(),
   discountAmount: z.number().nullable(),
-  discountReason: z.string().nullable(),
+  discountReason: z.nativeEnum(QuoteDiscountReasonEnum).nullable(),
   hourlyLaborRate: z.string().nullable().optional(),
   paymentTerms: z.string().nullable(),
   paymentDelay: z.number().nullable(),
@@ -68,7 +69,7 @@ export const createQuoteFinalSchema = z.object({
     travelCostsType: z.string().min(1, "Le type de frais de déplacement est requis"),
     depositAmount: z.number().min(0, "Le montant d'accompte est requis"),
     discountAmount: z.number().min(0, "Le montant de réduction est requis"),
-    discountReason: z.string().min(1, "Le type de réduction est requis"),
+    discountReason: z.nativeEnum(QuoteDiscountReasonEnum).nullable(),
     hourlyLaborRate: z.string().nullable().optional(),
     paymentTerms: z.string().min(10, "Les conditions de paiement sont requises"),
     paymentDelay: z.number().min(0, "Le délais de paiement est requis"),
@@ -81,7 +82,7 @@ export const createQuoteFinalSchema = z.object({
   })
 
 export const updateClassicQuoteSchema = z.object({
-    status: z.string().nullable(),
+    status: z.nativeEnum(QuoteStatusEnum).nullable(),
     isSignedByClient: z.string().nullable(),
     signatureDate: createDateSchemaWithoutMessage(),
 })
@@ -124,7 +125,7 @@ export const updateDraftFinalQuoteSchema = z.object({
     workStartDate: createDateSchema("La date de commencement de chantier est requise"),
     workEndDate: createDateSchema("La date de fin de chantier est requise"),
     workDuration: z.number().min(1, "Le nombre de jours de travail est requis"),
-    discountReason: z.string().nullable(),
+    discountReason: z.nativeEnum(QuoteDiscountReasonEnum).nullable(),
     quoteId: z.string().nullable().optional(),
     // paymentMethod: z.string().nullable().optional(),
 

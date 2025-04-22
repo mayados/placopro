@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { updateDraftQuoteSchema, updateDraftFinalQuoteSchema } from "@/validation/quoteValidation";
 import { sanitizeData } from "@/lib/sanitize"; 
+import { QuoteStatusEnum } from "@prisma/client";
 
 
 export async function PUT(req: NextRequest) {
@@ -243,7 +244,7 @@ const generateQuoteNumber = async (type = "quote", isDraft = false) => {
       const updateData: Record<string, string | number | boolean> = {};
 
       // Check if we're changing from draft to ready status
-      const isChangingToReady = initialQuote.status === 'draft' && data.status === 'ready';
+      const isChangingToReady = initialQuote.status === QuoteStatusEnum.DRAFT && data.status === QuoteStatusEnum.READY;
       
       // Generate new number if status is draft and we're creating a new quote or changing to ready
       if (data.status === 'ready' && (initialQuote.status === 'draft' || !initialQuote.number)) {

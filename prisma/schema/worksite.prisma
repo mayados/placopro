@@ -25,3 +25,10 @@ model WorkSite{
 
         @@index([clientId])	
 } 
+
+enum WorkSiteStatusEnum {
+  COMING
+  COMPLETED
+  PROGRESS
+
+}

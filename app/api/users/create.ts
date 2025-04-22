@@ -8,16 +8,16 @@ export async function POST(req: NextRequest) {
   // Retrieve datas from request's body
   const data = await req.json();
   // Explicit validation of CSRF token (in addition of the middleware)
-  const csrfToken = req.headers.get("x-csrf-token");
-  if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
-    return new Response("Invalid CSRF token", { status: 403 });
-  }
-  const { 
-    firstName,
-    lastName,
-    email,
-    role
-  } = data;
+  // const csrfToken = req.headers.get("x-csrf-token");
+  // if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
+  //   return new Response("Invalid CSRF token", { status: 403 });
+  // }
+  // const { 
+  //   firstName,
+  //   lastName,
+  //   email,
+  //   role
+  // } = data;
 
   try {
 
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     // console.log("le mail : "+email)
     // console.log("le role : "+role)
 
-    if (!email) {
+    if (!sanitizedData.email) {
       throw new Error("L'adresse email est requise.");
     }
 

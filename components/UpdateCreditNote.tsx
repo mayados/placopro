@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState } from "react";
 import { RadioGroup,Select, Input} from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
@@ -16,7 +16,11 @@ type UpdateCreditNoteProps = {
 export default function UpdateCreditNote({csrfToken, creditNoteNumber}: UpdateCreditNoteProps){
 
     const [creditNote, setCreditNote] = useState<CreditNoteType>();
-
+    const settlementTypeChoices = 
+    {
+        REFUND: "Remboursement",
+        COMPENSATION: "Compensation"
+    };
     const [updateCreditNoteFormValues, setUpdateCreditNoteFormValues] = useState<UpdateCreditNoteFormValueType>({
         id: null,
         isSettled: null,
@@ -223,17 +227,17 @@ export default function UpdateCreditNote({csrfToken, creditNoteNumber}: UpdateCr
                     </RadioGroup>
                 </div>  
                 <Select
-                    name="reason"
+                    name="settlementType"
                     value={updateCreditNoteFormValues.settlementType || ""}
                     className="w-full rounded-md bg-gray-700 text-white pl-3"
                     onChange={handleInputChange}
                     >
-                    <option value="" disabled>-- Sélectionner un motif de règlement --</option>
-                        {Object.values(CreditNoteSettlementTypeEnum).map((reasonKey) => (
-                            <option key={reasonKey} value={reasonKey}>
-                                {reasonKey}
-                    </option>
-                ))}
+                    <option value="" disabled>Sélectionnez une raison</option>
+                    {Object.entries(settlementTypeChoices).map(([value, label]) => (
+                        <option key={value} value={value}>
+                            {label}
+                        </option>
+                    ))}
                 </Select>
                 {errors.reason && <p style={{ color: "red" }}>{errors.reason}</p>}
                 <Input type="hidden" name="csrf_token" value={csrfToken} />

@@ -13,17 +13,17 @@ export async function POST(req: NextRequest) {
 
     console.log("Données reçues dans l'API :", JSON.stringify(data));
 
-    const { 
-            name,
-            firstName,
-            mail,
-            phone,
-            road,
-            addressNumber,
-            postalCode,
-            city,
-            additionalAddress,
-        } = data;
+    // const { 
+    //         name,
+    //         firstName,
+    //         mail,
+    //         phone,
+    //         road,
+    //         addressNumber,
+    //         postalCode,
+    //         city,
+    //         additionalAddress,
+    //     } = data;
             // currentUser() is a founction from Clerk which allows to retrieve the current User
             const user = await currentUser()
 

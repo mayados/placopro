@@ -10,13 +10,13 @@ export async function POST(req: NextRequest) {
     const data = await req.json();
     
 
-    const { 
-            title,
-            workSiteId,
-            clerkUserId,
-            start,
-            end
-        } = data;
+    // const { 
+    //         title,
+    //         workSiteId,
+    //         clerkUserId,
+    //         start,
+    //         end
+    //     } = data;
         // currentUser() is a founction from Clerk which allows to retrieve the current User
         const user = await currentUser()
 

@@ -45,7 +45,7 @@ export async function GET(req: NextRequest)
 
     } catch (error) {
         // console.log("[Suggestions]", error)
-
+        console.error("Erreur détaillée :", error instanceof Error ? error.message : error);
         return new NextResponse("Internal error, {status: 500}")
     }
 }

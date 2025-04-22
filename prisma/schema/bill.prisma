@@ -92,4 +92,5 @@ enum BillStatusEnum{
   READY
   SENT 
   CANCELED
+  PAID
 }

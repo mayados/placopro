@@ -26,8 +26,19 @@ export default function Bill({csrfToken, billNumber}: BillProps){
     const [company, setCompany] = useState<CompanyType | null>(null);
     const [vatAmountTravelCost, setVatAmountTravelCost] = useState<number>(0)
     const [priceTTCTravelCost, setPriceTTCTravelCost] = useState<number>(0)
-    const billStatusChoices = ["Prêt à l'envoi","Envoyé","Clos","Payé"];
-    const paymentMethodChoices = ["Virement","Chèque","Espèces"];
+    const billStatusChoices = 
+    {
+        READY: "Prêt à l'envoi",
+        SENT: "Envoyé",
+        CANCELED: "Clos"
+    };
+    const paymentMethodChoices =
+    {
+        CREDIT_CARD: "Carte bancaire",
+        BANK_TRANSFER: "Virement",
+        CASH: "Espèces",
+        CHECK: "Chèque"
+    };
     const [formValues, setFormValues] = useState<FormValuesUpdateNotDraftBill>({
         id: null,
         status: null,
@@ -174,11 +185,12 @@ export default function Bill({csrfToken, billNumber}: BillProps){
                                     {billStatusChoices.map((status) => (
                                         <option key={status} value={status}>{status}</option>
                                     ))} */}
-                                      {Object.entries(UpdateClassicBillStatusEnumDescription).map(([value, label]) => (
-    <option key={value} value={value}>
-      {label}
-    </option>
-  ))}
+                                    <option value="" >Statut de la facture</option>
+                                    {Object.entries(billStatusChoices).map(([value, label]) => (
+                                        <option key={value} value={value}>
+                                        {label}
+                                        </option>
+                                    ))}
                                 </Select>
                                 {errors.status && <p style={{ color: "red" }}>{errors.status}</p>}
 
@@ -212,10 +224,10 @@ export default function Bill({csrfToken, billNumber}: BillProps){
                                     {paymentMethodChoices.map((methode) => (
                                         <option key={methode} value={methode}>{methode}</option>
                                     ))} */}
-                                                                        <option value="" disabled>-- Sélectionner un motif de règlement --</option>
-                                        {Object.values(PaymentMethodEnumDescription).map((reasonKey) => (
-                                    <option key={reasonKey} value={reasonKey}>
-                                        {reasonKey}
+                                    <option value="" disabled>-- Sélectionner une méthode de paiement --</option>
+                                    {Object.values(paymentMethodChoices).map(([value,label]) => (
+                                    <option key={value} value={value}>
+                                        {label}
                                     </option>
                                     ))}
                                 </Select>

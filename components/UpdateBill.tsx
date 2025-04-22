@@ -14,7 +14,6 @@ import { fetchBill, updateDraftBill } from "@/services/api/billService";
 import { updateDraftBillSchema, updateDraftFinalBillSchema } from "@/validation/billValidation";
 import { toast } from 'react-hot-toast';
 
-
 type UpdateBillProps = {
     csrfToken: string;
     billNumber: string;
@@ -181,7 +180,7 @@ export default function UpdateBill({csrfToken, billNumber}: UpdateBillProps){
         console.log("Le bill? intial : "+JSON.stringify(bill?.services))        
         console.log("lors du submit, le status est : "+statusReady)
 
-        const status = statusReady ? "Ready": "Draft"
+        const status = statusReady ? "READY": "DRAFT"
         const billId = bill?.id
 
         try{
@@ -196,7 +195,7 @@ export default function UpdateBill({csrfToken, billNumber}: UpdateBillProps){
             }
 
             // Choisir le schéma de validation en fonction du statut
-            const schema = statusReady === "Ready" ? updateDraftFinalBillSchema : updateDraftBillSchema;
+            const schema = statusReady === "READY" ? updateDraftFinalBillSchema : updateDraftBillSchema;
 
             // Validation des données du formulaire en fonction du statut
             const validationResult = schema.safeParse(updateBillFormValues);
@@ -226,7 +225,7 @@ export default function UpdateBill({csrfToken, billNumber}: UpdateBillProps){
             toast.success("Facture mise à jour avec succès");
             
             try {
-                if(createdBill.status === "Draft"){
+                if(createdBill.status === "DRAFT"){
                     // Redirect to the page of bill's update
                     router.push(`/director/bills/${createdBill.number}/update`);                        
                 }else{
@@ -380,7 +379,7 @@ const handleServiceFieldChange = (
     // 2. OR it's a service from suggestions that's being modified
     if (currentService.selectedFromSuggestions || 
         (!currentService.id && isServiceComplete(newServices[index]))) {
-        let updatedServicesAdded = [...updateBillFormValues.servicesAdded];
+        const updatedServicesAdded = [...updateBillFormValues.servicesAdded];
         
         // Find if this service is already in servicesAdded
         const existingIndex = updatedServicesAdded.findIndex(
@@ -485,7 +484,7 @@ const addService = () => {
                     <label htmlFor="workSite">Chantier</label>
                     <Field className="w-full">
                         <Input type="text" name="workSite" 
-                            value={`${bill?.workSite.addressNumber} ${bill?.workSite.road} ${bill?.workSite.additionnalAddress ? bill?.workSite.additionnalAddress + " " : ""}${bill?.workSite.postalCode} ${bill?.workSite.city}`}
+                            value={`${bill?.workSite.addressNumber} ${bill?.workSite.road} ${bill?.workSite.additionalAddress ? bill?.workSite.additionalAddress + " " : ""}${bill?.workSite.postalCode} ${bill?.workSite.city}`}
                             className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             readOnly
                         >
@@ -797,7 +796,7 @@ const addService = () => {
                         <button
                         // choice to to finalize bill?
                             onClick={() => {
-                                handleBillUpdate("Ready"); 
+                                handleBillUpdate("READY"); 
                                 closeChoiceDialog(); 
                             }}
                             className="bg-green-600 text-white px-4 py-2 rounded-md"

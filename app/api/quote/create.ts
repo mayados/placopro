@@ -3,16 +3,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
 import { createQuoteDraftSchema, createQuoteFinalSchema } from "@/validation/quoteValidation";
 import { sanitizeData } from "@/lib/sanitize"; 
+import { QuoteStatusEnum } from "@prisma/client";
 
 
 // Asynchrone : waits for a promise
 export async function POST(req: NextRequest) {
     const data = await req.json();
       // Explicit validation of CSRF token (in addition of the middleware)
-      const csrfToken = req.headers.get("x-csrf-token");
-      if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
-        return new Response("Invalid CSRF token", { status: 403 });
-      }
+      // const csrfToken = req.headers.get("x-csrf-token");
+      // if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
+      //   return new Response("Invalid CSRF token", { status: 403 });
+      // }
     console.log("Données reçues dans la requête :", data);
 
   
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
         const { status, ...dataWithoutStatus } = data;
       
         // Choisir le schéma en fonction du statut (avant ou après validation)
-        const schema = status === "Ready" ? createQuoteFinalSchema : createQuoteDraftSchema;
+        const schema = status === QuoteStatusEnum.READY ? createQuoteFinalSchema : createQuoteDraftSchema;
               
         // Validation avec Zod (sans 'status')
         const parsedData = schema.safeParse(dataWithoutStatus);
@@ -118,7 +119,7 @@ export async function POST(req: NextRequest) {
       };
 
       // We have to know if the quote was saved as a draft
-      const isDraft = status === "draft";
+      const isDraft = status === QuoteStatusEnum.DRAFT;
       const quoteNumber =  await generateQuoteNumber();
       
       // for each data.services : see if it already exists. If it's the case, it has an id. In the other case, the Id is null.
@@ -240,7 +241,7 @@ export async function POST(req: NextRequest) {
                 discountAmount: sanitizedData.discountAmount,
                 discountReason: sanitizedData.discountReason,
                 travelCosts: sanitizedData.travelCosts ?? 0, 
-                hourlyLaborRate: 0, 
+                // hourlyLaborRate: 0, 
                 paymentDelay: sanitizedData.paymentDelay ?? 0,
                 paymentTerms: sanitizedData.paymentTerms ?? "",
                 latePaymentPenalties: sanitizedData.latePaymentPenalities,

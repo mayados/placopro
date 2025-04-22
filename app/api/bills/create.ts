@@ -3,16 +3,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
 import { createBillDraftSchema, createBillFinalSchema } from "@/validation/billValidation";
 import { sanitizeData } from "@/lib/sanitize"; 
+import { BillStatusEnum } from "@prisma/client";
 
 
 export async function POST(req: NextRequest) {
     try {
         const data = await req.json();
         // Explicit validation of CSRF token (in addition of the middleware)
-        const csrfToken = req.headers.get("x-csrf-token");
-        if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
-            return new Response("Invalid CSRF token", { status: 403 });
-        }
+        // const csrfToken = req.headers.get("x-csrf-token");
+        // if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
+        //     return new Response("Invalid CSRF token", { status: 403 });
+        // }
         console.log("Données reçues dans l'API :", JSON.stringify(data));
         const user = await currentUser();
 
@@ -55,7 +56,7 @@ export async function POST(req: NextRequest) {
         const { status, ...dataWithoutStatus } = data;
 
         // Choisir le schéma en fonction du statut (avant ou après validation)
-        const schema = status === "Ready" ? createBillFinalSchema : createBillDraftSchema;
+        const schema = status === BillStatusEnum.READY ? createBillFinalSchema : createBillDraftSchema;
         
         // Validation avec Zod (sans 'status')
         const parsedData = schema.safeParse(dataWithoutStatus);

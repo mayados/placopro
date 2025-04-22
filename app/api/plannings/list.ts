@@ -36,7 +36,9 @@ export async function GET(req: NextRequest) {
         })
 
     } catch (error) {
-        return new NextResponse("Internal error, {status: 500}")
+      console.error("Erreur détaillée :", error instanceof Error ? error.message : error);
+
+      return new NextResponse("Internal error, {status: 500}")
     }
 
 }
