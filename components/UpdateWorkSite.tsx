@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState} from "react";
 import { Field,Input, Select, Textarea } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import { formatDateToInput } from '@/lib/utils'
@@ -18,7 +18,11 @@ export default function UpdateWorkSite({csrfToken, workSiteSlug}: UpdateWorkSite
 
     const [workSite, setWorkSite] = useState<WorkSiteType | null>(null);
     // Define options for select
-    const statusChoices = ["En cours","A venir","Terminé"];
+    const statusChoices = {    
+        COMING: "A venir",
+        COMPLETED: "Terminé",
+        PROGRESS: "En cours"
+    };
     const [suggestions, setSuggestions] = useState<ClientSuggestionType[] | null>(null)
     // text visible in the client field
     const [clientInput, setClientInput] = useState(""); 
@@ -201,9 +205,15 @@ export default function UpdateWorkSite({csrfToken, workSiteSlug}: UpdateWorkSite
                         onChange={handleInputChange}
                         className="w-full rounded-md bg-gray-700 text-white pl-3"
                     >
-                    <option value="">Sélectionnez un statut</option>
+                    {/* <option value="">Sélectionnez un statut</option>
                         {statusChoices.map((status) => (
                             <option key={status} value={status}>{status}</option>
+                        ))} */}
+                        <option value="" disabled>Sélectionnez un statut</option>
+                        {Object.entries(statusChoices).map(([value, label]) => (
+                            <option key={value} value={value}>
+                                {label}
+                            </option>
                         ))}
                     </Select>
                     {errors.status && <p style={{ color: "red" }}>{errors.status}</p>}

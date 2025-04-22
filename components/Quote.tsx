@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState } from "react";
 import { formatDate } from '@/lib/utils'
 import DownloadPDF from "@/components/DownloadPDF";
 import { Field, Input, Label, Legend, Radio, RadioGroup, Select } from "@headlessui/react";
@@ -25,7 +25,12 @@ export default function Quote({csrfToken, quoteNumber}: QuoteProps){
     const [company, setCompany] = useState<CompanyType | null>(null);
     const [vatAmountTravelCost, setVatAmountTravelCost] = useState<number>(0)
     const [priceTTCTravelCost, setPriceTTCTravelCost] = useState<number>(0)
-    const quoteStatusChoices = ["Prêt à l'envoi","Envoyé","Accepté","Refusé"];
+    const quoteStatusChoices = {
+        READY: "Prêt à l'envoi",
+        ACCEPTED: "Accepté",
+        REFUSED: "Refusé",
+        CANCELED: "Clos"
+    };
     const isSignedByClientChoices = ["Oui","Non"];
     const [formValues, setFormValues] = useState<FormValuesUpdateNotDraftQuote>({
         id: null,
@@ -170,9 +175,11 @@ export default function Quote({csrfToken, quoteNumber}: QuoteProps){
                                     value={formValues.status || ""}
                                     className="w-full rounded-md bg-gray-700 text-white pl-3"
                                 >
-                                <option value="">Statut</option>
-                                    {quoteStatusChoices.map((status) => (
-                                        <option key={status} value={status}>{status}</option>
+                                    <option value="" >Statut du devis</option>
+                                    {Object.entries(quoteStatusChoices).map(([value, label]) => (
+                                        <option key={value} value={value}>
+                                        {label}
+                                        </option>
                                     ))}
                                 </Select>
                             </div>

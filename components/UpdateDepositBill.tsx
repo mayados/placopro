@@ -102,7 +102,7 @@ export default function UpdateDepositBill({csrfToken, billNumber}: UpdateDeposit
         // console.log("Le bill? intial : "+JSON.stringify(bill?.services))        
         // console.log("lors du submit, le status est : "+statusReady)
 
-        const status = statusReady ? "Ready": "Draft"
+        const status = statusReady ? "READY": "DRAFT"
         const billId = bill?.id
 
         try{
@@ -116,7 +116,7 @@ export default function UpdateDepositBill({csrfToken, billNumber}: UpdateDeposit
             }
 
             // Choisir le schéma de validation en fonction du statut
-            const schema = statusReady === "Ready" ? updateDraftFinalDepositBillSchema : updateDraftBillDepositSchema;
+            const schema = statusReady === "READY" ? updateDraftFinalDepositBillSchema : updateDraftBillDepositSchema;
 
             // Validation des données du formulaire en fonction du statut
             const validationResult = schema.safeParse(updateBillFormValues);
@@ -146,7 +146,7 @@ export default function UpdateDepositBill({csrfToken, billNumber}: UpdateDeposit
             // console.log("voici la bill crééé : "+createdBill.number)
             // console.log("status du devis updaté "+createdBill.status)
             try {
-                if(updatedBill.status === "Draft"){
+                if(updatedBill.status === "DRAFT"){
                     // Redirect to the page of bill's update
                     router.push(`/director/bills/${updatedBill.number}/update`);                        
                 }else{

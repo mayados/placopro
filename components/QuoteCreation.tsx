@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState } from "react";
 import { Field,Input, Label, Legend, Radio, RadioGroup, Select, Textarea } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
@@ -49,7 +49,11 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
         services: [],
         serviceType: "",
     })
-    const discountReasonChoices = ["Fidelité","Remise exceptionnelle"];
+    const discountReasonChoices = 
+    {
+        FIDELIITY: "Fidelité",
+        EXCEPTIONAL: "Remise exceptionnelle"
+    };
     const travelCostsTypeChoices = ["Forfait unique","Forfait journalier"];
     // Define options for select for services
     const serviceTypeChoices = ["plâtrerie","Peinture"];
@@ -69,7 +73,6 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
     const [vatRateInput, setVatRateInput] = useState(""); 
     const [serviceInput, setServiceInput] = useState(""); 
     // Choices for boolean properties
-    const isQuoteFreeChoices = ["Oui","Non"];
     const hasRightOfWithdrawalChoices = ["Oui","Non"];
     const [isOpen, setIsOpen] = useState(false);
     const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
@@ -617,10 +620,12 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                     value={quote.discountReason || ""}
                     className="w-full rounded-md bg-gray-700 text-white pl-3"
                 >
-                <option value="">Raison de la remise</option>
-                    {discountReasonChoices.map((discountReasonChoices) => (
-                        <option key={discountReasonChoices} value={discountReasonChoices}>{discountReasonChoices}</option>
-                    ))}
+                <option value="" >Motif de la remise</option>
+                {Object.entries(discountReasonChoices).map(([value, label]) => (
+                    <option key={value} value={value}>
+                    {label}
+                    </option>
+                ))}
                 </Select>
                 {errors.discountReason && <p style={{ color: "red" }}>{errors.discountReason}</p>}
 

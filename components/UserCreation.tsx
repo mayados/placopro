@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useState } from "react";
 import { Field,Input, Select } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import { createEmployee } from "@/services/api/userService";
@@ -21,7 +21,11 @@ export default function UserCreation({csrfToken}: UserCreationProps){
         email: "",
     })
     // Define options for select
-    const roleChoices = ["employé","directeur","secrétaire"];
+    const roleChoices = {
+        EMPLOYEE: "Employé",
+        DIRECTOR: "Directeur",
+        SECRETARY: "Secrétaire"
+    };
     const router = useRouter();
     const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
     
@@ -127,9 +131,11 @@ export default function UserCreation({csrfToken}: UserCreationProps){
                         onChange={handleInputChange}
                         className="w-full rounded-md bg-gray-700 text-white pl-3"
                     >
-                    <option value="">Sélectionnez un rôle</option>
-                        {roleChoices.map((role) => (
-                            <option key={role} value={role}>{role}</option>
+                         <option value="" disabled>Sélectionnez un rôle</option>
+                        {Object.entries(roleChoices).map(([value, label]) => (
+                            <option key={value} value={value}>
+                                {label}
+                            </option>
                         ))}
                     </Select>
                     {errors.role && <p style={{ color: "red" }}>{errors.role}</p>}

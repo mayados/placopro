@@ -72,16 +72,20 @@ export default function Bill({csrfToken, quoteNumber}: UpdateDraftQuoteProps){
     const [clientSuggestions, setClientSuggestions] = useState<ClientSuggestionType[] | null>(null)
     const [workSiteSuggestions, setWorkSiteSuggestions] = useState<WorkSiteSuggestionType[] | null>(null)
     const [servicesSuggestions, setServiceSuggestions] = useState<ServiceSuggestionType[] | null>(null)
-    const discountReasonChoices = ["Fidelité","Remise exceptionnelle"];
+    const discountReasonChoices = 
+    {
+        FIDELIITY: "Fidelité",
+        EXCEPTIONAL: "Remise exceptionnelle"
+    };
     const travelCostsTypeChoices = ["forfait unique","forfait journalier"];
     // text visible in the client field
     const [clientInput, setClientInput] = useState(""); 
     const [workSiteInput, setWorkSiteInput] = useState(""); 
     const [unitInput, setUnitInput] = useState(""); 
     const [vatRateInput, setVatRateInput] = useState(""); 
-    const [serviceInput, setServiceInput] = useState(""); 
+    // const [serviceInput, setServiceInput] = useState(""); 
     // Choices for boolean properties
-    const isQuoteFreeChoices = ["Oui","Non"];
+    // const isQuoteFreeChoices = ["Oui","Non"];
     const hasRightOfWithdrawalChoices = ["Oui","Non"];
 
 
@@ -262,7 +266,7 @@ export default function Bill({csrfToken, quoteNumber}: UpdateDraftQuoteProps){
         console.log("update du champ de termes de paiement lors d'un changement : "+updatedQuoteFormValues.paymentTerms)
         console.log("lors du submit, le status est : "+statusReady)
 
-        const status = statusReady ? "Ready": "Draft"
+        const status = statusReady ? "READY": "DRAFT"
         const quoteId = quote?.id
 
         try{
@@ -277,7 +281,7 @@ export default function Bill({csrfToken, quoteNumber}: UpdateDraftQuoteProps){
             }
 
             // Choisir le schéma de validation en fonction du statut
-            const schema = statusReady === "Ready" ? updateDraftFinalQuoteSchema : updateDraftQuoteSchema;
+            const schema = statusReady === "READY" ? updateDraftFinalQuoteSchema : updateDraftQuoteSchema;
 
             // Validation des données du formulaire en fonction du statut
             const validationResult = schema.safeParse(updatedQuoteWithStatus);
@@ -703,10 +707,12 @@ export default function Bill({csrfToken, quoteNumber}: UpdateDraftQuoteProps){
                         : quote.discountReason ?? ""} 
                     className="w-full rounded-md bg-gray-700 text-white pl-3"
                 >
-                <option value="">Raison de la remise</option>
-                    {discountReasonChoices.map((discountReasonChoices) => (
-                        <option key={discountReasonChoices} value={discountReasonChoices}>{discountReasonChoices}</option>
-                    ))}
+                <option value="" >Motif de la remise</option>
+                {Object.entries(discountReasonChoices).map(([value, label]) => (
+                    <option key={value} value={value}>
+                    {label}
+                    </option>
+                ))}
                 </Select>
                 {errors.discountReason && <p style={{ color: "red" }}>{errors.discountReason}</p>}
 
@@ -1047,7 +1053,7 @@ export default function Bill({csrfToken, quoteNumber}: UpdateDraftQuoteProps){
                         <button
                         // choice to to finalize quote
                             onClick={() => {
-                                handleDraftQuoteUpdate("Ready"); 
+                                handleDraftQuoteUpdate("READY"); 
                                 closeChoiceDialog(); 
                             }}
                             className="bg-green-600 text-white px-4 py-2 rounded-md"
