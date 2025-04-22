@@ -35,7 +35,7 @@ export async function PUT(req: NextRequest) {
     // Ajoute le statut aux données validées
     sanitizedData.id = id;
     // construct dynamically update's object
-    const updateData: Record<string, any> = {};
+    const updateData: Record<string, unknown> = {};
 
 
     // console.log("start : "+start)
