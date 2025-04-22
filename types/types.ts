@@ -630,12 +630,7 @@ enum QuoteStatusEnumDescription {
     REFUSED = "Refusé",
     CANCELED = "Clos"
 }
-enum PaymentMethodEnumDescription {
-    CREDIT_CARD = "Carte bancaire",
-    BANK_TRANSFER = "Virement",
-    CASH = "Espèces",
-    CHECK = "Chèque"
-  }
+
 
 enum UpdateClassicQuoteStatusEnumDescription {
     READY = "Prêt à l'envoi",
@@ -681,14 +676,6 @@ enum BillTypeEnum {
     FINAL = "FINAL",
 }
 
-enum BillStatusEnumDescription{
-    DRAFT = "Brouillon",
-    READY = "Prêt à l'envoi",
-    SENT = "Envoyé",
-    CANCELED = "Clos"
-}
-
-
 // to not have the possibility to re put in DRAFT
 enum UpdateClassicBillStatusEnumDescription{
     READY = "Prêt à l'envoi",
@@ -696,11 +683,6 @@ enum UpdateClassicBillStatusEnumDescription{
     CANCELED = "Clos"
 }
   
-enum QuoteDiscountReasonEnumDescription {
-    FIDELITY = "Fidélité",
-    EXCEPTIONAL = "Exceptionnelle"
-}
-
 interface CreditNoteType{
     id: string,
     number: string,
