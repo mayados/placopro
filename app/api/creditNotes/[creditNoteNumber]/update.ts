@@ -7,17 +7,17 @@ import { sanitizeData } from "@/lib/sanitize";
 export async function PUT(req: NextRequest) {
   const data = await req.json();
   // Explicit validation of CSRF token (in addition of the middleware)
-  const csrfToken = req.headers.get("x-csrf-token");
-  if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
-    return new Response("Invalid CSRF token", { status: 403 });
-  }
-  const { id, isSettled, settlementType } = data;
+  // const csrfToken = req.headers.get("x-csrf-token");
+  // if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
+  //   return new Response("Invalid CSRF token", { status: 403 });
+  // }
+  // const { id, isSettled, settlementType } = data;
   
 
   // Mapping of french statuts to english
   const statusMapping: Record<string, string> = {
-    "Remboursement": "REFUND",
-    "Compensation": "COMPENSATION",
+    "Remboursement": CreditNoteSettlementTypeEnum.REFUND,
+    "Compensation": CreditNoteSettlementTypeEnum.COMPENSATION,
   };
 
   try {
@@ -42,11 +42,11 @@ export async function PUT(req: NextRequest) {
     sanitizedData.id = id;
     
     // construct dynamically update's object
-    const updateData: Record<string, any> = {};
+    const updateData: Record<string, unknown> = {};
 
     // status conversion
     if (sanitizedData.settlementType !== null) {
-        const mappedStatus = statusMapping[settlementType];
+        const mappedStatus = statusMapping[sanitizedData.settlementType];
         if (mappedStatus) {
             updateData.status = mappedStatus;
         } else {
@@ -55,7 +55,7 @@ export async function PUT(req: NextRequest) {
     }
 
     if (sanitizedData.isSettled !== null){
-        updateData.isSettled = isSettled
+        updateData.isSettled = sanitizedData.isSettled
     }
 
 

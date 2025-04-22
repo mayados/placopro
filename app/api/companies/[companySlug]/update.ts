@@ -8,31 +8,31 @@ export async function PUT(req: NextRequest) {
   // Retrieve datas from request's body
   const data = await req.json();
   // Explicit validation of CSRF token (in addition of the middleware)
-  const csrfToken = req.headers.get("x-csrf-token");
-  if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
-    return new Response("Invalid CSRF token", { status: 403 });
-  }
-  const { 
-    id,
-    slug,
-    name, 
-    type, 
-    phone, 
-    email, 
-    capital, 
-    rcs, 
-    siret, 
-    ape, 
-    intraCommunityVat, 
-    addressNumber, 
-    road,  
-    additionnalAddress, 
-    postalCode, 
-    city, 
-    insuranceName, 
-    insuranceContractNumber ,
-    insuranceCoveredZone 
-    } = data;
+  // const csrfToken = req.headers.get("x-csrf-token");
+  // if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
+  //   return new Response("Invalid CSRF token", { status: 403 });
+  // }
+  // const { 
+  //   id,
+  //   slug,
+  //   name, 
+  //   type, 
+  //   phone, 
+  //   email, 
+  //   capital, 
+  //   rcs, 
+  //   siret, 
+  //   ape, 
+  //   intraCommunityVat, 
+  //   addressNumber, 
+  //   road,  
+  //   additionnalAddress, 
+  //   postalCode, 
+  //   city, 
+  //   insuranceName, 
+  //   insuranceContractNumber ,
+  //   insuranceCoveredZone 
+  //   } = data;
 
   try {
 
@@ -54,13 +54,13 @@ export async function PUT(req: NextRequest) {
     */
     const originalCompany = await db.company.findUnique({
         where: {
-            id: id
+            id: sanitizedData.id
         }            
     })
 
     if(originalCompany){
         const company : CompanyType= {
-            id: id,
+            id: sanitizedData.id,
             slug: originalCompany.slug,
             name: originalCompany.name, 
             type: originalCompany.type, 
@@ -105,7 +105,7 @@ export async function PUT(req: NextRequest) {
 
         // We update tes values in the database
         const updatedCompany = await db.company.update({
-            where: { id: id },
+            where: { id: sanitizedData.id },
             data: {
                 slug: company.slug,
                 name: company.name, 
