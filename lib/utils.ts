@@ -10,7 +10,7 @@ import { format } from "date-fns";
 // }
 export function formatDate(date: Date | string | null | undefined): string {
   
-  console.log("Type:", typeof date, "Value:", date);
+  // console.log("Type:", typeof date, "Value:", date);
 
 
   if (!date) return "Date non disponible";

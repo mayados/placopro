@@ -10,9 +10,6 @@ export async function GET(req: NextRequest) {
     // currentUser() is a founction from Clerk which allows to retrieve the current User
     const user = await currentUser()
 
-    console.log("user actuel "+JSON.stringify(user))
-    console.log("user id "+user?.id)
-
     try{
 
         if (!user) {
@@ -21,25 +18,28 @@ export async function GET(req: NextRequest) {
                 message: "Utilisateur non authentifié." 
             }, { status: 401 });
         }
-
-
+        
         const toDos = await db.toDo.findMany({
             select: {
                 id: true,
                 description: true,
                 task: true,
                 createdAt: true,
+                isChecked: true
             },
             where: {
                 authorClerkId: user.id,
                 isArchived: false,
                 isChecked: false,
-                assignedToClerkId: null,
+                assignedToClerkId: {
+                    equals: null
+                }
             },
             orderBy: {
-                createdAt: "asc",
+                createdAt: "desc",
             },
         });
+  
 
         const checkedToDos = await db.toDo.findMany({
             select: {
@@ -47,6 +47,7 @@ export async function GET(req: NextRequest) {
                 description: true,
                 task: true,
                 createdAt: true,
+                isChecked: true
             },
             where: {
                 authorClerkId: user.id,
@@ -55,11 +56,10 @@ export async function GET(req: NextRequest) {
                 assignedToClerkId: null,
             },
             orderBy: {
-                createdAt: "asc",
+                createdAt: "desc",
             },
         });
 
-        console.log("todos : "+JSON.stringify(toDos))
         const archivedToDos = await db.toDo.findMany({
             where: {
                 authorClerkId: user.id,
@@ -70,88 +70,64 @@ export async function GET(req: NextRequest) {
                 id: true,
                 description: true,
                 task: true,
-                createdAt: true
+                createdAt: true,
+                isChecked: true
+
             },
             orderBy: {
-                createdAt: "asc",
+                createdAt: "desc",
             },
         })
 
-        console.log("todos archivés : "+JSON.stringify(archivedToDos))
-
-
-        // const assignedToDos = await db.toDo.findMany({
-        //     where: {
-        //         authorClerkId: user.id,
-        //         assignedToClerkId: {
-        //             not: null,
-        //         },
-        //     },
-        //     select: {
-        //         id: true,
-        //         description: true,
-        //         task: true,
-        //         createdAt: true,
-        //         assignedToClerkId: true
-        //     },
-        //     orderBy: {
-        //         createdAt: "asc",
-        //     },
-        // })
-
-
-        // console.log("todos assignés: "+JSON.stringify(assignedToDos))
-
-// Étape 1 : Récupérer les todos assignés
-const rawAssignedToDos = await db.toDo.findMany({
-    where: {
-      authorClerkId: user.id,
-      assignedToClerkId: {
-        not: null,
-      },
-    },
-    select: {
-      id: true,
-      description: true,
-      task: true,
-      createdAt: true,
-      assignedToClerkId: true,
-    },
-    orderBy: {
-      createdAt: "asc",
-    },
-  });
   
-  // Extract all clerk ids
-  const clerkIds = [...new Set(rawAssignedToDos.map(todo => todo.assignedToClerkId))];
-  
-  // Get users
-  const assignedUsers = await Promise.all(
-    clerkIds.map(async id => {
-      try {
-        const user = await clerkClient.users.getUser(id!); // le ! évite TypeScript de râler sur le null potentiel
-        return {
-          id,
-          fullName: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
-        };
-      } catch (err) {
-        console.warn(`Impossible de récupérer l'utilisateur Clerk ${id}`+err);
-        return { id, fullName: "Utilisateur inconnu" };
-      }
-    })
-  );
-  
-  // Create a dictionnary {id => nom complet}
-  const userMap = Object.fromEntries(assignedUsers.map(user => [user.id, user.fullName]));
-  
-  // Add complete name for each to do
-  const assignedToDos = rawAssignedToDos.map(todo => ({
-    ...todo,
-    assignedToName: userMap[todo.assignedToClerkId ?? ""] ?? "Utilisateur inconnu",
-  }));
 
-  console.log("to do assignés : "+JSON.stringify(assignedToDos))
-
+    // Étape 1 : Récupérer les todos assignés
+    const rawAssignedToDos = await db.toDo.findMany({
+        where: {
+        authorClerkId: user.id,
+        assignedToClerkId: {
+            not: null,
+        },
+        },
+        select: {
+        id: true,
+        description: true,
+        task: true,
+        createdAt: true,
+        assignedToClerkId: true,
+        },
+        orderBy: {
+        createdAt: "desc",
+        },
+    });
+    
+    // Extract all clerk ids
+    const clerkIds = [...new Set(rawAssignedToDos.map(todo => todo.assignedToClerkId))];
+    
+    // Get users
+    const assignedUsers = await Promise.all(
+        clerkIds.map(async id => {
+        try {
+            const user = await clerkClient.users.getUser(id!); // le ! évite TypeScript de râler sur le null potentiel
+            return {
+            id,
+            fullName: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
+            };
+        } catch (err) {
+            console.warn(`Impossible de récupérer l'utilisateur Clerk ${id}`+err);
+            return { id, fullName: "Utilisateur inconnu" };
+        }
+        })
+    );
+    
+    // Create a dictionnary {id => nom complet}
+    const userMap = Object.fromEntries(assignedUsers.map(user => [user.id, user.fullName]));
+    
+    // Add complete name for each to do
+    const assignedToDos = rawAssignedToDos.map(todo => ({
+        ...todo,
+        assignedToName: userMap[todo.assignedToClerkId ?? ""] ?? "Utilisateur inconnu",
+    }));
 
 
         //Counting number of toDos

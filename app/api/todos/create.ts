@@ -42,14 +42,15 @@ export async function POST(req: NextRequest) {
                 description: sanitizedData.description,
                 authorClerkId: user.id,
                 isChecked: false,
-                isArchived: false
+                isArchived: false,
+                assignedToClerkId: null
             },
         });
 
 
         console.log("To do créé avec succès.");
         // Toujours retourner la réponse après la création
-        return NextResponse.json({ success: true, data: toDo });
+        return NextResponse.json(toDo);
 
 
     } catch (error) {

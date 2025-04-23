@@ -12,19 +12,17 @@ export async function PATCH(req: NextRequest) {
 
     let updatedToDo;
 
-    if(currentToDo?.isChecked === false){
-      console.log("le to do actuel n'est pas checked donc on doit le checked")
+    if(currentToDo?.isArchived === false){
        updatedToDo = await db.toDo.update({
           where: { id: toDoId },
-          data: { isChecked: true },
+          data: { isArchived: true },
         });      
     }else{
-      console.log("le to do actuel est checked. Donc on doit le unchecked")
-
       updatedToDo = await db.toDo.update({
         where: { id: toDoId },
-        data: { isChecked: false },
-      });        
+        data: { isArchived: false },
+      });  
+
     }
 
       return NextResponse.json({ success: true, toDo: updatedToDo });
