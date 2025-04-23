@@ -916,3 +916,24 @@ interface EmployeeType {
 interface FormErrors {
     [key: string]: string;
 }
+
+interface ToDoForListType{
+    id: string;
+    task: string;
+    description: string;
+    createdAt: Date;
+    assignedToClerkId?: null | undefined | string,
+    assignedToName?: null | undefined | string
+}
+
+interface ToDosWithTotalsAndStatus{
+    success: boolean,
+    toDos: ToDoForListType[],
+    archivedToDos: ToDoForListType[],
+    assignedToDos: ToDoForListType[],
+    checkedToDos: ToDoForListType[],
+    totalToDos : number,
+    totalArchivedToDos : number,
+    totalAssignedToDos : number,
+    totalCheckedToDos: number
+}

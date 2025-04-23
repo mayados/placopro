@@ -6,7 +6,6 @@ model User{
     firstName String
     password  String
     role UserRoleEnum
-    toDos ToDo[]
     reportsDone Report[]
     // billsEstablished Bill[]
     // quotesEstablished Quote[]
