@@ -923,7 +923,8 @@ interface ToDoForListType{
     description: string;
     createdAt: Date;
     assignedToClerkId?: null | undefined | string,
-    assignedToName?: null | undefined | string
+    assignedToName?: null | undefined | string,
+    isChecked?: boolean
 }
 
 interface ToDosWithTotalsAndStatus{
@@ -937,3 +938,39 @@ interface ToDosWithTotalsAndStatus{
     totalAssignedToDos : number,
     totalCheckedToDos: number
 }
+
+interface ClassicToDoCreationType{
+    task: string | null,
+    description: string | null,
+}
+
+interface ClassicToDoUpdateType{
+    task: string | null,
+    description: string | null,
+}
+
+interface AssignedToDoCreationType{
+    task: string,
+    description: string | null,
+    assignedToClerkId: string
+}
+
+interface ClassicToDoType{
+    id: string,
+    task: string,
+    description: string | null,
+    isChecked: boolean,
+    isArchived: boolean,
+    authorClerkId: string,
+}
+
+interface AssignedToDoType{
+    id: string,
+    task: string,
+    description: string | null,
+    isChecked: boolean,
+    isArchived: boolean,
+    authorClerkId: string,
+    assignedToClerkId: string
+}
+
