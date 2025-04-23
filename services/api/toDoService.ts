@@ -13,14 +13,39 @@ export const fetchToDos = async (): Promise<ToDosWithTotalsAndStatus> => {
     }
   };
   
-// Check a to do
-export const checkToDo = async (toDoId: string,csrfToken: string): Promise<ToDoForListType> => {
+// Check or uncheck a to do
+export const checkOrUncheckToDo = async (toDoId: string,csrfToken: string): Promise<ToDoForListType> => {
     try {
         const response = await fetch(`/api/todos/${toDoId}`, {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,
+
+            },
+            body: JSON.stringify({ toDoId })
+        });
+        if (!response.ok) {
+            throw new Error("Error with to do's check");
+        }
+        const data: ToDoForListType = await response.json();
+        console.log("Created to do :", data);
+  
+        return data; 
+    } catch (error) {
+        console.error("Error with to do's check :", error);
+        throw error;
+    }
+  };
+// Check a to do
+export const archiveOrUnarchiveToDo = async (toDoId: string,csrfToken: string): Promise<ToDoForListType> => {
+    try {
+        const response = await fetch(`/api/todos/${toDoId}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
+                "X-patch-type": "archiveOrUnarchive"
 
             },
             body: JSON.stringify({ toDoId })
@@ -53,23 +78,28 @@ export const checkToDo = async (toDoId: string,csrfToken: string): Promise<ToDoF
 //     }
 // };
 
-// // Delete a workSite
-// export const deleteWorkSite = async (workSiteSlug: string): Promise<void> => {
-//     try {
-//         const response = await fetch(`/api/workSites/${workSiteSlug}`, {
-//             method: "DELETE",
-//         });
-//         if (!response.ok) {
-//             throw new Error("Error with workSite deletion");
-//         }
-//     } catch (error) {
-//         console.error("Error with workSite deletion :", error);
-//         throw error;
-//     }
-// };
+// Delete a to do 
+export const deleteToDo = async (toDoId: string,csrfToken: string): Promise<void> => {
+    try {
+        const response = await fetch(`/api/todos/${toDoId}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
+
+            },
+        });
+        if (!response.ok) {
+            throw new Error("Error with to do deletion");
+        }
+    } catch (error) {
+        console.error("Error with to do deletion :", error);
+        throw error;
+    }
+};
 
 // Create classic to do 
-export const createToDo = async (toDo: ClassicToDoCreationType, csrfToken: string): Promise<ToDoType> => {
+export const createClassicToDo = async (toDo: ClassicToDoCreationType, csrfToken: string): Promise<ToDoForListType> => {
     try {
         const response = await fetch(`/api/todos`, {
             method: "POST",
@@ -85,7 +115,7 @@ export const createToDo = async (toDo: ClassicToDoCreationType, csrfToken: strin
             throw new Error(`Erreur HTTP: ${response.status}`);
         }
   
-        const data: ToDoType = await response.json();
+        const data: ToDoForListType = await response.json();
         console.log("Created to do :", data);
   
         return data; 
@@ -96,7 +126,7 @@ export const createToDo = async (toDo: ClassicToDoCreationType, csrfToken: strin
 };
 
 // Create classic to do 
-export const createAssignedToDo = async (toDo: AssignedToDoCreationType, csrfToken: string): Promise<ToDoType> => {
+export const createAssignedToDo = async (toDo: AssignedToDoCreationType, csrfToken: string): Promise<AssignedToDoType> => {
     try {
         const response = await fetch(`/api/todos`, {
             method: "POST",
@@ -113,7 +143,7 @@ export const createAssignedToDo = async (toDo: AssignedToDoCreationType, csrfTok
             throw new Error(`Erreur HTTP: ${response.status}`);
         }
   
-        const data: ToDoType = await response.json();
+        const data: AssignedToDoType = await response.json();
         console.log("Created to do :", data);
   
         return data; 
