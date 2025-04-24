@@ -927,6 +927,12 @@ interface ToDoForListType{
     isChecked?: boolean
 }
 
+interface SecretariesForListType{
+    id: string,
+    firstName: string,
+    lastName: string
+}
+
 interface ToDosWithTotalsAndStatus{
     success: boolean,
     toDos: ToDoForListType[],
@@ -936,7 +942,8 @@ interface ToDosWithTotalsAndStatus{
     totalToDos : number,
     totalArchivedToDos : number,
     totalAssignedToDos : number,
-    totalCheckedToDos: number
+    totalCheckedToDos: number,
+    secretaries: [],
 }
 
 interface ClassicToDoCreationType{
@@ -945,14 +952,14 @@ interface ClassicToDoCreationType{
 }
 
 interface ClassicToDoUpdateType{
-    task: string | null,
-    description: string | null,
+    task?: string;
+    description?: string | null;
 }
 
 interface AssignedToDoCreationType{
-    task: string,
+    task: string | null,
     description: string | null,
-    assignedToClerkId: string
+    assignedToClerkId: string | null
 }
 
 interface ClassicToDoType{
@@ -965,12 +972,12 @@ interface ClassicToDoType{
 }
 
 interface AssignedToDoType{
-    id: string,
-    task: string,
-    description: string | null,
-    isChecked: boolean,
-    isArchived: boolean,
-    authorClerkId: string,
-    assignedToClerkId: string
+    id: string;
+    task: string;
+    description: string;
+    createdAt: Date;
+    assignedToClerkId?: null | undefined | string,
+    assignedToName?: null | undefined | string,
+    isChecked?: boolean
 }
 
