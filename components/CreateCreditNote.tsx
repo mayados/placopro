@@ -172,7 +172,7 @@ export default function CreateCreditNote({csrfToken, billNumber}: CreateCreditNo
                                 {reasonKey}
                     </option>
                 ))} */}
-                    <option value="" disabled>-- Sélectionner un motif --</option>
+                    <option value="">-- Sélectionner un motif --</option>
                         {Object.entries(CreditNoteReasonEnumDescription).map(([key, description]) => (
                             <option key={key} value={key}>
                                 {description}
