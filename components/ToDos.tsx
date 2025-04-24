@@ -6,10 +6,10 @@ import { formatDate } from '@/lib/utils'
 import { toast } from 'react-hot-toast';
 import { Dialog, DialogTitle, DialogPanel, Description, Tab, TabGroup ,TabList, TabPanel, TabPanels, Textarea } from '@headlessui/react';
 import Link from "next/link";
-import {archiveOrUnarchiveToDo, checkOrUncheckToDo, createClassicToDo, deleteToDo, fetchToDos } from "@/services/api/toDoService";
+import {archiveOrUnarchiveToDo, checkOrUncheckToDo, createAssignedToDo, createClassicToDo, deleteToDo, fetchToDos, updateClassicToDo } from "@/services/api/toDoService";
 import { faArchive, faXmark, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import { Field,Input } from '@headlessui/react';
-import { createClassicToDoSchema } from "@/validation/toDoValidation";
+import { createAssignedToDoSchema, createClassicToDoSchema } from "@/validation/toDoValidation";
 
 
 type ToDosProps = {
@@ -22,17 +22,26 @@ type ToDosProps = {
         task: null,
         description: null
     })
+    const [assignedToDoFormValues, setAssignedToDoFormValues] = useState<AssignedToDoCreationType>({
+        task: null,
+        description: null,
+        assignedToClerkId: null
+    })
+
     // To do update
     const [editingToDoId, setEditingToDoId] = useState<string | null>(null);
     // Use of Record here because there are many to do
-    const [editedValues, setEditedValues] = useState<Record<string, ClassicToDoUpdateType>>({});
-    const [originalValues, setOriginalValues] = useState<Record<string, ClassicToDoUpdateType>>({});
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedToDo, setSelectedToDo] = useState<ToDoForListType | null>(null);
+    const [editedValues, setEditedValues] = useState<ClassicToDoUpdateType>({});
+    
 
     // a const for each to do status
     const [toDos, setToDos] = useState<ToDoForListType[]>([])
     const [archivedToDos, setArchivedToDos] = useState<ToDoForListType[]>([])
     const [assignedToDos, setAssignedToDos] = useState<ToDoForListType[]>([])
     const [checkedToDos, setCheckedToDos] = useState<ToDoForListType[]>([])
+    const [secretaries, setSecretaries] = useState<SecretariesForListType[]>([])
     // const to get total of workSites by status
     const [totalToDos, setTotalToDos] = useState<number>(0)
     const [totalCheckedToDos, setTotalCheckedToDos] = useState<number>(0)
@@ -56,6 +65,7 @@ type ToDosProps = {
                 setCheckedToDos(data['checkedToDos'])
                 setArchivedToDos(data['archivedToDos'])
                 setAssignedToDos(data['assignedToDos'])
+                setSecretaries(data['secretaries'])
                   
                 setTotalToDos(data['totalToDos'] || 0)
                 setTotalCheckedToDos(data['totalCheckedToDos'] || 0)
@@ -167,32 +177,21 @@ type ToDosProps = {
         } 
     }
 
-    const handleUpdateToDo = async (toDo: ToDoForListType) => {
-        try {
+ 
+    const handleAssignedInputChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+      ) => {
 
-            // We unarchive a to do which is checked
-            // We have to delete it from the archived and add it to the checked
-            if(toDo.isChecked){
-                await archiveOrUnarchiveToDo(toDo.id,csrfToken);
-                toast("Tâche désarchivée");
-                setArchivedToDos(prev => prev.filter(item => item.id !== toDo.id));
-                setCheckedToDos(prev => [...prev, toDo]); 
-                setTotalArchivedToDos(prev => prev - 1);
-                setTotalCheckedToDos(prev => prev + 1);                
-            }else{
-                await archiveOrUnarchiveToDo(toDo.id,csrfToken);
-                toast("Tâche désarchivée");
-                setArchivedToDos(prev => prev.filter(item => item.id !== toDo.id));
-                setToDos(prev => [...prev, toDo]); 
-                setTotalArchivedToDos(prev => prev - 1);
-                setTotalToDos(prev => prev + 1);                 
-            }
+        const { name, value } = e.target;
+        console.log("onChange déclenché :", name, value); // ← Doit afficher 'assignedToClerkId' et l'id sélectionné
 
+        setAssignedToDoFormValues(prev => ({
+          ...prev,
+          [name]: value,
+        }));
 
-        } catch {
-            toast.error("Erreur lors de l'archivage");
-        } 
-    }
+      };
+      
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         // console.log("évènement reçu : "+e)
@@ -252,6 +251,53 @@ type ToDosProps = {
         }
     }
 
+    const handleAssignedToDoCreation = async () => {
+        console.log("données assign from "+JSON.stringify(assignedToDoFormValues))
+
+        try{
+
+            // Choisir le schéma de validation en fonction du statut
+            const schema = createAssignedToDoSchema;
+
+            // Validation des données du formulaire en fonction du statut
+            const validationResult = schema.safeParse(assignedToDoFormValues);
+
+            if (!validationResult.success) {
+                toast.error("Veuillez remplir les champs requis correctement")
+                // Si la validation échoue, afficher les erreurs
+                console.error("Erreurs de validation :", validationResult.error.errors);
+                    // Transformer les erreurs Zod en un format utilisable dans le JSX
+                const formattedErrors = validationResult.error.flatten().fieldErrors;
+              
+                // Mettre à jour l'état avec les erreurs
+                setErrors(formattedErrors);
+                return;  // Ne pas soumettre si la validation échoue
+            }
+
+            // Delete former validation errors
+            setErrors({})
+
+            const data = await createAssignedToDo(assignedToDoFormValues,csrfToken)
+            
+            const createdToDo = data;
+            if (createdToDo) {
+ 
+                // Réinitialiser le formulaire
+                setAssignedToDoFormValues({
+                  task: null,
+                  description: null,
+                  assignedToClerkId: null
+                });
+                setAssignedToDos(prev => [createdToDo,...prev]);
+                setTotalAssignedToDos(prev => prev + 1);
+                toast.success("Tâche créée");
+              }
+
+        }catch{
+            toast.error("Un problème est survenu lors de la création de la tâche")
+        }
+    }
+
     const openDeleteDialog = (toDoId: string) => {
         setToDoToDelete(toDoId);
         setIsOpen(true);  
@@ -261,6 +307,56 @@ type ToDosProps = {
         setIsOpen(false);  
     };
 
+
+    const openEditModal = (toDo: ToDoForListType) => {
+        setSelectedToDo(toDo);
+        setEditedValues({ task: toDo.task, description: toDo.description });
+        setIsEditModalOpen(true);
+      };
+
+      const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setEditedValues(prev => ({
+          ...prev,
+          [name]: value,
+        }));
+      };
+      
+      const handleUpdate = async () => {
+        if (!selectedToDo) return;
+      
+        const updates: ClassicToDoUpdateType = {};
+      
+        if (editedValues.task !== selectedToDo.task) updates.task = editedValues.task!;
+        if (editedValues.description !== selectedToDo.description) updates.description = editedValues.description!;
+      
+        if (Object.keys(updates).length === 0) {
+          toast("Aucune modification");
+          return;
+        }
+      
+        try {
+          await updateClassicToDo(selectedToDo.id, updates, csrfToken);
+     
+          setToDos(prev =>
+            prev.map(todo =>
+              todo.id === selectedToDo!.id 
+                ? {
+                    ...todo,
+                    task: updates.task ?? todo.task,
+                    description: updates.description ?? todo.description,
+                  }
+                : todo
+            )
+          );
+          toast.success("Tâche mise à jour");
+          setIsEditModalOpen(false);
+        } catch{
+          toast.error("Erreur lors de la mise à jour");
+        }
+      };
+      
+
   return (
 
     <>
@@ -268,40 +364,7 @@ type ToDosProps = {
 
         <section className="border-2 border-green-800 flex-[8]">
             <h1 className="text-3xl text-white text-center">To do list</h1>
-            <Link href={`/director/toDos/create`}>Créer un to do</Link>
-            <form 
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    handleToDoCreation();
-                }}
-            >
-                <div>
-                    <label htmlFor="task">Tâche</label>
-                    <Field className="w-full">
-                        <Input type="text" name="task" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            // Avoid uncontrolled input. Operateur nullish coalescing ?? allows to put an empty string if the value is null or undefined
-                            value={toDoFormValues.task ?? ""}
-                            onChange={handleInputChange}
-                        >
-                        </Input>
-                    </Field>
-                    {errors.task && <p style={{ color: "red" }}>{errors.task}</p>}
-                </div>
-                <div>
-                    <label htmlFor="description">Description</label>
-                    <Field className="w-full">
-                        <Textarea name="description" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={toDoFormValues.description !== null ? toDoFormValues.description : ""}
-                            onChange={handleInputChange}
-                        >
-                        </Textarea>
-                    </Field>
-                    {errors.description && <p style={{ color: "red" }}>{errors.description}</p>}
-                </div>
-                <Input type="hidden" name="csrf_token" value={csrfToken} />
-                                
-                <button type="submit">Ajouter</button>
-            </form>
+
             <TabGroup className="flex flex-col items-center lg:block my-3">
                 <TabList className="my-3 flex gap-3">
                     <Tab className="text-lg lg:text-base flex data-[selected]:bg-pink-600  data-[hover]:bg-pink-500 p-2 rounded-md">To do ({totalToDos})</Tab>
@@ -312,44 +375,99 @@ type ToDosProps = {
                 <TabPanels>
                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
                         <section>
+                            <Link href={`/director/toDos/create`}>Créer un to do</Link>
+                            <form 
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    handleToDoCreation();
+                                }}
+                            >
+                                <div>
+                                    <label htmlFor="task">Tâche</label>
+                                    <Field className="w-full">
+                                        <Input type="text" name="task" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                                            // Avoid uncontrolled input. Operateur nullish coalescing ?? allows to put an empty string if the value is null or undefined
+                                            value={toDoFormValues.task ?? ""}
+                                            onChange={handleInputChange}
+                                        >
+                                        </Input>
+                                    </Field>
+                                    {errors.task && <p style={{ color: "red" }}>{errors.task}</p>}
+                                </div>
+                                <div>
+                                    <label htmlFor="description">Description</label>
+                                    <Field className="w-full">
+                                        <Textarea name="description" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                                            value={toDoFormValues.description !== null ? toDoFormValues.description : ""}
+                                            onChange={handleInputChange}
+                                        >
+                                        </Textarea>
+                                    </Field>
+                                    {errors.description && <p style={{ color: "red" }}>{errors.description}</p>}
+                                </div>
+                                <Input type="hidden" name="csrf_token" value={csrfToken} />
+                                                
+                                <button type="submit">Ajouter</button>
+                            </form>
                             {
                                 toDos.map((toDo) => {
                                 
                                 return (
-                                    <article key={toDo.id}>
-                                        <input
-                                            type="checkbox"
-                                            className="w-5 h-5 accent-green-500"
-                                            onChange={() => check(toDo)}
-                                        />
-                                        <p>{toDo.task}</p>
-                                        <p>{toDo.description}</p>
-                                        {formatDate(toDo.createdAt)}
-                                        <Button
-                                            label="Archiver"
-                                            icon={faArchive}
-                                            specifyBackground="bg-yellow-500 hover:bg-yellow-600"
-                                            action={() => archive(toDo)}
-                                        />
-                                        {/* <Link href={`/director/workSites/${workSite?.slug}/update`}>
-                                            Modifier
-                                        </Link> */}
-                 
-                                        <Button 
-                                            label="Supprimer"
-                                            icon={faXmark} 
-                                            type="button" 
-                                            specifyBackground="bg-red-500"
-                                            action={() => openDeleteDialog(toDo.id)}
-                                        />
-                 
-                                        <Button 
-                                            label="Modifier"
-                                            icon={faXmark} 
-                                            type="button" 
-                                            specifyBackground="bg-red-500"
-                                            action={() => handleUpdateToDo(toDo)}
-                                        />
+                                    <article key={toDo.id}>   
+                                                <input
+                                                type="checkbox"
+                                                className="w-5 h-5 accent-green-500"
+                                                onChange={() => check(toDo)}
+                                                />
+                                                <p>{toDo.task}</p>
+                                                <p>{toDo.description}</p>
+                                                {formatDate(toDo.createdAt)}
+                                                <Button
+                                                    label="Archiver"
+                                                    icon={faArchive}
+                                                    specifyBackground="bg-yellow-500 hover:bg-yellow-600"
+                                                    action={() => archive(toDo)}
+                                                />
+                                                <Button 
+                                                    label="Supprimer"
+                                                    icon={faXmark} 
+                                                    type="button" 
+                                                    specifyBackground="bg-red-500"
+                                                    action={() => openDeleteDialog(toDo.id)}
+                                                />
+                        
+                                                <Button 
+                                                    label="Modifier"
+                                                    icon={faPenToSquare} 
+                                                    type="button" 
+                                                    specifyBackground="bg-orange-500"
+                                                    action={() => openEditModal(toDo)}
+                                                />
+                                        <Dialog open={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} className="absolute top-[50%] left-[25%]">
+                                            <DialogPanel>
+                                                <DialogTitle>Modifier la tâche</DialogTitle>
+
+                                                <label>Tâche</label>
+                                                <Input
+                                                name="task"
+                                                value={editedValues.task || ""}
+                                                onChange={handleEditChange}
+                                                className="w-full text-black"
+                                                />
+
+                                                <label>Description</label>
+                                                <Textarea
+                                                name="description"
+                                                value={editedValues.description || ""}
+                                                onChange={handleEditChange}
+                                                className="w-full text-black"
+                                                />
+
+                                                <button onClick={handleUpdate}>Enregistrer</button>
+                                                <button onClick={() => setIsEditModalOpen(false)}>Annuler</button>
+                                            </DialogPanel>
+                                        </Dialog>
+
                                     </article>
                                 );
                                 })
@@ -424,10 +542,60 @@ type ToDosProps = {
                     </TabPanel>
                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
                         <section>
+                            <Link href={`/director/toDos/create`}>Créer un to do à assigner</Link>
+                                <form 
+                                    onSubmit={(e) => {
+                                        e.preventDefault();
+                                        handleAssignedToDoCreation();
+                                    }}
+                                >
+                                    <div>
+                                        <label htmlFor="task">Tâche</label>
+                                        <Field className="w-full">
+                                            <Input type="text" name="task" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                                                // Avoid uncontrolled input. Operateur nullish coalescing ?? allows to put an empty string if the value is null or undefined
+                                                value={assignedToDoFormValues.task ?? ""}
+                                                onChange={handleAssignedInputChange}
+                                            >
+                                            </Input>
+                                        </Field>
+                                        {/* {errors.task && <p style={{ color: "red" }}>{errors.task}</p>} */}
+                                    </div>
+                                    <div>
+                                        <label htmlFor="description">Description</label>
+                                        <Field className="w-full">
+                                            <Textarea name="description" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                                                value={assignedToDoFormValues.description !== null ? assignedToDoFormValues.description : ""}
+                                                onChange={handleAssignedInputChange}
+                                            >
+                                            </Textarea>
+                                        </Field>
+                                        {/* {errors.description && <p style={{ color: "red" }}>{errors.description}</p>} */}
+                                    </div>
+                                    <select
+                                        name="assignedToClerkId"
+                                        className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
+                                        value={assignedToDoFormValues.assignedToClerkId ?? ""}
+                                        onChange={handleAssignedInputChange}
+                                        >
+                                        <option value="">-- Sélectionner un(e) secrétaire --</option>
+                                        {secretaries.map(secretary => (
+                                            <option key={secretary.id} value={secretary.id}>
+                                            {secretary.firstName} {secretary.lastName} {secretary.id}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errors.assignedToClerkId && <p style={{ color: "red" }}>{errors.assignedToClerkId}</p>}
+
+                                    <Input type="hidden" name="csrf_token" value={csrfToken} />
+                                                    
+                                    <button type="submit">Ajouter</button>
+                                </form>
                             {
                                 assignedToDos.map((toDo) => {
                                     
                                 return (
+                                    
                                     <article key={toDo.id}>
                                         <p>{toDo.task}</p>
                                         <p>{toDo.description}</p>
