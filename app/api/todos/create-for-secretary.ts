@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
-import { createSecretaryToDoSchema } from "@/validation/toDoValidation";
+import { createAssignedToDoSchema } from "@/validation/toDoValidation";
 import { sanitizeData } from "@/lib/sanitize"; 
 
 
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Validation avec Zod
-        const parsedData = createSecretaryToDoSchema.safeParse(data);
+        const parsedData = createAssignedToDoSchema.safeParse(data);
         if (!parsedData.success) {
             console.error("Validation Zod échouée :", parsedData.error.format());
                 
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
 
         console.log("To do créé avec succès.");
         // Toujours retourner la réponse après la création
-        return NextResponse.json({ success: true, data: toDo });
+        return NextResponse.json(toDo);
 
 
     } catch (error) {

@@ -63,6 +63,31 @@ export const archiveOrUnarchiveToDo = async (toDoId: string,csrfToken: string): 
     }
   };
 
+  export const updateClassicToDo = async (toDoId: string,updatedValues: ClassicToDoUpdateType,csrfToken: string): Promise<ToDoForListType> => {
+    try {
+        const response = await fetch(`/api/todos/${toDoId}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
+                "X-patch-type": "update-classic"
+
+            },
+            body: JSON.stringify(updatedValues )
+        });
+        if (!response.ok) {
+            throw new Error("Error with to do's check");
+        }
+        const data: ToDoForListType = await response.json();
+        console.log("Created to do :", data);
+  
+        return data; 
+    } catch (error) {
+        console.error("Error with to do's check :", error);
+        throw error;
+    }
+  };
+
 // Retrieve a specific WorkSite
 // export const fetchWorkSite = async (workSiteSlug: string): Promise<WorkSiteTypeSingle> => {
 //     try {

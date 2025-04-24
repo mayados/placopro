@@ -4,6 +4,7 @@ import { currentUser } from '@clerk/nextjs/server'
 import { clerkClient} from "@clerk/express";
 
 
+
 export async function GET(req: NextRequest) {
 
 
@@ -18,7 +19,19 @@ export async function GET(req: NextRequest) {
                 message: "Utilisateur non authentifié." 
             }, { status: 401 });
         }
+
+        const allUsersResponse = await clerkClient.users.getUserList();
+        const allUsers = allUsersResponse.data;
         
+        const secretaries = allUsers
+        .filter(user => user.publicMetadata?.role === "secrétaire")
+        .map(user => ({
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+        }));
+              
+
         const toDos = await db.toDo.findMany({
             select: {
                 id: true,
@@ -166,6 +179,8 @@ export async function GET(req: NextRequest) {
                 },
             },
         });
+
+        console.log("secrétaires : "+JSON.stringify(secretaries))
           
 
         return NextResponse.json({
@@ -178,6 +193,7 @@ export async function GET(req: NextRequest) {
             totalArchivedToDos : totalArchivedToDos,
             totalAssignedToDos : totalAssignedToDos,
             totalCheckedToDos : totalCheckedToDos,
+            secretaries: secretaries
         })
 
     } catch (error) {
