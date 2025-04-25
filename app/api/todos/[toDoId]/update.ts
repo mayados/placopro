@@ -7,19 +7,30 @@ import { sanitizeData } from "@/lib/sanitize";
 export async function PATCH(req: NextRequest, {params}: {params: {toDoId: string}}) {
     const data = await req.json();
     
-        const resolvedParams = await params;
+    const resolvedParams = await params;
     
-        const toDoId = resolvedParams.toDoId;
+    const toDoId = resolvedParams.toDoId;
     const user = await currentUser()
   
-  try {
 
     if (!user) {
-        return NextResponse.json({ 
-            success: false, 
-            message: "Utilisateur non authentifié." 
-        }, { status: 401 });
+      return new NextResponse("Non authentifié", { status: 401 });
     }
+  
+    const toDo = await db.toDo.findUnique({
+      where: { id: toDoId },
+      select: { authorClerkId: true },
+    });
+  
+    if (!toDo) {
+      return new NextResponse("To do introuvable", { status: 404 });
+    }
+  
+    if (toDo.authorClerkId !== user.id) {
+      return new NextResponse("Accès interdit", { status: 403 });
+    }
+
+  try {
 
     // Validation avec Zod
     const parsedData = updateClassicToDoSchema.safeParse(data);
