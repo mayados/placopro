@@ -88,20 +88,31 @@ export const archiveOrUnarchiveToDo = async (toDoId: string,csrfToken: string): 
     }
   };
 
-// Retrieve a specific WorkSite
-// export const fetchWorkSite = async (workSiteSlug: string): Promise<WorkSiteTypeSingle> => {
-//     try {
-//         const response = await fetch(`/api/workSites/${workSiteSlug}`);
-//         if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
-    
-//         const data: WorkSiteTypeSingle = await response.json();
-//         console.log("Données reçues après le fetch :", data);
-//         return data;
-//     } catch (error) {
-//         console.error("Erreur lors de la récupération du chantier :", error);
-//         throw error;
-//     }
-// };
+  export const updateAssignedToDo = async (toDoId: string,updatedValues: ClassicToDoUpdateType,csrfToken: string): Promise<ToDoForListType> => {
+    try {
+        const response = await fetch(`/api/todos/${toDoId}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
+                "X-patch-type": "update-assigned"
+
+            },
+            body: JSON.stringify(updatedValues )
+        });
+        if (!response.ok) {
+            throw new Error("Error with to do's check");
+        }
+        const data: ToDoForListType = await response.json();
+        console.log("Created to do :", data);
+  
+        return data; 
+    } catch (error) {
+        console.error("Error with to do's check :", error);
+        throw error;
+    }
+  };
+
 
 // Delete a to do 
 export const deleteToDo = async (toDoId: string,csrfToken: string): Promise<void> => {
