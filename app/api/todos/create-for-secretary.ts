@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
 
 
         // We create the to do thanks to te datas retrieved
-        const toDo = await db.toDo.create({
+        const toDoCreated = await db.toDo.create({
             data: {
                 task: sanitizedData.task,
                 description: sanitizedData.description,
@@ -46,6 +46,12 @@ export async function POST(req: NextRequest) {
                 assignedToClerkId: sanitizedData.assignedToClerkId
             },
         });
+
+            // Add complete name for each to do
+    const toDo = {
+        ...toDoCreated,
+        assignedToName: sanitizedData.assignedToName,
+    };
 
 
         console.log("To do créé avec succès.");

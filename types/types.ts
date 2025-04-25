@@ -956,10 +956,18 @@ interface ClassicToDoUpdateType{
     description?: string | null;
 }
 
+interface AssignedToDoUpdateType{
+    task?: string;
+    description?: string | null;
+    assignedToClerkId?: string | null,
+    // assignedToName?: string
+}
+
 interface AssignedToDoCreationType{
     task: string | null,
     description: string | null,
-    assignedToClerkId: string | null
+    assignedToClerkId: string | null,
+    assignedToName: string | null
 }
 
 interface ClassicToDoType{

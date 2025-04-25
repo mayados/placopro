@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
-import { updateClassicToDoSchema } from "@/validation/toDoValidation";
+import { updateAssignedToDoSchema } from "@/validation/toDoValidation";
 import { sanitizeData } from "@/lib/sanitize"; 
 
 export async function PATCH(req: NextRequest, {params}: {params: {toDoId: string}}) {
@@ -33,7 +33,7 @@ export async function PATCH(req: NextRequest, {params}: {params: {toDoId: string
   try {
 
     // Validation avec Zod
-    const parsedData = updateClassicToDoSchema.safeParse(data);
+    const parsedData = updateAssignedToDoSchema.safeParse(data);
     if (!parsedData.success) {
         console.error("Validation Zod échouée :", parsedData.error.format());
             

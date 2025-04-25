@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { currentUser } from '@clerk/nextjs/server'
 
 
 // Asynchrone : waits for a promise
@@ -8,6 +9,25 @@ export async function DELETE(req: NextRequest, {params}: {params: {toDoId: strin
     const resolvedParams = await params;
 
     const toDoId = resolvedParams.toDoId;
+
+    const user = await currentUser();
+
+    if (!user) {
+      return new NextResponse("Non authentifié", { status: 401 });
+    }
+  
+    const toDo = await db.toDo.findUnique({
+      where: { id: toDoId },
+      select: { authorClerkId: true },
+    });
+  
+    if (!toDo) {
+      return new NextResponse("To do introuvable", { status: 404 });
+    }
+  
+    if (toDo.authorClerkId !== user.id) {
+      return new NextResponse("Accès interdit", { status: 403 });
+    }
 
     try{
 

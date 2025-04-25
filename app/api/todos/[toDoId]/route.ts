@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { PATCH as checkOrUncheckToDo } from "@/app/api/todos/[toDoId]/check";
 import { PATCH as archiveOrUnarchiveToDo } from "@/app/api/todos/[toDoId]/archive";
 import { PATCH as updateClassicToDo } from "@/app/api/todos/[toDoId]/update";
+import { PATCH as updateAssignedToDo } from "@/app/api/todos/[toDoId]/update-assigned";
 import { DELETE as deleteToDo } from "@/app/api/todos/[toDoId]/delete";
 
 export async function PATCH(req: NextRequest) {
@@ -17,6 +18,8 @@ export async function PATCH(req: NextRequest) {
       return archiveOrUnarchiveToDo(req);
     }else if(req.headers.get('X-patch-type') === 'update-classic'){
       return updateClassicToDo(req,{ params: { toDoId } });
+    }else if(req.headers.get('X-patch-type') === 'update-assigned'){
+      return updateAssignedToDo(req,{ params: { toDoId } });
     }
 
   return checkOrUncheckToDo(req);
