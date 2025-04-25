@@ -6,7 +6,7 @@ import { formatDate } from '@/lib/utils'
 import { toast } from 'react-hot-toast';
 import { Dialog, DialogTitle, DialogPanel, Description, Tab, TabGroup ,TabList, TabPanel, TabPanels, Textarea } from '@headlessui/react';
 import Link from "next/link";
-import {archiveOrUnarchiveToDo, checkOrUncheckToDo, createAssignedToDo, createClassicToDo, deleteToDo, fetchToDos, updateClassicToDo } from "@/services/api/toDoService";
+import {archiveOrUnarchiveToDo, checkOrUncheckToDo, createAssignedToDo, createClassicToDo, deleteToDo, fetchToDos, updateAssignedToDo, updateClassicToDo } from "@/services/api/toDoService";
 import { faArchive, faXmark, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import { Field,Input } from '@headlessui/react';
 import { createAssignedToDoSchema, createClassicToDoSchema } from "@/validation/toDoValidation";
@@ -25,15 +25,18 @@ type ToDosProps = {
     const [assignedToDoFormValues, setAssignedToDoFormValues] = useState<AssignedToDoCreationType>({
         task: null,
         description: null,
-        assignedToClerkId: null
+        assignedToClerkId: null,
+        assignedToName: null
     })
 
     // To do update
     const [editingToDoId, setEditingToDoId] = useState<string | null>(null);
     // Use of Record here because there are many to do
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isAssignedEditModalOpen, setIsAssignedEditModalOpen] = useState(false);
     const [selectedToDo, setSelectedToDo] = useState<ToDoForListType | null>(null);
     const [editedValues, setEditedValues] = useState<ClassicToDoUpdateType>({});
+    const [editedAssignedValues, setEditedAssignedValues] = useState<AssignedToDoUpdateType>({});
     
 
     // a const for each to do status
@@ -48,7 +51,7 @@ type ToDosProps = {
     const [totalArchivedToDos, setTotalArchivedToDos] = useState<number>(0)
     const [totalAssignedToDos, setTotalAssignedToDos] = useState<number>(0)
     // const to set a workSite if it's selected to be deleted
-    const [toDoToDelete, setToDoToDelete] = useState<string | null>(null); 
+    const [toDoToDelete, setToDoToDelete] = useState<ToDoForListType | null>(null); 
     // const for the modal
     const [isOpen, setIsOpen] = useState(false);
     // For zod validation errors
@@ -80,14 +83,21 @@ type ToDosProps = {
     }, [csrfToken]);
 
     // Delete a to do
-    const handleToDoDeletion = async (toDoId: string) => {
+    const handleToDoDeletion = async (toDo: ToDoForListType) => {
+           const toDoId = toDo.id
         try {
             await deleteToDo(toDoId, csrfToken);
             setIsOpen(false);  
             toast.success('To do supprimé avec succès');   
-            // Vérifier si l'on est dans les toDos, checkToDos, archived
-            setToDos(prevToDos => prevToDos.filter(toDo => toDo.id !== toDoId));
-            setTotalToDos(prev => prev - 1);
+            if(toDo.assignedToClerkId != null){
+                setAssignedToDos(prevToDos => prevToDos.filter(toDo => toDo.id !== toDoId));
+                setTotalAssignedToDos(prev => prev - 1);
+            }else{
+                // Vérifier si l'on est dans les toDos, checkToDos, archived
+                setToDos(prevToDos => prevToDos.filter(toDo => toDo.id !== toDoId));
+                setTotalToDos(prev => prev - 1);                
+            }
+
 
         } catch (error) {
             toast.error('Erreur lors de la suppression du To do');                 
@@ -183,12 +193,21 @@ type ToDosProps = {
       ) => {
 
         const { name, value } = e.target;
-        console.log("onChange déclenché :", name, value); // ← Doit afficher 'assignedToClerkId' et l'id sélectionné
+        console.log("onChange déclenché :", name, value); 
 
-        setAssignedToDoFormValues(prev => ({
-          ...prev,
-          [name]: value,
-        }));
+        if (name === "assignedToClerkId") {
+            const selectedSecretary = secretaries.find(sec => sec.id === value);
+            setAssignedToDoFormValues(prev => ({
+              ...prev,
+              assignedToClerkId: value,
+              assignedToName: selectedSecretary ? `${selectedSecretary.firstName} ${selectedSecretary.lastName}` : null,
+            }));
+          } else {
+            setAssignedToDoFormValues(prev => ({
+              ...prev,
+              [name]: value,
+            }));
+          }
 
       };
       
@@ -298,8 +317,8 @@ type ToDosProps = {
         }
     }
 
-    const openDeleteDialog = (toDoId: string) => {
-        setToDoToDelete(toDoId);
+    const openDeleteDialog = (toDo: ToDoForListType) => {
+        setToDoToDelete(toDo);
         setIsOpen(true);  
     };
 
@@ -312,11 +331,27 @@ type ToDosProps = {
         setSelectedToDo(toDo);
         setEditedValues({ task: toDo.task, description: toDo.description });
         setIsEditModalOpen(true);
-      };
+    };
+
+    const openEditAssignedModal = (toDo: ToDoForListType) => {
+        setSelectedToDo(toDo);
+        setEditedAssignedValues({ task: toDo.task, description: toDo.description, assignedToClerkId: toDo.assignedToClerkId });
+        setIsAssignedEditModalOpen(true);
+    };
 
       const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
+        
         setEditedValues(prev => ({
+          ...prev,
+          [name]: value,
+        }));
+      };
+
+      const handleEditAssignedChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        
+        setEditedAssignedValues(prev => ({
           ...prev,
           [name]: value,
         }));
@@ -351,6 +386,41 @@ type ToDosProps = {
           );
           toast.success("Tâche mise à jour");
           setIsEditModalOpen(false);
+        } catch{
+          toast.error("Erreur lors de la mise à jour");
+        }
+      };
+      
+      const handleAssignedUpdate = async () => {
+        if (!selectedToDo) return;
+      
+        const updates: AssignedToDoUpdateType = {};
+      
+        if (editedAssignedValues.task !== selectedToDo.task) updates.task = editedAssignedValues.task!;
+        if (editedAssignedValues.description !== selectedToDo.description) updates.description = editedAssignedValues.description!;
+        if (editedAssignedValues.assignedToClerkId !== selectedToDo.assignedToClerkId) updates.assignedToClerkId = editedAssignedValues.assignedToClerkId!;
+      
+        if (Object.keys(updates).length === 0) {
+          toast("Aucune modification");
+          return;
+        }
+      
+        try {
+          await updateAssignedToDo(selectedToDo.id, updates, csrfToken);
+     
+          setAssignedToDos(prev =>
+            prev.map(todo =>
+              todo.id === selectedToDo!.id 
+                ? {
+                    ...todo,
+                    task: updates.task ?? todo.task,
+                    description: updates.description ?? todo.description,
+                  }
+                : todo
+            )
+          );
+          toast.success("Tâche mise à jour");
+          setIsAssignedEditModalOpen(false);
         } catch{
           toast.error("Erreur lors de la mise à jour");
         }
@@ -433,7 +503,7 @@ type ToDosProps = {
                                                     icon={faXmark} 
                                                     type="button" 
                                                     specifyBackground="bg-red-500"
-                                                    action={() => openDeleteDialog(toDo.id)}
+                                                    action={() => openDeleteDialog(toDo)}
                                                 />
                         
                                                 <Button 
@@ -542,6 +612,42 @@ type ToDosProps = {
                     </TabPanel>
                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
                         <section>
+                            <Dialog open={isAssignedEditModalOpen} onClose={() => setIsAssignedEditModalOpen(false)} className="absolute top-[50%] left-[25%]">
+                                            <DialogPanel>
+                                                <DialogTitle>Modifier la tâche</DialogTitle>
+
+                                                <label>Tâche</label>
+                                                <Input
+                                                name="task"
+                                                value={editedAssignedValues.task || ""}
+                                                onChange={handleEditAssignedChange}
+                                                className="w-full text-black"
+                                                />
+
+                                                <label>Description</label>
+                                                <Textarea
+                                                name="description"
+                                                value={editedAssignedValues.description || ""}
+                                                onChange={handleEditAssignedChange}
+                                                className="w-full text-black"
+                                                />
+                                                <select
+                                                    name="assignedToClerkId"
+                                                    className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
+                                                    value={editedAssignedValues.assignedToClerkId ?? ""}
+                                                    onChange={handleEditAssignedChange}
+                                                    >
+                                                    <option value="">-- Sélectionner un(e) secrétaire --</option>
+                                                    {secretaries.map(secretary => (
+                                                        <option key={secretary.id} value={secretary.id}>
+                                                        {secretary.firstName} {secretary.lastName} {secretary.id}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <button onClick={handleAssignedUpdate}>Enregistrer</button>
+                                                <button onClick={() => setIsAssignedEditModalOpen(false)}>Annuler</button>
+                                            </DialogPanel>
+                                        </Dialog>
                             <Link href={`/director/toDos/create`}>Créer un to do à assigner</Link>
                                 <form 
                                     onSubmit={(e) => {
@@ -601,14 +707,21 @@ type ToDosProps = {
                                         <p>{toDo.description}</p>
                                         {formatDate(toDo.createdAt)}
                                         <p>Assigné à {toDo.assignedToName}</p>
-                                            
-                                        {/* <Link href={`/director/workSites/${workSite?.slug}/update`}>
-                                            Modifier
-                                        </Link>
-                                    </td>
-                                        <td>
-                                            <Button label="Remove" icon={Trash2} type="button" action={() => openDeleteDialog(toDo.id)} specifyBackground="text-red-500" />
-                                        </td> */}
+                                        <Button 
+                                            label="Supprimer"
+                                            icon={faXmark} 
+                                            type="button" 
+                                            specifyBackground="bg-red-500"
+                                            action={() => openDeleteDialog(toDo)}
+                                        />
+                        
+                                        <Button 
+                                            label="Modifier"
+                                            icon={faPenToSquare} 
+                                            type="button" 
+                                            specifyBackground="bg-orange-500"
+                                            action={() => openEditAssignedModal(toDo)}
+                                        />
                                     </article>
                                 );
                                 })
