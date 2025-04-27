@@ -167,7 +167,11 @@ export const createDepositBillDraftSchema = z.object({
       travelCostsType: z.string().min(1, "Le type de frais de déplacement est requis"),
       workStartDate: createDateSchema("La date de commencement de chantier est requise"),
       workEndDate: createDateSchema("La date de fin de chantier est requise"),
-      workDuration: z.number().min(1, "Le nombre de jours de travail est requis"),
+      workDuration: z.preprocess(
+        (val) => Number(val),
+        z.number()
+          .min(1, { message: "Le nombre de jours de travail est requis" })
+      ),
       discountReason: z.string().nullable(),
     })
 
