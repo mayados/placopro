@@ -9,6 +9,7 @@ import { fetchCompany } from "@/services/api/companyService";
 import { updateClassicQuoteSchema } from "@/validation/quoteValidation";
 import { toast } from 'react-hot-toast';
 import Breadcrumb from "@/components/BreadCrumb";
+import Link from "next/link";
 
 
 // import { useRouter } from "next/navigation";
@@ -139,8 +140,11 @@ export default function Quote({csrfToken, quoteNumber}: QuoteProps){
     
 
         if (!quote) return <div>Loading...</div>;
-      
-    return (
+
+        console.log("backups des elements : "+JSON.stringify(quote.elementsBackup))
+
+
+        return (
         <>
             {/* <div><Toaster/></div> */}
             <h1 className="text-3xl text-white ml-3 text-center">Devis {quote?.number}</h1>
@@ -158,7 +162,7 @@ export default function Quote({csrfToken, quoteNumber}: QuoteProps){
 
             </ul>
             {/* If the quote's status is different from draft, we can display the form */}
-                {quote.status !== "draft" && (
+                {quote.status !== "DRAFT" && (
                     <section>
                         <h2>Modifier les informations</h2>
                         <form 
@@ -216,6 +220,12 @@ export default function Quote({csrfToken, quoteNumber}: QuoteProps){
                     </section>
 
                 )}
+            <Link href={`/director/bills/create/${quote?.number}`}>
+                Créer une facture finale
+            </Link>
+            <Link href={`/director/bills/create-deposit/${quote?.number}`}>
+                Créer une facture d'acompte
+            </Link>
             <DownloadPDF quote={quote} company={company as CompanyType} vatAmountTravelCost={vatAmountTravelCost} priceTTCTravelCost={priceTTCTravelCost} />
             {/* <div><Toaster /></div> */}
             <section>
@@ -231,13 +241,13 @@ export default function Quote({csrfToken, quoteNumber}: QuoteProps){
                 <div>
                     <h2>Addressé à</h2>
                     <div>
-                        <p>{quote?.client.name} {quote?.client.firstName}</p>
-                        <p>{quote?.client.addressNumber} {quote?.client.road} {quote?.client.postalCode} {quote?.client.city} {quote?.client.additionalAddress}</p>
+                        <p>{quote?.clientBackup?.name} {quote?.clientBackup?.firstName}</p>
+                        <p>{quote?.clientBackup?.addressNumber} {quote?.clientBackup?.road} {quote?.clientBackup?.postalCode} {quote?.clientBackup?.city} {quote?.clientBackup?.additionalAddress}</p>
                     </div>
                 </div>
             </section>
             <section>
-                <p>Chantier : {quote?.workSite.addressNumber} {quote?.workSite.road} {quote?.workSite.postalCode} {quote?.workSite.city} {quote?.workSite.additionnalAddress}</p>
+                <p>Chantier : {quote?.workSiteBackup?.addressNumber} {quote?.workSiteBackup?.road} {quote?.workSiteBackup?.postalCode} {quote?.workSiteBackup?.city} {quote?.workSiteBackup?.additionalAddress}</p>
                 <p>Date de début estimée : {formatDate(quote.workStartDate)}</p>
                 <p>Date de fin estimée : {formatDate(quote.estimatedWorkEndDate)}</p>
                 <p>Durée estimée des travaux : {quote.estimatedWorkDuration} jours</p>
@@ -273,15 +283,15 @@ export default function Quote({csrfToken, quoteNumber}: QuoteProps){
                     </thead>
                     <tbody>
                         {/* quote.services => quoteService */}
-                        {quote?.services.map((service, index) => {
-                            console.log("taux de tva du service "+service.service.vatRate)
+                        {quote?.servicesBackup && typeof quote.servicesBackup === "string" && 
+                            JSON.parse(quote.servicesBackup).map((service, index) => {
 
                             return (
                                 <tr key={index}>
-                                    <td>{service.service.label} - {service.service.type}</td>
+                                    <td>{service.label} - {service.type}</td>
                                     <td>{service.detailsService}</td>
                                     <td>{service.quantity} {service.unit}</td>
-                                    <td>{service.service.unitPriceHT}</td>
+                                    <td>{service.unitPriceHT}</td>
                                     <td>{service.vatRate} %</td>
                                     <td>{service.vatAmount}</td>
                                     <td>{service.totalHT}</td>
@@ -350,13 +360,13 @@ export default function Quote({csrfToken, quoteNumber}: QuoteProps){
                     <tbody>
                         <tr>
                             <td>
-                                {quote.priceHT} €
+                                {quote.elementsBackup?.priceHT} €
                             </td>
                             <td>
-                                {quote.vatAmount} €
+                                {quote.elementsBackup?.vatAmount} €
                             </td>
                             <td>
-                                {quote.priceTTC} €
+                                {quote.elementsBackup?.priceTTC} €
                             </td>
                         </tr>
                     </tbody>
