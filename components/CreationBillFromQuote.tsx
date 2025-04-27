@@ -13,6 +13,7 @@ import { fetchSuggestions } from "@/services/api/suggestionService";
 import { createBillFromQuote } from "@/services/api/billService";
 import { createBillDraftSchema, createBillFinalSchema } from "@/validation/billValidation";
 import { z } from 'zod';
+import { faPlane, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 // import toast, { Toaster } from 'react-hot-toast';
 type CreationBillFromQuoteProps = {
@@ -707,7 +708,7 @@ const addService = () => {
     {/* Bouton de suppression du service */}
     <Button
       label="Supprimer le service"
-      icon={CircleX}
+      icon={faXmark}
       type="button"
       action={() => addServiceToUnlink(service, index)}
       specifyBackground="text-red-500"
@@ -718,7 +719,7 @@ const addService = () => {
 {/* Bouton d'ajout d'un service */}
 <Button
   label="Ajouter un service"
-  icon={CirclePlus}
+  icon={faPlane}
   type="button"
   action={() => addService()}
   specifyBackground="text-green-500"

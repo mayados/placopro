@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Field,Input, Label, Legend, Radio, RadioGroup, Select, Textarea } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
-import { CirclePlus, CircleX } from "lucide-react";
 import { capitalizeFirstLetter } from "@/lib/utils";
 import { fetchVatRates } from "@/services/api/vatRateService";
 import { fetchUnits } from "@/services/api/unitService";
@@ -13,6 +12,7 @@ import { fetchSuggestions } from "@/services/api/suggestionService";
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
 import { createQuoteDraftSchema, createQuoteFinalSchema } from "@/validation/quoteValidation";
 import { toast } from 'react-hot-toast';
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
 type QuoteCreationProps = {
     csrfToken: string;
@@ -51,7 +51,7 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
     })
     const discountReasonChoices = 
     {
-        FIDELIITY: "Fidelité",
+        FIDELITY: "Fidelité",
         EXCEPTIONAL: "Remise exceptionnelle"
     };
     const travelCostsTypeChoices = ["Forfait unique","Forfait journalier"];
@@ -226,16 +226,16 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
 
       const handleQuoteCreation = async (statusReady?: string) => {
         console.log("lors du submit, le status est : "+statusReady)
-        const status = statusReady ? "Ready": "Draft"
+        const status = statusReady ? "READY": "DRAFT"
 
         try {
             const createQuoteWithStatus = {
                 ...quote,
                 status,
             };
-
+            console.log("Payload envoyé au backend :", JSON.stringify(createQuoteWithStatus));
             // Choisir le schéma de validation en fonction du statut
-            const schema = statusReady === "Ready" ? createQuoteFinalSchema : createQuoteDraftSchema;
+            const schema = statusReady === "READY" ? createQuoteFinalSchema : createQuoteDraftSchema;
             
             // Validation des données du formulaire en fonction du statut
             const validationResult = schema.safeParse(createQuoteWithStatus);
@@ -585,10 +585,10 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                             <option key={vatRate.id} value={vatRate.rate}>{vatRate.rate}</option>
                         ))}
                 </Select> 
-                <Button label="Enlever le service" icon={CircleX} type="button" action={() => removeService(index)} specifyBackground="text-red-500" />
+                <Button label="Enlever le service" icon={faXmark} type="button" action={() => removeService(index)} specifyBackground="text-red-500" />
             </div>
             ))}
-            <Button label="Ajouter un service" icon={CirclePlus} type="button" action={() => addService()} specifyBackground="text-red-500" />
+            <Button label="Ajouter un service" icon={faXmark} type="button" action={() => addService()} specifyBackground="text-red-500" />
 
 
                 {/* Quote : validity end date */}
@@ -757,19 +757,19 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
             {/* {isOpen ?? ( */}
                 <Dialog open={isOpen} onClose={closeChoiceDialog}  className="fixed top-[50%] left-[25%]" >
                     <DialogPanel className="bg-gray-300 p-5 rounded-md shadow-lg text-black">
-                    <DialogTitle>Etes-vous sûr de vouloir enregistrer la facture en version finale ?</DialogTitle>
+                    <DialogTitle>Etes-vous sûr de vouloir enregistrer le devis en version finale ?</DialogTitle>
                     <Description>Cette action est irréversible</Description>
-                    <p>La facture ne pourra plus être modifiée ultérieurement. </p>
+                    <p>Le devis ne pourra plus être modifié ultérieurement. </p>
                         <div className="flex justify-between mt-4">
                         <button
                         // choice to to finalize quote
                             onClick={() => {
-                                handleQuoteCreation("Ready"); 
+                                handleQuoteCreation("READY"); 
                                 closeChoiceDialog(); 
                             }}
                             className="bg-green-600 text-white px-4 py-2 rounded-md"
                         >
-                            Finaliser la facture
+                            Finaliser le devis
                         </button>
                             <button onClick={closeChoiceDialog} className="bg-gray-300 text-black px-4 py-2 rounded-md">Annuler</button>
                         </div>
