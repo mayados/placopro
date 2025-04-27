@@ -231,7 +231,11 @@ interface BillType{
     workStartDate: Date,
     workEndDate: Date,
     workDuration: number,
-    quote: QuoteType
+    quote: QuoteType,
+    clientBackup?: ClientBackup,
+    elementsBackup?: BillElementsBackup,
+    servicesBackup?: ServiceBackup[],
+    workSiteBackup?: WorkSiteBackup,
 }
 //
 interface CreateBillFormValueType{
@@ -382,8 +386,64 @@ interface QuoteType{
     workSite: WorkSiteType;
     services : QuoteServiceType[];
     discountAmount?: number;
-    discountReason?: string
+    discountReason?: string,
+    clientBackup?: ClientBackup,
+    elementsBackup?: QuoteElementsBackup,
+    servicesBackup?: ServiceBackup[],
+    workSiteBackup?: WorkSiteBackup,
+
 }
+
+interface ClientBackup {
+    firstName: string;
+    name: string;
+    mail: string;
+    road: string;
+    addressNumber: string;
+    city: string;
+    postalCode: string;
+    additionalAddress?: string;
+}
+
+interface WorkSiteBackup {
+    road: string;
+    addressNumber: string;
+    city: string;
+    postalCode: string;
+    additionalAddress?: string;
+}
+
+interface ServiceBackup {
+    label: string;
+    unitPriceHT: number;
+    quantity: number;
+    unit: string;
+    vatRate: string;
+    totalHT: number;
+    vatAmount: number;
+    totalTTC: number;
+    detailsService: string;
+    discountAmount: number;
+    type: string,
+    discountReason: string | null;
+  }
+
+  interface QuoteElementsBackup {
+    vatAmount: number;
+    priceHT: number;
+    priceTTC: number;
+  }
+
+  interface BillElementsBackup {
+    vatAmount: number,
+    totalTtc: null,
+    totalHt: number,
+    quoteNumber: string
+  }
+
+
+  
+  
 
 interface QuoteTypeSingle{
     quote: QuoteType;
