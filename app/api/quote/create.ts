@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
           const currentYear = new Date().getFullYear();
           
             // Get the counter for current year for quote
-            let counter = await db.documentCounter.findFirst({
+            const counter = await db.documentCounter.findFirst({
               where: {
                 year: currentYear,
                 type: type, 
@@ -182,6 +182,7 @@ export async function POST(req: NextRequest) {
       
             try {
               await db.$transaction(async (tx) => {
+
                 const createdService = await tx.service.create({
                   data: {
                     label: service.label,
@@ -257,6 +258,10 @@ export async function POST(req: NextRequest) {
             },
         });
 
+      // stock datas for backup for quoteServices
+      const quoteServicesWithData = [];
+
+
       // global variables to use later in the code for Quote update
       let totalHtQuote = 0;
       let vatAmountQuote = 0;
@@ -284,12 +289,12 @@ export async function POST(req: NextRequest) {
             console.log("type de données de unitPriceHt du service : "+typeof(service.unitPriceHT))
             console.log("Type de quantity :", typeof service.quantity, "Valeur :", service.quantity);
 
-            let totalHTService = service.unitPriceHT * service.quantity;
+            const totalHTService = service.unitPriceHT * service.quantity;
             console.log("total HT pour le service "+service.label+" : "+totalHTService+" €")
-            let vatRateService = parseFloat(service.vatRate);
-            let vatAmountService = totalHTService * (vatRateService / 100);
+            const vatRateService = parseFloat(service.vatRate);
+            const vatAmountService = totalHTService * (vatRateService / 100);
             console.log("total montant de la TVA pour le service "+service.label+" : "+vatAmountService+" €")
-            let totalTTCService = totalHTService+vatAmountService; 
+            const totalTTCService = totalHTService+vatAmountService; 
             console.log("total TTC pour le service "+service.label+" : "+totalTTCService+" €")
 
 
@@ -311,11 +316,32 @@ export async function POST(req: NextRequest) {
                 totalHT: totalHTService,
                 vatAmount: vatAmountService,
                 totalTTC: totalTTCService,
-                detailsService: service.detailsService,
+                detailsService: service.detailsService || "",
                 quoteId: quote.id,
                 serviceId: serviceRetrieved.id,
               },
-            });  
+              include: {
+                // essential to access service object for backup
+                service: true 
+            }
+          });  
+          // we add services to the backup's datas
+          quoteServicesWithData.push({
+            // datas of the associated service
+            label: quoteService.service.label,
+            unitPriceHT: quoteService.service.unitPriceHT,
+            type: quoteService.service.type,
+            // datas of billService
+            quantity: quoteService.quantity,
+            unit: quoteService.unit,
+            vatRate: quoteService.vatRate,
+            totalHT: quoteService.totalHT,
+            vatAmount: quoteService.vatAmount,
+            totalTTC: quoteService.totalTTC,
+            detailsService: quoteService.detailsService || '',
+            discountAmount: quoteService.discountAmount || 0,
+            discountReason: quoteService.discountReason || null
+          });         
             
           }
 
@@ -325,16 +351,28 @@ export async function POST(req: NextRequest) {
 
       // add travelCosts to totalHtQuote (which contains services costs HT)
       totalHtQuote += sanitizedData.travelCosts ?? 0
-      totalHtQuote-= sanitizedData.discountAmount ?? 0
+      // totalHtQuote-= sanitizedData.discountAmount ?? 0
       // Count vatAmount for travelCosts and add the result to vatAmountQuote
-      const vatAmountForTravelCosts = sanitizedData.travelCosts ?? 0 * (20 / 100);
+      const vatAmountForTravelCosts = (sanitizedData.travelCosts ?? 0) * (20 / 100);
       console.log("montant tva pour les trajets : "+vatAmountForTravelCosts)
       vatAmountQuote += vatAmountForTravelCosts
       console.log("montant tva du devis : "+vatAmountQuote)
       // add totalTTC travelCosts to totalTTCQuote
-      totalTTCQuote += sanitizedData.travelCosts ?? 0 + Number(vatAmountForTravelCosts)
+      totalTTCQuote += (sanitizedData.travelCosts ?? 0) + Number(vatAmountForTravelCosts)
       console.log("total du prix du devis : "+totalTTCQuote)
 
+      const clientId = sanitizedData.clientId
+
+      const workSiteId = sanitizedData.workSiteId
+
+      const client = await db.client.findUnique({
+        where: {id: clientId},
+      })
+
+      const workSite = await db.workSite.findUnique({
+        where: {id: workSiteId},
+      })
+      
         //update Quote
         const newQuote = await db.quote.update({
               where: { id: quote.id },
@@ -342,12 +380,38 @@ export async function POST(req: NextRequest) {
                 vatAmount: vatAmountQuote,
                 priceHT: Number(totalHtQuote),
                 priceTTC: totalTTCQuote,
+                     // Add backup fields only for FINAL bills
+                    ...(status === QuoteStatusEnum.READY && {
+                        clientBackup: {
+                            firstName: client?.firstName,
+                            name: client?.name,
+                            mail: client?.mail,
+                            road: client?.road,
+                            addressNumber: client?.addressNumber,
+                            city: client?.city,
+                            postalCode: client?.postalCode,
+                            additionalAddress: client?.additionalAddress,
+                        },
+                        workSiteBackup: {
+                            road: workSite?.road,
+                            addressNumber: workSite?.addressNumber,
+                            city: workSite?.city,
+                            postalCode: workSite?.postalCode,
+                            additionalAddress: workSite?.additionalAddress,
+                        },
+                        servicesBackup: quoteServicesWithData,
+                        elementsBackup: {
+                          vatAmount: vatAmountQuote,
+                          priceHT: Number(totalHtQuote),
+                          priceTTC: totalTTCQuote,
+                        },
+                    }),
               }
         })
 
         console.log("Quote created with success.");
         
-        return NextResponse.json({ success: true, data: newQuote });
+        return NextResponse.json(newQuote);
 
 
     } catch (error) {

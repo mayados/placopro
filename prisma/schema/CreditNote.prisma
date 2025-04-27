@@ -12,6 +12,11 @@ model CreditNote {
     // Indicates if the CreditNote was treated
     isSettled Boolean @default(false) 
 
+    // Have a backup in case of client's deletion
+    clientBackup Json?
+    // Have a backup of different elements such as services, price, VAT... In case of change
+    elementsBackup Json?
+
     // Linked to a Bill (mandatory)
     billId String @db.ObjectId
     bill Bill @relation(fields: [billId], references: [id], onDelete: Cascade)

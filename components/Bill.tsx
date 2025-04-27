@@ -273,13 +273,13 @@ export default function Bill({csrfToken, billNumber}: BillProps){
                 <div>
                     <h2>Addressé à</h2>
                     <div>
-                        <p>{bill?.client.name} {bill?.client.firstName}</p>
-                        <p>{bill?.client.addressNumber} {bill?.client.road} {bill?.client.postalCode} {bill?.client.city} {bill?.client.additionalAddress}</p>
+                        <p>{bill?.clientBackup?.name} {bill?.clientBackup?.firstName}</p>
+                        <p>{bill?.clientBackup?.addressNumber} {bill?.clientBackup?.road} {bill?.clientBackup?.postalCode} {bill?.clientBackup?.city} {bill?.clientBackup?.additionalAddress}</p>
                     </div>
                 </div>
             </section>
             <section>
-                <p>Chantier : {bill?.workSite.addressNumber} {bill?.workSite.road} {bill?.workSite.postalCode} {bill?.workSite.city} {bill?.workSite.additionalAddress}</p>
+                <p>Chantier : {bill?.workSiteBackup?.addressNumber} {bill?.workSiteBackup?.road} {bill?.workSiteBackup?.postalCode} {bill?.workSiteBackup?.city} {bill?.workSiteBackup?.additionalAddress}</p>
                 <p>Date de début estimée : {formatDate(bill.workStartDate)}</p>
                 <p>Date de fin estimée : {formatDate(bill.workEndDate)}</p>
                 <p>Durée estimée des travaux : {bill.workDuration} jours</p>
@@ -302,12 +302,12 @@ export default function Bill({csrfToken, billNumber}: BillProps){
                     </thead>
                     <tbody>
                     {/* bill.services => billService */}
-                    {bill?.services.map((service, index) => (
+                    {(bill?.servicesBackup).map((service, index) => (
                         <tr key={index}>
-                        <td>{service.service.label} - {service.service.type}</td>
+                        <td>{service.label} - {service.type}</td>
                         <td>{service.detailsService}</td>
                         <td>{service.quantity} {service.unit}</td>
-                        <td>{service.service.unitPriceHT}</td>
+                        <td>{service.unitPriceHT}</td>
                         <td>{service.vatRate} %</td>
                         <td>{service.vatAmount}</td>
                         <td>
@@ -335,15 +335,14 @@ export default function Bill({csrfToken, billNumber}: BillProps){
                     </thead>
                     <tbody>
                     {/* bill.services => billService */}
-                    {bill?.services.map((service, index) => {
-                        console.log("taux de tva du service "+service.service.vatRate)
+                    {bill?.servicesBackup.map((service, index) => {
 
                         return (
                         <tr key={index}>
-                            <td>{service.service.label} - {service.service.type}</td>
+                            <td>{service.label} - {service.type}</td>
                             <td>{service.detailsService}</td>
                             <td>{service.quantity} {service.unit}</td>
-                            <td>{service.service.unitPriceHT}</td>
+                            <td>{service.unitPriceHT}</td>
                             <td>{service.vatRate} %</td>
                             <td>{service.vatAmount}</td>
                             <td>{service.totalHT}</td>
@@ -413,13 +412,13 @@ export default function Bill({csrfToken, billNumber}: BillProps){
                         <tbody>
                             <tr>
                                 <td>
-                                    {bill.totalHt} €
+                                    {bill.elementsBackup?.totalHt} €
                                 </td>
                                 <td>
-                                    {bill.vatAmount} €
+                                    {bill.elementsBackup?.vatAmount} €
                                 </td>
                                 <td>
-                                    {bill.totalTtc} €
+                                    {bill.elementsBackup?.totalTtc} €
                                 </td>
                             </tr>
                         </tbody>

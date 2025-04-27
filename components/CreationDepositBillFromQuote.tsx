@@ -3,9 +3,7 @@
 import { useEffect, useState, use } from "react";
 import { Field,Input, Label, Legend, Radio, RadioGroup, Select, Textarea } from '@headlessui/react';
 import { useRouter } from "next/navigation";
-import Button from "@/components/Button";
-import { CirclePlus, CircleX } from "lucide-react";
-import { capitalizeFirstLetter } from "@/lib/utils";
+import Button from "@/components/Button";import { capitalizeFirstLetter } from "@/lib/utils";
 import { formatDateForInput } from '@/lib/utils'
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
 import { fetchQuote, updateDraftQuote } from "@/services/api/quoteService";
@@ -181,7 +179,7 @@ export default function CreationDepositBillFromQuote({csrfToken, quoteNumber}: C
         console.log("Le quote intial : "+JSON.stringify(quote?.services))        
         console.log("lors du submit, le status est : "+statusReady)
 
-        const status = statusReady ? "Ready": "Draft"
+        const status = statusReady ? "READY": "DRAFT"
         const quoteId = quote?.id
 
         try{
@@ -196,7 +194,7 @@ export default function CreationDepositBillFromQuote({csrfToken, quoteNumber}: C
             }
 
             // Choisir le schéma de validation en fonction du statut
-            const schema = statusReady === "Ready" ? createDepositBillFinalSchema : createDepositBillDraftSchema;
+            const schema = statusReady === "READY" ? createDepositBillFinalSchema : createDepositBillDraftSchema;
             
             // Validation des données du formulaire en fonction du statut
             const validationResult = schema.safeParse(createBillFormValues);
@@ -224,7 +222,7 @@ export default function CreationDepositBillFromQuote({csrfToken, quoteNumber}: C
             console.log("voici la bill crééé : "+createdBill.number)
             console.log("status du devis updaté "+createdBill.status)
             try {
-                if(createdBill.status === "Draft"){
+                if(createdBill.status === "DRAFT"){
                     // Redirect to the page of bill's update
                     router.push(`/director/bills/${createdBill.number}/update`);                        
                 }else{
@@ -570,7 +568,7 @@ export default function CreationDepositBillFromQuote({csrfToken, quoteNumber}: C
                         <button
                         // choice to to finalize quote
                             onClick={() => {
-                                handleBillCreation("Ready"); 
+                                handleBillCreation("READY"); 
                                 closeChoiceDialog(); 
                             }}
                             className="bg-green-600 text-white px-4 py-2 rounded-md"

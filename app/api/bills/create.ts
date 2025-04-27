@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
 import { createBillDraftSchema, createBillFinalSchema } from "@/validation/billValidation";
 import { sanitizeData } from "@/lib/sanitize"; 
-import { BillStatusEnum } from "@prisma/client";
+import { BillStatusEnum, BillTypeEnum } from "@prisma/client";
 
 
 export async function POST(req: NextRequest) {
@@ -73,13 +73,15 @@ export async function POST(req: NextRequest) {
     
         // Ajoute le statut aux données validées
         sanitizedData.status = status;
+        const clientId = data.clientId;
 
         // Execute all operations in one transaction for integrity
         const result = await db.$transaction(async (prisma) => {
+            const billServicesWithData = [];
             // Generate bill number
             let billNumber = "";
 
-            if (status === "Ready") {
+            if (status === BillStatusEnum.READY) {
                 const currentYear = new Date().getFullYear();
                 const counter = await prisma.documentCounter.upsert({
                     where: {
@@ -130,7 +132,7 @@ export async function POST(req: NextRequest) {
                 data: {
                     number: billNumber,
                     issueDate: new Date().toISOString(),
-                    billType: "INVOICE",
+                    billType: BillTypeEnum.FINAL,
                     dueDate: sanitizedData.dueDate ? new Date(sanitizedData.dueDate).toISOString() : null,
                     workStartDate: sanitizedData.workStartDate ? new Date(sanitizedData.workStartDate).toISOString() : null,
                     workEndDate: sanitizedData.workEndDate ? new Date(sanitizedData.workEndDate).toISOString() : null,
@@ -207,7 +209,7 @@ export async function POST(req: NextRequest) {
                     console.log(`Totaux après service: ${billTotalHT} HT, ${billTotalVAT} TVA, ${billTotalTTC} TTC`);
 
                     // Create billService
-                    await prisma.billService.create({
+                    const billServiceCreated = await prisma.billService.create({
                         data: {
                             vatRate: service.vatRate,
                             unit: service.unit,
@@ -221,8 +223,30 @@ export async function POST(req: NextRequest) {
                             },
                             service: {
                                 connect: { id: quoteService.serviceId }
-                            }
+                            }, 
+                            
                         },
+                        include: {
+                            // essential to access service object for backup
+                            service: true 
+                        }
+                    });
+                    // we add services to the backup's datas
+                    billServicesWithData.push({
+                        // Données du service associé
+                        label: billServiceCreated.service.label,
+                        unitPriceHT: billServiceCreated.service.unitPriceHT,
+                        type: billServiceCreated.service.type,
+                        // Données du billService lui-même
+                        quantity: billServiceCreated.quantity,
+                        unit: billServiceCreated.unit,
+                        vatRate: billServiceCreated.vatRate,
+                        totalHT: billServiceCreated.totalHT,
+                        vatAmount: billServiceCreated.vatAmount,
+                        totalTTC: billServiceCreated.totalTTC,
+                        detailsService: billServiceCreated.detailsService || null,
+                        discountAmount: billServiceCreated.discountAmount || 0,
+                        discountReason: billServiceCreated.discountReason || null
                     });
                 }
             } else {
@@ -299,7 +323,7 @@ export async function POST(req: NextRequest) {
                     }
 
                     // Create billService
-                    await prisma.billService.create({
+                    const billServiceCreated = await prisma.billService.create({
                         data: {
                             vatRate: service.vatRate,
                             unit: service.unit,
@@ -310,7 +334,29 @@ export async function POST(req: NextRequest) {
                             detailsService: service.detailsService,
                             bill: { connect: { id: bill.id } },
                             service: { connect: { id: serviceId } }
+                        },
+                        include: {
+                            // essential to access service object for backup
+                            service: true 
                         }
+                    });
+
+                    // we add services to the backup's datas
+                    billServicesWithData.push({
+                        // datas of the associated service
+                        label: billServiceCreated.service.label,
+                        unitPriceHT: billServiceCreated.service.unitPriceHT,
+                        type: billServiceCreated.service.type,
+                        // datas of billService
+                        quantity: billServiceCreated.quantity,
+                        unit: billServiceCreated.unit,
+                        vatRate: billServiceCreated.vatRate,
+                        totalHT: billServiceCreated.totalHT,
+                        vatAmount: billServiceCreated.vatAmount,
+                        totalTTC: billServiceCreated.totalTTC,
+                        detailsService: billServiceCreated.detailsService || null,
+                        discountAmount: billServiceCreated.discountAmount || 0,
+                        discountReason: billServiceCreated.discountReason || null
                     });
                 }
             }
@@ -353,6 +399,12 @@ export async function POST(req: NextRequest) {
             // Log final values
             console.log(`Valeurs finales: ${finalHT} HT, ${finalVAT} TVA, ${finalTTC} TTC`);
             
+            const client = await prisma.client.findUnique({
+                where: {id: clientId},
+            })
+
+            
+
             // Update bill with final amounts
             await prisma.bill.update({
                 where: { id: bill.id },
@@ -366,7 +418,29 @@ export async function POST(req: NextRequest) {
                         advancePayments: {
                             connect: depositBills.map(deposit => ({ id: deposit.id }))
                         }
-                    })
+                    }),
+                     // Add backup fields only for FINAL bills
+                    ...(status === BillStatusEnum.READY && {
+                        clientBackup: {
+                            firstName: client?.firstName,
+                            name: client?.name,
+                            mail: client?.mail,
+                            road: client?.road,
+                            addressNumber: client?.addressNumber,
+                            city: client?.city,
+                            postalCode: client?.postalCode,
+                            additionalAddress: client?.additionalAddress,
+                        },
+                        servicesBackup: billServicesWithData,
+                        elementsBackup: {
+                            quote: quote.number,
+                            totalHt: finalHT,
+                            vatAmount: finalVAT,
+                            totalTtc: finalTTC,
+                            depositDeductionAmount: totalPaidDepositTTC > 0 ? totalPaidDepositTTC : 0,
+                            remainingDueAmount: finalTTC,
+                        },
+                    }),
                 },
             });
 
@@ -378,7 +452,7 @@ export async function POST(req: NextRequest) {
             });
         });
 
-        return NextResponse.json({ success: true, data: result });
+        return NextResponse.json(result);
 
     } catch (error) {
         console.error("Erreur détaillée :", error instanceof Error ? error.message : error);

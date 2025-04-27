@@ -63,7 +63,7 @@ export const deleteQuote = async (quoteId: string): Promise<void> => {
 // Create quote
 export const createQuote = async (quote: QuoteFormValueType, csrfToken: string): Promise<QuoteType> => {
   try {
-      const response = await fetch(`/api/quotes`, {
+      const response = await fetch(`/api/quote`, {
           method: "POST",
           headers: {
               "Content-Type": "application/json",
