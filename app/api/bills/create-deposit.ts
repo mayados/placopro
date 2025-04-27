@@ -3,18 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
 import { createDepositBillDraftSchema, createDepositBillFinalSchema } from "@/validation/billValidation";
 import { sanitizeData } from "@/lib/sanitize"; 
-import { BillStatusEnum } from "@prisma/client";
+import { BillStatusEnum, BillTypeEnum } from "@prisma/client";
 
 
 export async function POST(req: NextRequest) {
     try {
         const data = await req.json();
         const user = await currentUser();
-          // Explicit validation of CSRF token (in addition of the middleware)
-        const csrfToken = req.headers.get("x-csrf-token");
-        if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
-            return new Response("Invalid CSRF token", { status: 403 });
-        }
+
 
         if (!data) {
             return NextResponse.json({ success: false, message: "Aucune donnée reçue." }, { status: 400 });
@@ -75,6 +71,17 @@ export async function POST(req: NextRequest) {
         sanitizedData.status = status;
         sanitizedData.quoteId = quoteId;
 
+        const clientId = sanitizedData.clientId
+        const client = await prisma.client.findUnique({
+            where: {id: clientId},
+        })
+
+        const workSiteId = sanitizedData.workSiteId
+        const workSite = await prisma.workSite.findUnique({
+            where: {id: workSiteId},
+        })
+  
+
 
             // Generate bill number
             let billNumber = "";
@@ -117,7 +124,10 @@ export async function POST(req: NextRequest) {
             }
 
 // Appliquer la remise sur le HT
-const htAfterDiscount = Math.max(0, quote.priceHT - (sanitizedData.discountAmount || 0));
+// const htAfterDiscount = Math.max(0, quote.priceHT - (sanitizedData.discountAmount || 0));
+// We keep brut HT without duscount
+const htWithoutDiscount = quote.priceHT; 
+
 
 // Définir l'acompte HT
 const depositHt = Math.max(0, quote.depositAmount ?? 0);
@@ -127,9 +137,9 @@ let depositVat = 0;
 
 for (const service of sanitizedData.services) {
     const serviceTotalHt = Number(service.unitPriceHT) * service.quantity;
-    console.log("service totalHt : " + serviceTotalHt + " quote price Ht : " + htAfterDiscount);
+    console.log("service totalHt : " + serviceTotalHt + " quote price Ht : " + htWithoutDiscount);
 
-    const proportion = Number(serviceTotalHt) / Number(htAfterDiscount);
+    const proportion = Number(serviceTotalHt) / Number(htWithoutDiscount);
     console.log("proportion : " + proportion);
 
     const serviceDepositHt = depositHt * proportion; 
@@ -141,7 +151,14 @@ for (const service of sanitizedData.services) {
     depositVat += Number(serviceVat);
 }
 
-depositVat = Number(depositVat.toFixed(2)); // 🔹 Arrondi
+// 1. Récupération des frais de déplacement
+const travelCosts = sanitizedData.travelCosts ?? 0;  // Récupérer les frais de déplacement (HT)
+
+// Calcul de la TVA sur les frais de déplacement
+const travelCostsVat = travelCosts * 0.20 ;  
+depositVat = depositVat + travelCostsVat; 
+
+depositVat = Number(depositVat.toFixed(2) ); // Arrondi
 
 console.log("depositVAT : " + depositVat);
 
@@ -172,14 +189,44 @@ const bill = await prisma.bill.create({
         userId: user.id,
         client: { connect: { id: sanitizedData.clientId } },
         workSite: { connect: { id: sanitizedData.workSiteId } },
-        quote: { connect: { id: quoteId } }
+        quote: { connect: { id: quoteId } },
+        // Add backup fields only for FINAL bills
+        ...(status === BillStatusEnum.READY && {
+            clientBackup: {
+                firstName: client?.firstName,
+                name: client?.name,
+                mail: client?.mail,
+                road: client?.road,
+                addressNumber: client?.addressNumber,
+                city: client?.city,
+                postalCode: client?.postalCode,
+                additionalAddress: client?.additionalAddress,
+            },
+            workSiteBackup: {
+                road: workSite?.road,
+                addressNumber: workSite?.addressNumber,
+                city: workSite?.city,
+                postalCode: workSite?.postalCode,
+                additionalAddress: workSite?.additionalAddress,
+            },
+            elementsBackup: {
+                vatAmount: depositVat,
+                totalTtc: Number(depositTtc),
+                totalHt: Number((depositHt).toFixed(2)),
+                quoteNumber: quote.number
+            },
+            servicesBackup: JSON.stringify(sanitizedData.services)
+        }),
     }
 });
+
+      // stock datas for backup for quoteServices
+      const billServicesWithData = [];
 
 for (const service of sanitizedData.services) {
     const serviceTotalHt = Number(service.unitPriceHT) * service.quantity;
     // Avoid division by 0
-    const proportion = htAfterDiscount > 0 ? serviceTotalHt / htAfterDiscount : 0;
+    const proportion = htWithoutDiscount  > 0 ? serviceTotalHt / htWithoutDiscount  : 0;
     const totalServiceHt = Number(Number(service.unitPriceHT) * service.quantity);
 
     const serviceDepositHt = Number(depositHt * proportion); 
@@ -205,7 +252,7 @@ for (const service of sanitizedData.services) {
     const realServiceId = quoteService.serviceId 
 
 
-    await prisma.billService.create({
+    const billService = await prisma.billService.create({
         data: {
             vatRate: service.vatRate,
             unit: service.unit,
@@ -216,17 +263,45 @@ for (const service of sanitizedData.services) {
             detailsService: service.detailsService,
             bill: { connect: { id: bill.id } },
             service: { connect: { id: realServiceId } }
-        }
+        },
+        include: {
+          // essential to access service object for backup
+          service: true 
+      }
     });
+              // we add services to the backup's datas
+              billServicesWithData.push({
+                // datas of the associated service
+                label: billService.service.label,
+                unitPriceHT: billService.service.unitPriceHT,
+                type: billService.service.type,
+                // datas of billService
+                quantity: billService.quantity,
+                unit: billService.unit,
+                vatRate: billService.vatRate,
+                totalHT: billService.totalHT,
+                vatAmount: billService.vatAmount,
+                totalTTC: billService.totalTTC,
+                detailsService: billService.detailsService || '',
+              }); 
 }
 
-
+// 3. Mise à jour de la facture avec les services de sauvegarde
+    // Ceci peut être utile si tu veux mettre à jour la facture après que tous les services ont été ajoutés
+    await prisma.bill.update({
+        where: {
+            id: bill.id, // Identifiant de la facture
+        },
+        data: {
+            servicesBackup: billServicesWithData, // Sauvegarde des services après traitement
+        }
+    });
 
     return bill;
 });
 
 
-        return NextResponse.json({ success: true, data: result });
+        return NextResponse.json(result);
 
     } catch (error) {
         console.error("Erreur détaillée :", error instanceof Error ? error.message : error);
