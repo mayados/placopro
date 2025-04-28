@@ -1,18 +1,19 @@
 // 👇 server file
 import { headers } from 'next/headers'
 // client component
-import UpdateCreditNote from '@/components/UpdateCreditNote' 
+import CreateCreditNote from '@/components/CreateCreditNote' 
 
-export default async function Page({ params }: { params: { creditNoteNumber: string } }) {
-  const { creditNoteNumber } = await params;
+export default async function Page({ params }: { params: { billNumber: string } }) {
+  
+  const billNumberParam = await Promise.resolve(params.billNumber);
 
   const h = await headers()
   const csrfToken = h.get('X-CSRF-Token') || 'missing'
 
   // Once we get the csrf token and billNumber, we can give it to the component
   return (
-    <UpdateCreditNote
-      creditNoteNumber={creditNoteNumber}
+    <CreateCreditNote
+      billNumber={billNumberParam}
       csrfToken={csrfToken}
     />
   )
