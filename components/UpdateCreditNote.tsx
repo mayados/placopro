@@ -163,12 +163,12 @@ export default function UpdateCreditNote({csrfToken, creditNoteNumber}: UpdateCr
     return (
         <div className="relative">
             {/* <div><Toaster/></div> */}
-            <h1 className="text-3xl text-white ml-3 text-center">Création d'avoir lié à la facture n°{creditNote.bill.number}</h1>
-            <p>Client : {creditNote.bill.client.name} {creditNote.bill.client.firstName}</p>
-            <p>Téléphone : {creditNote.bill.client.phone}</p>
-            <p>Mail : {creditNote.bill.client.mail}</p>
-            <p>Adresse : {creditNote.bill.client.addressNumber} {creditNote.bill.client.road} {creditNote.bill.client.postalCode} {creditNote.bill.client.city}</p>
-            <p>Complément d'adresse : {creditNote.bill.client.additionalAddress}</p>
+            <h1 className="text-3xl text-white ml-3 text-center">Avoir lié à la facture n°{creditNote.bill.number}</h1>
+            <p>Client : {creditNote?.clientBackup?.name} {creditNote?.clientBackup?.firstName}</p>
+            <p>Téléphone : {creditNote?.clientBackup?.phone}</p>
+            <p>Mail : {creditNote?.clientBackup?.mail}</p>
+            <p>Adresse : {creditNote?.clientBackup?.addressNumber} {creditNote?.clientBackup?.road} {creditNote?.clientBackup?.postalCode} {creditNote?.clientBackup?.city}</p>
+            <p>Complément d'adresse : {creditNote?.clientBackup?.additionalAddress}</p>
             {/* <div><Toaster /></div> */}
             <form 
                 autoComplete="off"
@@ -232,7 +232,7 @@ export default function UpdateCreditNote({csrfToken, creditNoteNumber}: UpdateCr
                     className="w-full rounded-md bg-gray-700 text-white pl-3"
                     onChange={handleInputChange}
                     >
-                    <option value="" disabled>Sélectionnez une raison</option>
+                    <option value="" disabled>Sélectionnez un règlement</option>
                     {Object.entries(settlementTypeChoices).map(([value, label]) => (
                         <option key={value} value={value}>
                             {label}
