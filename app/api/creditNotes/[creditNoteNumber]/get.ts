@@ -19,11 +19,7 @@ export async function GET(req: NextRequest, {params}: {params: {creditNoteNumber
 
         console.log("Je récupère un avoir : "+creditNote)
 
-        return NextResponse.json({ 
-            success: true, 
-            creditNote: creditNote,
-            status: 200,
-        })
+        return NextResponse.json(creditNote)
 
     } catch (error) {
         console.log("[CREDITNOTE]", error)
