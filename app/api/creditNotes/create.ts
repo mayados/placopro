@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     //         reason
     //         } = data;
             // currentUser() is a founction from Clerk which allows to retrieve the current User
-            const user = await currentUser()
+    const user = await currentUser()
 
 
     try {
@@ -89,6 +89,13 @@ export async function POST(req: NextRequest) {
           return formattedNumber;
     };
 
+    const bill = await db.bill.findUnique({
+      where: {id: billId},
+      include: {
+        client: true
+    }
+  })
+
     const CreditNoteNumber =  await generateCreditNoteNumber();
 
         // We create the company thanks to te datas retrieved
@@ -98,14 +105,28 @@ export async function POST(req: NextRequest) {
                 amount: sanitizedData.amount,
                 billId: billId,
                 reason: sanitizedData.reason as CreditNoteReasonEnum,
-                issueDate: new Date()
+                issueDate: new Date(),
+                clientBackup: {
+                  firstName: bill?.client?.firstName,
+                  name: bill?.client?.name,
+                  mail: bill?.client?.mail,
+                  road: bill?.client?.road,
+                  phone: bill?.client?.phone,
+                  addressNumber: bill?.client?.addressNumber,
+                  city: bill?.client?.city,
+                  postalCode: bill?.client?.postalCode,
+                  additionalAddress: bill?.client?.additionalAddress,
+              },
+              elementsBackup: {
+                  bill: bill?.number,
+              },
             },
         });
 
 
         console.log("Avoir créé avec succès.");
         // Toujours retourner la réponse après la création
-        return NextResponse.json({ success: true, data: creditNote });
+        return NextResponse.json(creditNote);
 
 
     } catch (error) {

@@ -54,7 +54,7 @@ export const updateCreditNote = async (creditNoteNumber: string, formValues: Upd
 // Retrieve a specific credit note
 export const fetchCreditNote = async (creditNoteNumber: string): Promise<CreditNoteType> => {
     try {
-        const response = await fetch(`/api/creditNote/${creditNoteNumber}`);
+        const response = await fetch(`/api/creditNotes/${creditNoteNumber}`);
         if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
       
         const data: CreditNoteType = await response.json();

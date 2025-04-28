@@ -396,6 +396,7 @@ interface QuoteType{
 
 interface ClientBackup {
     firstName: string;
+    phone?: string,
     name: string;
     mail: string;
     road: string;
@@ -439,6 +440,10 @@ interface ServiceBackup {
     totalTtc: null,
     totalHt: number,
     quoteNumber: string
+  }
+
+  interface CreditNoteElementsBackup {
+    billNumber: string
   }
 
 
@@ -753,6 +758,8 @@ interface CreditNoteType{
     isSettled: boolean, 
     billId: string,
     bill: BillType,
+    clientBackup?: ClientBackup,
+    elementsBackup?: CreditNoteElementsBackup,
 }
 
 interface CreditNoteForListType{
