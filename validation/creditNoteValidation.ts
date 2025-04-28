@@ -4,7 +4,11 @@ import { CreditNoteReasonEnum } from '@prisma/client';
 import { CreditNoteSettlementTypeEnum } from '@prisma/client';
 
 export const createCreditNoteSchema = z.object({
-    amount: z.number().min(1,"Le montant est requis"),
+    amount: z.preprocess(
+        (val) => Number(val),
+        z.number()
+          .min(1, { message: "Le montant est requis" })
+      ),
     reason: z.nativeEnum(CreditNoteReasonEnum),
 
 })
