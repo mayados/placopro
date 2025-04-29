@@ -276,6 +276,7 @@ interface BillForListType{
     issueDate: Date;
     dueDate: Date;
     status: string;
+    slug: string;
 }
 
 interface BillTypeSingle{
@@ -531,6 +532,7 @@ interface QuoteForListType{
     workStartDate: Date;
     validityEndDate: Date;
     status: string;
+    slug: string,
 }
 
 interface QuotesWithTotalsAndStatus{
