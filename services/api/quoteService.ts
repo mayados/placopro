@@ -31,9 +31,9 @@ export const fetchQuotes = async ({
   };
 
   // Retrieve a specific Quote
-  export const fetchQuote = async (quoteNumber: string): Promise<QuoteTypeSingle> => {
+  export const fetchQuote = async (quoteSlug: string): Promise<QuoteTypeSingle> => {
     try {
-      const response = await fetch(`/api/quote/${quoteNumber}`);
+      const response = await fetch(`/api/quote/${quoteSlug}`);
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
       const data: QuoteTypeSingle = await response.json();
@@ -88,9 +88,9 @@ export const createQuote = async (quote: QuoteFormValueType, csrfToken: string):
 };
 
 // Update draft quote
-export const updateDraftQuote = async (quoteNumber: string, updatedQuoteWithStatus: UpdatedQuoteFormValueType, csrfToken: string): Promise<QuoteType> => {
+export const updateDraftQuote = async (quoteSlug: string, updatedQuoteWithStatus: UpdatedQuoteFormValueType, csrfToken: string): Promise<QuoteType> => {
   try {
-      const response = await fetch(`/api/quote/${quoteNumber}`, {
+      const response = await fetch(`/api/quote/${quoteSlug}`, {
           method: "PUT",
           headers: {
               "Content-Type": "application/json",
@@ -116,9 +116,9 @@ export const updateDraftQuote = async (quoteNumber: string, updatedQuoteWithStat
 };
 
 // Update classic quote
-export const updateClassicQuote = async (quoteNumber: string, formValues: FormValuesUpdateNotDraftQuote, csrfToken: string): Promise<QuoteType> => {
+export const updateClassicQuote = async (quoteSlug: string, formValues: FormValuesUpdateNotDraftQuote, csrfToken: string): Promise<QuoteType> => {
   try {
-      const response = await fetch(`/api/quote/${quoteNumber}`, {
+      const response = await fetch(`/api/quote/${quoteSlug}`, {
           method: "PUT",
           headers: {
               "Content-Type": "application/json",

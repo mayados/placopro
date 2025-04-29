@@ -17,10 +17,10 @@ import { toast } from 'react-hot-toast';
 
 type UpdateDraftQuoteProps = {
     csrfToken: string;
-    quoteNumber: string;
+    quoteSlug: string;
   };
 
-export default function Bill({csrfToken, quoteNumber}: UpdateDraftQuoteProps){
+export default function Bill({csrfToken, quoteSlug}: UpdateDraftQuoteProps){
 
     const [quote, setQuote] = useState<QuoteType>();
     const [updatedQuoteFormValues, setUpdatedQuoteFormValues] = useState<UpdatedQuoteFormValueType>({
@@ -95,7 +95,7 @@ export default function Bill({csrfToken, quoteNumber}: UpdateDraftQuoteProps){
 
 
                 try{
-                    const data = await fetchQuote(quoteNumber)
+                    const data = await fetchQuote(quoteSlug)
                     setUpdatedQuoteFormValues({
                         ...updatedQuoteFormValues,
                         number: data.quote.number,
@@ -110,7 +110,7 @@ export default function Bill({csrfToken, quoteNumber}: UpdateDraftQuoteProps){
         const loadVatRates = async () => {
                 try{
                     const data = await fetchVatRates();
-                    setVatRateChoices(data.vatRates)
+                    setVatRateChoices(data)
 
                 }catch (error) {
                     console.error("Impossible to load VAT rates :", error);
@@ -120,7 +120,7 @@ export default function Bill({csrfToken, quoteNumber}: UpdateDraftQuoteProps){
         const loadUnits = async () => {
                 try{
                     const data = await fetchUnits();
-                    setUnitChoices(data.units)
+                    setUnitChoices(data)
             
                 }catch (error) {
                     console.error("Impossible to load units :", error);
@@ -130,7 +130,7 @@ export default function Bill({csrfToken, quoteNumber}: UpdateDraftQuoteProps){
         loadQuote();
         loadVatRates();
         loadUnits();
-    },[quoteNumber, csrfToken]);
+    },[quoteSlug, csrfToken]);
 
 
         console.log("name du client retrieved de la database "+quote?.client.name)
@@ -303,7 +303,7 @@ export default function Bill({csrfToken, quoteNumber}: UpdateDraftQuoteProps){
             // Delete former validation errors
             setErrors({})
 
-            const data = await updateDraftQuote(quote?.number, updatedQuoteWithStatus, csrfToken)
+            const data = await updateDraftQuote(quote.slug, updatedQuoteWithStatus, csrfToken)
             console.log("data renvoyés : "+data)
             const updatedQuote = data;
             toast.success("Le devis a été mis à jour avec succès");
