@@ -482,6 +482,8 @@ interface QuoteFormValueType{
     workSiteId: string | null,
     services: ServiceFormQuoteType[],
     serviceType: string,
+    clientName?: string,
+    workSiteName?: string
 }
 
 // The values can be null, it means the form field hasn't been updated, so the quote either
@@ -1056,3 +1058,59 @@ interface AssignedToDoType{
     isChecked?: boolean
 }
 
+interface UnitCreationType{
+    label: string | null,
+}
+
+interface UnitUpdateType{
+    label?: string;
+}
+
+interface UnitType{
+    id: string;
+    label: string;
+}
+
+interface UnitForListType{
+    units: UnitType[],
+}
+
+interface VatRateCreationType{
+    rate: number | null,
+}
+
+interface VatRateUpdateType{
+    rate?: number;
+}
+
+interface VatRateType{
+    id: string;
+    rate: number;
+}
+
+interface VatRateForListType{
+    vatRates: VatRateType[],
+}
+
+interface ServiceCreationType{
+    label: string | null,
+    unitPriceHT: number | null,
+    type: string | null,
+}
+
+interface ServiceUpdateType{
+    label?: string | null,
+    unitPriceHT?: number | null,
+    type?: string | null,
+}
+
+interface ServiceEntityType{
+    id: string;
+    label: string,
+    unitPriceHT: number,
+    type: string,
+}
+
+interface ServiceForListType{
+    services: ServiceEntityType[],
+}

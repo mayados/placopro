@@ -283,8 +283,8 @@ export default function Quote({csrfToken, quoteNumber}: QuoteProps){
                     </thead>
                     <tbody>
                         {/* quote.services => quoteService */}
-                        {quote?.servicesBackup && typeof quote.servicesBackup === "string" && 
-                            JSON.parse(quote.servicesBackup).map((service, index) => {
+                        {quote?.servicesBackup?.map((service, index) => {
+
 
                             return (
                                 <tr key={index}>

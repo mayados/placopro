@@ -13,9 +13,7 @@ export async function GET(req: NextRequest) {
             }
         );
 
-        return NextResponse.json({
-            vatRates: vatRates,
-        })
+        return NextResponse.json(vatRates)
 
     } catch (error) {
         console.log("[VATRATES]", error)
