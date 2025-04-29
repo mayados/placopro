@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Field,Input, Label, Legend, Radio, RadioGroup, Select, Textarea } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
-import { capitalizeFirstLetter } from "@/lib/utils";
+import { capitalizeFirstLetter, formatDateForInput } from "@/lib/utils";
 import { fetchVatRates } from "@/services/api/vatRateService";
 import { fetchUnits } from "@/services/api/unitService";
 import { createQuote } from "@/services/api/quoteService";
@@ -21,6 +21,8 @@ type QuoteCreationProps = {
 export default function QuoteCreation({csrfToken}: QuoteCreationProps){
 
     const [quote, setQuote] = useState<QuoteFormValueType>({
+        clientName: "",
+        workSiteName: "",
         validityEndDate: "",
         natureOfWork: "",
         description: "",
@@ -68,6 +70,8 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
     const [servicesSuggestions, setServiceSuggestions] = useState<ServiceSuggestionType[] | null>(null)
     // text visible in the client field
     const [clientInput, setClientInput] = useState(""); 
+
+
     const [workSiteInput, setWorkSiteInput] = useState(""); 
     const [unitInput, setUnitInput] = useState(""); 
     const [vatRateInput, setVatRateInput] = useState(""); 
@@ -81,10 +85,35 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
 
     useEffect(() => {
 
+        const savedQuote = localStorage.getItem('quoteFormData');
+        if (savedQuote) {
+            try {
+                // Parse les données du localStorage
+                const parsedQuote = JSON.parse(savedQuote);
+    
+                // Mettre à jour l'objet global quote
+                setQuote(parsedQuote);
+    
+                // Initialiser clientInput et workSiteInput avec les valeurs du localStorage
+                if (parsedQuote.clientName) {
+                    setClientInput(parsedQuote.clientName);  // Mettre à jour clientInput avec le nom du client
+                }
+    
+                if (parsedQuote.workSiteName) {
+                    setWorkSiteInput(parsedQuote.workSiteName);  // Mettre à jour workSiteInput avec le nom du chantier
+                }
+    
+            } catch (error) {
+                console.error("Erreur de parsing du localStorage quoteFormData :", error);
+                // Nettoyer si les données sont corrompues
+                localStorage.removeItem('quoteFormData'); 
+            }
+        }
+
         const loadVatRates = async () => {
             try{
                 const data = await fetchVatRates();
-                setVatRateChoices(data.vatRates)
+                setVatRateChoices(data)
 
             }catch (error) {
                 console.error("Impossible to load VAT rates :", error);
@@ -94,7 +123,7 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
         const loadUnits = async () => {
             try{
                 const data = await fetchUnits();
-                setUnitChoices(data.units)
+                setUnitChoices(data)
 
             }catch (error) {
                 console.error("Impossible to load units :", error);
@@ -105,15 +134,23 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
         loadUnits();
     },[]);
     
+    //Util function to update the Quote and the localStorage
+    const updateQuoteAndStorage = (updatedQuote: QuoteFormValueType) => {
+        setQuote(updatedQuote);
+        localStorage.setItem('quoteFormData', JSON.stringify(updatedQuote));
+    };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         console.log("évènement reçu : "+e)
         const { name, value } = e.target;
         console.log("select :"+name+" valeur : "+value)
-        setQuote({
-            ...quote,
-            [name]: value,
-        });
+        // setQuote({
+        //     ...quote,
+        //     [name]: value,
+        // });
+        const updatedQuote = { ...quote, [name]: value };
+        updateQuoteAndStorage(updatedQuote);
+    
 
         if(name === "client"){
             setClientInput(value)
@@ -134,11 +171,20 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
 
     //   Retrieve datas from the radio buttons. Because they are in a RadioGroup, we can't retrieve the value just thanks to an event, we have to get the name (of the group) + the value selected
     const handleRadioChange = (name: string, value: string) => {
-        setQuote((quote) => ({
-          ...quote,
-          [name]: value,
-        }));
+        // setQuote((quote) => ({
+        //   ...quote,
+        //   [name]: value,
+        // }));
+
+        const updatedQuote = {
+            ...quote,
+            [name]: value,
+          };
+          updateQuoteAndStorage(updatedQuote); 
       };
+
+    //   console.log("Contenu du localStorage 'quoteFormData' :", JSON.parse(localStorage.getItem('quoteFormData') || '{}'));
+
 
       const handleDisplaySuggestions = async (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -174,22 +220,37 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
       };
       
     const handleClickSuggestion = (inputName: string, id: string, fieldValue: string) => {
+        console.log("valeur du champ : "+fieldValue)
         if(inputName === "client"){
+            // setClientInput(fieldValue)
+            // setQuote((prev) => ({
+            //     ...prev,
+            //     // Put id from selected client
+            //     clientId: id, 
+            // }));
             setClientInput(fieldValue)
-            setQuote((prev) => ({
-                ...prev,
-                // Put id from selected client
-                clientId: id, 
-            }));
+            updateQuoteAndStorage({
+                ...quote,
+                clientId: id,
+                clientName: fieldValue, 
+
+            });
             // Close suggestions list
             setClientSuggestions(null); 
         }else if(inputName === "workSite"){
+            // setWorkSiteInput(fieldValue)
+            // setQuote((prev) => ({
+            //     ...prev,
+            //     // Put id from selected client
+            //     workSiteId: id, 
+            // }));
             setWorkSiteInput(fieldValue)
-            setQuote((prev) => ({
-                ...prev,
-                // Put id from selected client
-                workSiteId: id, 
-            }));
+
+            updateQuoteAndStorage({
+                ...quote,
+                workSiteName: fieldValue,
+                workSiteId: id,
+            });
             // Close suggestions list
             setWorkSiteSuggestions(null); 
         }
@@ -214,9 +275,13 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
       
         console.log("le type de la suggestion est "+suggestion.type)
 
-        setQuote({
-          ...quote,
-          services: newServices,
+        // setQuote({
+        //   ...quote,
+        //   services: newServices,
+        // });
+        updateQuoteAndStorage({
+            ...quote,
+            services: newServices,
         });
 
 
@@ -260,6 +325,9 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
             toast.success("Devis créé avec succès");
 
             console.log("Devis créé avec succès :", newQuote);
+            // Clear localStorage
+            localStorage.removeItem('quoteFormData');
+
     
             try {
                 // Redirection vers le devis créé
@@ -342,9 +410,13 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
         console.log("Après mise à jour : ", newServices[index]);
 
     
-        setQuote({
-        ...quote,
-        services: newServices,
+        // setQuote({
+        // ...quote,
+        // services: newServices,
+        // });
+        updateQuoteAndStorage({
+            ...quote,
+            services: newServices,
         });
 
         if(fieldName === "label"){
@@ -431,6 +503,7 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                     <Field className="w-full">
                         <Input type="text" name="natureOfWork" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
+                            value={quote.natureOfWork} 
                         >
                         </Input>
                     </Field>
@@ -443,6 +516,7 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                     <Field className="w-full">
                         <Textarea name="description" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
+                            value={quote.description} 
                         >
                         </Textarea>
                     </Field>
@@ -455,6 +529,7 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                     <Field className="w-full">
                         <Input type="date" name="workStartDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
+                            value={quote.workStartDate}
                         >
                         </Input>
                     </Field>
@@ -467,6 +542,7 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                     <Field className="w-full">
                         <Input type="date" name="estimatedWorkEndDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
+                            value={quote.estimatedWorkEndDate}
                         >
                         </Input>
                     </Field>
@@ -479,6 +555,7 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                     <Field className="w-full">
                         <Input type="number" name="estimatedWorkDuration" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
+                            value={quote.estimatedWorkDuration} 
                         >
                         </Input>
                     </Field>
@@ -491,6 +568,7 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                     <Field className="w-full">
                         <Input type="number" name="depositAmount" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
+                            value={quote.depositAmount} 
                         >
                         </Input>
                     </Field>
@@ -597,6 +675,8 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                     <Field className="w-full">
                         <Input type="date" name="validityEndDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
+                            value={quote.validityEndDate} 
+
                         >
                         </Input>
                     </Field>
@@ -608,6 +688,8 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                     <Field className="w-full">
                         <Input type="number" name="discountAmount" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
+                            value={quote.discountAmount} 
+
                         >
                         </Input>
                     </Field>
@@ -646,7 +728,7 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                 <div>
                     <label htmlFor="paymentDelay">Délais de paiement (en jours)</label>
                     <Field className="w-full">
-                        <Input type="number" name="paymentDelay" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="number" name="paymentDelay" value={quote.paymentDelay} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -658,7 +740,7 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                  <div>
                     <label htmlFor="latePaymentPenalities">Frais de retard de paiement (HT), en €</label>
                     <Field className="w-full">
-                        <Input type="number" name="latePaymentPenalities" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="number" name="latePaymentPenalities" value={quote.latePaymentPenalities} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -670,7 +752,7 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                 <div>
                     <label htmlFor="travelCosts">Frais de déplacement (HT), en €</label>
                     <Field className="w-full">
-                        <Input type="number" name="travelCosts" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="number" name="travelCosts" value={quote.travelCosts} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -695,7 +777,7 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                 <div>
                     <label htmlFor="recoveryFees">Frais forfaitaires de recouvrement (HT), en €</label>
                     <Field className="w-full">
-                        <Input type="number" name="recoveryFees" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="number" name="recoveryFees" value={quote.recoveryFees} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -708,6 +790,7 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                     <Legend>Y a t'il un droit de rétractation ?</Legend>
                     <RadioGroup 
                         name="hasRightOfWithdrawal"
+                        value={quote.hasRightOfWithdrawal}
                         onChange={(value)=> handleRadioChange("hasRightOfWithdrawal",value)}
 
                     >
@@ -725,7 +808,7 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                 <div>
                     <label htmlFor="withdrawalPeriod">Délai de rétractation (en jours)</label>
                     <Field className="w-full">
-                        <Input type="number" name="withdrawalPeriod" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="number" value={quote.withdrawalPeriod} name="withdrawalPeriod" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
                         >
                         </Input>
