@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
-import { generateSlug, slugify } from '@/lib/utils'
+import { generateSlug } from '@/lib/utils'
 import { createWorkSiteSchema } from "@/validation/workSiteValidation";
 import { sanitizeData } from "@/lib/sanitize"; 
 import { WorkSiteStatusEnum } from "@prisma/client";

@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
-import { generateSlug, slugify } from '@/lib/utils'
+import { generateSlug } from '@/lib/utils'
 import { createCreditNoteSchema } from "@/validation/creditNoteValidation";
 import { CreditNoteReasonEnum } from "@prisma/client";
 import { sanitizeData } from "@/lib/sanitize"; 
