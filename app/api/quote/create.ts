@@ -257,7 +257,7 @@ export async function POST(req: NextRequest) {
                 withdrawalPeriod: sanitizedData.withdrawalPeriod,
                 clientId: sanitizedData.clientId,
                 workSiteId: sanitizedData.workSiteId,
-                userId: user.id,
+                author: user.id,
 
             },
         });

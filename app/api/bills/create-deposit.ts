@@ -189,7 +189,7 @@ const bill = await prisma.bill.create({
         vatAmount: depositVat,
         totalTtc: Number(depositTtc),
         totalHt: Number((depositHt).toFixed(2)),
-        userId: user.id,
+        author: user.id,
         client: { connect: { id: sanitizedData.clientId } },
         workSite: { connect: { id: sanitizedData.workSiteId } },
         quote: { connect: { id: quoteId } },
