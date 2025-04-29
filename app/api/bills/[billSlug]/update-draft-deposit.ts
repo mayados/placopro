@@ -126,7 +126,11 @@ export async function PUT(req: NextRequest) {
         // Mise à jour de la facture
         const updatedBill = await db.bill.update({
             where: { id },
-            data: updateData
+            data: {
+                ...updateData,
+                updatedAt : new Date().toISOString(),
+                modifiedBy: user?.id
+            } 
         });
 
             return {

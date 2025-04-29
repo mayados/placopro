@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { updateDraftQuoteSchema, updateDraftFinalQuoteSchema } from "@/validation/quoteValidation";
 import { sanitizeData } from "@/lib/sanitize"; 
 import { QuoteStatusEnum } from "@prisma/client";
+import { currentUser } from "@clerk/nextjs/server";
 
 
 export async function PUT(req: NextRequest) {
@@ -44,6 +45,7 @@ export async function PUT(req: NextRequest) {
   //       discountReason
   // } = data;
 
+  const user = await currentUser();
 
   
   // Détecter si la facture est enregistrée en tant que "brouillon" ou en "final"
@@ -178,7 +180,7 @@ const generateQuoteNumber = async (type = "quote", isDraft = false) => {
           const currentYear = new Date().getFullYear();
           
             // Get the counter for current year for quote
-            let counter = await db.documentCounter.findFirst({
+            const counter = await db.documentCounter.findFirst({
               where: {
                 year: currentYear,
                 type: type, 
@@ -373,7 +375,11 @@ const generateQuoteNumber = async (type = "quote", isDraft = false) => {
     // Update the quote
     const updatedQuote = await db.quote.update({
       where: whereClause,
-      data: updateData,
+      data: {
+        ...updateData,
+        updatedAt : new Date().toISOString(),
+        modifiedBy: user?.id
+      } 
     });
 
       const fullUpdatedQuote = await db.quote.findUnique({
