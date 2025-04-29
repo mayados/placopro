@@ -59,6 +59,9 @@ model Bill{
     elementsBackup Json?
     // Have a backup for services
     servicesBackup Json?
+    author String?
+    updatedAt DateTime?
+    modifiedBy String?
 
     workSiteBackup Json?
 
