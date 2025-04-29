@@ -17,10 +17,10 @@ import Link from "next/link";
 
 type QuoteProps = {
     csrfToken: string;
-    quoteNumber: string;
+    quoteSlug: string;
   };
 
-export default function Quote({csrfToken, quoteNumber}: QuoteProps){
+export default function Quote({csrfToken, quoteSlug}: QuoteProps){
 
     const [quote, setQuote] = useState<QuoteType | null>(null);
     const [company, setCompany] = useState<CompanyType | null>(null);
@@ -46,7 +46,7 @@ export default function Quote({csrfToken, quoteNumber}: QuoteProps){
             async function loadQuote() {
 
                 try{
-                    const data = await fetchQuote(quoteNumber)
+                    const data = await fetchQuote(quoteSlug)
                     setQuote(data.quote); 
                     setFormValues({
                         ...formValues,
@@ -74,7 +74,7 @@ export default function Quote({csrfToken, quoteNumber}: QuoteProps){
       
           loadQuote();
           loadCompany()
-        }, [quoteNumber, csrfToken]);
+        }, [quoteSlug, csrfToken]);
 
         const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
             console.log("évènement reçu : "+e)
@@ -123,7 +123,7 @@ export default function Quote({csrfToken, quoteNumber}: QuoteProps){
                 // Delete former validation errors
                 setErrors({})
 
-                const data = await updateClassicQuote(quote.number,formValues, csrfToken)
+                const data = await updateClassicQuote(quote.slug,formValues, csrfToken)
                 const updatedQuote = data;
                 console.log("voici le devis mis à jour : "+updatedQuote.number)
                 setQuote(updatedQuote)

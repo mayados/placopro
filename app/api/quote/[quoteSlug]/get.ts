@@ -1,16 +1,16 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: NextRequest, {params}: {params: {quoteNumber: string}})
+export async function GET(req: NextRequest, {params}: {params: {quoteSlug: string}})
 {
     const resolvedParams = await params;
-    const quoteNumber = resolvedParams.quoteNumber;
+    const quoteSlug = resolvedParams.quoteSlug;
 
     try{
 
         const quote = await db.quote.findUnique({
             where: {
-                number: quoteNumber
+                slug: quoteSlug
             },
             include: {
                 client: true,

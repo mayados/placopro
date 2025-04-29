@@ -16,10 +16,10 @@ import { toast } from 'react-hot-toast';
 
 type UpdateBillProps = {
     csrfToken: string;
-    billNumber: string;
+    billSlug: string;
   };
 
-export default function UpdateBill({csrfToken, billNumber}: UpdateBillProps){
+export default function UpdateBill({csrfToken, billSlug}: UpdateBillProps){
 
     const [bill, setBill] = useState<BillType>();
     const [updateBillFormValues, setUpdateBillFormValues] = useState<UpdatedBillFormValueType>({
@@ -82,7 +82,7 @@ export default function UpdateBill({csrfToken, billNumber}: UpdateBillProps){
         async function loadBill() {
 
                 try{
-                    const data = await fetchBill(billNumber)
+                    const data = await fetchBill(billSlug)
                     // let isDiscountFrombill = false
                   
                     setUpdateBillFormValues({
@@ -126,7 +126,7 @@ export default function UpdateBill({csrfToken, billNumber}: UpdateBillProps){
         const loadVatRates = async () => {
                 try{
                     const data = await fetchVatRates();
-                    setVatRateChoices(data.vatRates)
+                    setVatRateChoices(data)
 
                 }catch (error) {
                     console.error("Impossible to load VAT rates :", error);
@@ -136,7 +136,7 @@ export default function UpdateBill({csrfToken, billNumber}: UpdateBillProps){
         const loadUnits = async () => {
                 try{
                     const data = await fetchUnits();
-                    setUnitChoices(data.units)
+                    setUnitChoices(data)
             
                 }catch (error) {
                     console.error("Impossible to load units :", error);
@@ -146,7 +146,7 @@ export default function UpdateBill({csrfToken, billNumber}: UpdateBillProps){
         loadBill();
         loadVatRates();
         loadUnits();
-    },[billNumber, csrfToken]);
+    },[billSlug, csrfToken, updateBillFormValues]);
 
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -217,7 +217,7 @@ export default function UpdateBill({csrfToken, billNumber}: UpdateBillProps){
             // Delete former validation errors
             setErrors({})
 
-            const data = await updateDraftBill(bill.number,updateBillWithStatus,csrfToken)
+            const data = await updateDraftBill(bill.slug,updateBillWithStatus,csrfToken)
             console.log("data renvoyés : "+data)
             const createdBill = data;
             console.log("voici la bill crééé : "+createdBill.number)

@@ -5,9 +5,9 @@ import Quote from '@/components/Quote'
 // import { cookies } from 'next/headers';  // Utilisation de la fonction cookies pour récupérer les cookies
 
 
-export default async function Page({ params }: { params: { quoteNumber: string } }) {
+export default async function Page({ params }: { params: { quoteSlug: string } }) {
 
-  const { quoteNumber } = await params;
+  const { quoteSlug } = await params;
 
   const h = await headers()
   const csrfToken = h.get('X-CSRF-Token') || 'missing'
@@ -20,7 +20,7 @@ export default async function Page({ params }: { params: { quoteNumber: string }
   // Once we get the csrf token and billNumber, we can give it to the component
   return (
     <Quote
-      quoteNumber={quoteNumber}
+      quoteSlug={quoteSlug}
       csrfToken={csrfToken}
     />
   )

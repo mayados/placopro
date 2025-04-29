@@ -16,10 +16,10 @@ import { updateClassicBillSchema } from "@/validation/billValidation";
 
 type BillProps = {
     csrfToken: string;
-    billNumber: string;
+    billSlug: string;
   };
 
-export default function Bill({csrfToken, billNumber}: BillProps){
+export default function Bill({csrfToken, billSlug}: BillProps){
 
 
     const [bill, setBill] = useState<BillType | null>(null);
@@ -59,7 +59,7 @@ export default function Bill({csrfToken, billNumber}: BillProps){
                 // const billNumber = resolvedParams.billNumber;
 
                 try{
-                    const data = await fetchBill(billNumber)
+                    const data = await fetchBill(billSlug)
                     setBill(data.bill); 
                     setFormValues({
                         ...formValues,
@@ -87,7 +87,7 @@ export default function Bill({csrfToken, billNumber}: BillProps){
       
           loadBill();
           loadCompany()
-        }, [billNumber, csrfToken]);
+        }, [billSlug, csrfToken]);
 
         const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
             console.log("évènement reçu : "+e)
@@ -129,7 +129,7 @@ export default function Bill({csrfToken, billNumber}: BillProps){
             // Delete former validation errors
             setErrors({})
 
-                const data = await updateClassicBill(bill.number,formValues, csrfToken)
+                const data = await updateClassicBill(bill.slug,formValues, csrfToken)
                 const updatedBill = data;
                 console.log("voici la facture mis à jour : "+updatedBill.number)
                 setBill(updatedBill)

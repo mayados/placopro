@@ -4,7 +4,6 @@ import { useEffect, useState, use } from "react";
 import { Field,Input, Label, Legend, Radio, RadioGroup, Select, Textarea } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
-import { CirclePlus, CircleX } from "lucide-react";
 import { capitalizeFirstLetter, formatDateToInput } from "@/lib/utils";
 import { formatDateForInput } from '@/lib/utils'
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
@@ -18,10 +17,10 @@ import { toast } from 'react-hot-toast';
 
 type UpdateDepositBillProps = {
     csrfToken: string;
-    billNumber: string;
+    billSlug: string;
   };
 
-export default function UpdateDepositBill({csrfToken, billNumber}: UpdateDepositBillProps){
+export default function UpdateDepositBill({csrfToken, billSlug}: UpdateDepositBillProps){
 
     const [bill, setBill] = useState<BillType>();
     const [updateBillFormValues, setUpdateBillFormValues] = useState<UpdatedDepositBillFormValueType>({
@@ -49,7 +48,7 @@ export default function UpdateDepositBill({csrfToken, billNumber}: UpdateDeposit
         async function loadBill() {
 
                 try{
-                    const data = await fetchBill(billNumber)
+                    const data = await fetchBill(billSlug)
                     let isDiscountFrombill = false
                   
                     setUpdateBillFormValues({
@@ -84,7 +83,7 @@ export default function UpdateDepositBill({csrfToken, billNumber}: UpdateDeposit
         loadBill();
         loadVatRates();
         loadUnits();
-    },[billNumber, csrfToken]);
+    },[billSlug, csrfToken]);
 
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -138,7 +137,7 @@ export default function UpdateDepositBill({csrfToken, billNumber}: UpdateDeposit
             // Delete former validation errors
             setErrors({})
 
-            const data = await updateDepositDraftBill(bill.number,updateBillWithStatus, csrfToken)
+            const data = await updateDepositDraftBill(bill.slug,updateBillWithStatus, csrfToken)
             // console.log("data renvoyés : "+data)
             const updatedBill = data;
             toast.success("La facture d'accompte a été mise à jour avec succès");

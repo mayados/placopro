@@ -3,16 +3,16 @@ import { db } from "@/lib/db";
 
 
 // Asynchrone : waits for a promise
-export async function DELETE(req: NextRequest, {params}: {params: {quoteNumber: string}})
+export async function DELETE(req: NextRequest, {params}: {params: {quoteSlug: string}})
 {
     const resolvedParams = await params;
-    const quoteNumber = resolvedParams.quoteNumber;
+    const quoteSlug = resolvedParams.quoteSlug;
 
     try{
 
         await db.quote.delete({
             where: {
-                number: quoteNumber
+                slug: quoteSlug
             }            
         })
 
