@@ -33,7 +33,9 @@ global.TextEncoder = TextEncoder;
       const clientNumber1 = generateUniqueClientNumber();
       const clientNumber2 = generateUniqueClientNumber();
       expect(clientNumber1).not.toBe(clientNumber2);
-      expect(clientNumber1).toMatch(/^CL-\d{6}$/);
+      // UUID format
+      expect(clientNumber1).toMatch(/^CL-[a-f0-9\-]{36}$/); 
+
     });
   
     test("capitalizeFirstLetter should capitalize the first letter", () => {
