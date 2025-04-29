@@ -156,7 +156,7 @@ const Quotes = () =>{
                                         <td>{formatDate(quote?.workStartDate)}</td>
                                         <td>{formatDate(quote.validityEndDate)}</td>
                                         <td>
-                                            <Link href={`/director/quotes/${quote?.number}`}>
+                                            <Link href={`/director/quotes/${quote?.slug}`}>
                                                 Consulter les détails
                                             </Link>
                                         </td>
@@ -195,12 +195,12 @@ const Quotes = () =>{
                                         <td>{formatDate(quote?.workStartDate)}</td>
                                         <td>{formatDate(quote.validityEndDate)}</td>
                                         <td>
-                                            <Link href={`/director/quotes/${quote?.number}`}>
+                                            <Link href={`/director/quotes/${quote?.slug}`}>
                                                 Consulter les détails
                                             </Link>
                                         </td>
                                         <td>
-                                            <Link href={`/director/quotes/${quote?.number}/update`}>
+                                            <Link href={`/director/quotes/${quote?.slug}/update`}>
                                                 Modifier
                                             </Link>
                                         </td>
@@ -237,7 +237,7 @@ const Quotes = () =>{
                                         <td>{formatDate(quote?.workStartDate)}</td>
                                         <td>{formatDate(quote.validityEndDate)}</td>
                                         <td>
-                                            <Link href={`/director/quotes/${quote?.number}`}>
+                                            <Link href={`/director/quotes/${quote?.slug}`}>
                                                 Consulter les détails
                                             </Link>
                                         </td>
@@ -274,7 +274,7 @@ const Quotes = () =>{
                                         <td>{formatDate(quote?.workStartDate)}</td>
                                         <td>{formatDate(quote.validityEndDate)}</td>
                                         <td>
-                                            <Link href={`/director/quotes/${quote?.number}`}>
+                                            <Link href={`/director/quotes/${quote?.slug}`}>
                                                 Consulter les détails
                                             </Link>
                                         </td>
@@ -312,7 +312,7 @@ const Quotes = () =>{
                                         <td>{formatDate(quote?.workStartDate)}</td>
                                         <td>{formatDate(quote.validityEndDate)}</td>
                                         <td>
-                                            <Link href={`/director/quotes/${quote?.number}`}>
+                                            <Link href={`/director/quotes/${quote?.slug}`}>
                                                 Consulter les détails
                                             </Link>
                                         </td>
@@ -350,7 +350,7 @@ const Quotes = () =>{
                                         <td>{formatDate(quote?.workStartDate)}</td>
                                         <td>{formatDate(quote.validityEndDate)}</td>
                                         <td>
-                                            <Link href={`/director/quotes/${quote?.number}`}>
+                                            <Link href={`/director/quotes/${quote?.slug}`}>
                                                 Consulter les détails
                                             </Link>
                                         </td>
