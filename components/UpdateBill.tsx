@@ -146,7 +146,7 @@ export default function UpdateBill({csrfToken, billSlug}: UpdateBillProps){
         loadBill();
         loadVatRates();
         loadUnits();
-    },[billSlug, csrfToken, updateBillFormValues]);
+    },[billSlug, csrfToken]);
 
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {

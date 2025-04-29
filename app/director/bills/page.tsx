@@ -149,7 +149,7 @@ const Bills = () =>{
                                         <td>{bill.status}</td>
                                         <td>Afficher</td>
                                         <td>
-                                            <Link href={`/director/bills/${bill?.number}`}>
+                                            <Link href={`/director/bills/${bill?.slug}`}>
                                                 Consulter les détails
                                             </Link>
                                         </td>
@@ -187,12 +187,12 @@ const Bills = () =>{
                                         <td>{formatDate(bill?.issueDate)}</td>
                                         <td>{formatDate(bill.dueDate)}</td>
                                         <td>
-                                            <Link href={`/director/bills/${bill?.number}`}>
+                                            <Link href={`/director/bills/${bill?.slug}`}>
                                                 Consulter les détails
                                             </Link>
                                         </td>
                                         <td>
-                                            <Link href={`/director/bills/${bill?.number}/update`}>
+                                            <Link href={`/director/bills/${bill?.slug}/update`}>
                                                 Modifier
                                             </Link>
                                         </td>
@@ -231,7 +231,7 @@ const Bills = () =>{
                                         <td>{formatDate(bill.dueDate)}</td>
                                         <td>Afficher</td>
                                         <td>
-                                            <Link href={`/director/bills/${bill?.number}`}>
+                                            <Link href={`/director/bills/${bill?.slug}`}>
                                                 Consulter les détails
                                             </Link>
                                         </td>
@@ -270,7 +270,7 @@ const Bills = () =>{
                                         <td>{formatDate(bill.dueDate)}</td>
                                         <td>Afficher</td>
                                         <td>
-                                            <Link href={`/director/bills/${bill?.number}`}>
+                                            <Link href={`/director/bills/${bill?.slug}`}>
                                                 Consulter les détails
                                             </Link>
                                         </td>
@@ -308,7 +308,7 @@ const Bills = () =>{
                                         <td>{formatDate(bill?.issueDate)}</td>
                                         <td>{formatDate(bill.dueDate)}</td>
                                         <td>
-                                            <Link href={`/director/bills/${bill?.number}`}>
+                                            <Link href={`/director/bills/${bill?.slug}`}>
                                                 Consulter les détails
                                             </Link>
                                         </td>

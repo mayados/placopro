@@ -4,13 +4,16 @@ import { headers } from 'next/headers'
 import UpdateDraftQuote from '@/components/UpdateDraftQuote' 
 
 export default async function Page({ params }: { params: { quoteSlug: string } }) {
+  
+  const { quoteSlug } = await params;
+
   const h = await headers()
   const csrfToken = h.get('X-CSRF-Token') || 'missing'
 
   // Once we get the csrf token and billNumber, we can give it to the component
   return (
     <UpdateDraftQuote
-      quoteSlug={params.quoteSlug}
+      quoteSlug={quoteSlug}
       csrfToken={csrfToken}
     />
   )
