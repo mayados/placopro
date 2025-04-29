@@ -213,6 +213,7 @@ interface BillType{
     issueDate: Date;
     dueDate: Date;
     status: string;
+    slug: string;
     billType: string;
     paymentDate?: Date;
     paymentMethod?: string,
@@ -356,6 +357,7 @@ interface UpdatedDepositBillFormValueType{
 interface QuoteType{
     id:string;
     number: string;
+    slug: string,
     issueDate: Date;
     validityEndDate: Date;
     natureOfWork: string;
