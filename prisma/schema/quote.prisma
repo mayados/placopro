@@ -20,6 +20,7 @@ model Quote{
     isQuoteFree Boolean 
     // Le coût du devis si la réalisation de ce dernier est payante
     quoteCost Float?
+    slug String @unique
     // Brouillon, envoyé, signé, etc.
     status String 
     // Montant (€) de l'accompte demandé

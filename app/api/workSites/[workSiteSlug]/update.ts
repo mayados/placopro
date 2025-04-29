@@ -1,6 +1,5 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
-import { slugify } from '@/lib/utils'
 import { updateWorkSiteSchema } from "@/validation/workSiteValidation";
 
 
@@ -96,7 +95,6 @@ export async function PUT(req: NextRequest) {
         // We verify if the values have changed by comparing original values and values retrieved from the form
         // If it's the case, we replace const workSite's values by values retrieve from the forms
         if (originalWorkSite.title !== validatedData.title) workSite.title = validatedData.title;
-        if (originalWorkSite.title !== title) workSite.slug = slugify(validatedData.title);
         if (originalWorkSite.description !== validatedData.description) workSite.description = validatedData.description;
         if (originalWorkSite.beginsThe !== validatedData.beginsThe) workSite.beginsThe = validatedData.beginsThe;
         if (originalWorkSite.status !== validatedData.status) workSite.status = validatedData.status;
@@ -116,7 +114,6 @@ export async function PUT(req: NextRequest) {
         const updatedworkSite = await db.workSite.update({
             where: { id: id },
             data: {
-                slug: workSite.slug,
                 title: workSite.title, 
                 description: workSite.description, 
                 beginsThe: workSite.beginsThe, 

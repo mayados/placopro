@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
-import { slugify } from '@/lib/utils'
+import { generateSlug} from '@/lib/utils'
 import { generateUniqueClientNumber } from '@/lib/utils'
 import { createClientSchema } from "@/validation/clientValidation";
 import { ClientOrProspectEnum } from "@prisma/client";
@@ -51,15 +51,13 @@ export async function POST(req: NextRequest) {
                 
 
         const clientNumber = generateUniqueClientNumber();
-        const slug = slugify(validatedData.name+" "+validatedData.firstName+" "+clientNumber)
-        console.log("Slug du client : "+slug)
         console.log("client number : "+clientNumber)
         console.log("type de clientNumber : "+typeof(clientNumber))
-        console.log("type de slug : "+typeof(slug))
         console.log("type de code postal : "+typeof(validatedData.postalCode))
         console.log("type de téléphone : "+typeof(validatedData.phone))
 
         console.log("Tentative de création du client...");
+        const slug = generateSlug(`${validatedData.name}-${validatedData.firstName}`);
 
           // Création du client
           const client = await db.client.create({
@@ -73,7 +71,7 @@ export async function POST(req: NextRequest) {
                 postalCode: validatedData.postalCode,
                 city: validatedData.city,
                 additionalAddress: validatedData.additionalAddress,
-                slug,
+                slug: slug,
                 clientNumber,
                 isAnonymized: false,
                 convertedAt: null,

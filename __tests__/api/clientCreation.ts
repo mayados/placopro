@@ -63,8 +63,10 @@ describe('API Client Creation Route', () => {
     prismaMock.client.create.mockResolvedValue({
       ...clientData,
       id: '5f63a7bf4b0a8c001c4e8df8',
-      clientNumber: 'CL-000006',
-      slug: 'dupont-jean-cl-000006',
+      // clientNumber: 'CL-000006',
+      // slug: 'dupont-jean-cl-000006',
+      clientNumber: 'CL-40852375-1f85-4c35-be54-9100c8c6446f',  
+      slug: 'dupont-jean-edd02bea-bed5-44bb-893c-96c152b2a22a', 
     });
 
     // Vérifier que le client n'existe pas déjà
@@ -95,8 +97,9 @@ describe('API Client Creation Route', () => {
       data: expect.objectContaining({
         // id: '5f63a7bf4b0a8c001c4e8df8',
 
-        clientNumber: expect.stringMatching(/^CL-\d+$/),
-        slug: expect.stringMatching(/dupont-jean-cl-\d+/),
+        // Slug and clientNumber have to match an UUID
+        clientNumber: expect.stringMatching(/^CL-[a-f0-9\-]+$/),
+        slug: expect.stringMatching(/^[a-zA-Z]+-[a-zA-Z]+-[a-f0-9\-]+$/),
         name: 'Dupont',
         firstName: 'Jean',
         mail: 'jean.dupont@example.com',

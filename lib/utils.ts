@@ -3,6 +3,8 @@
  */
 
 import { format } from "date-fns";
+import { v4 as uuidv4 } from 'uuid';
+
 
 // Display date on french format, without hours
 // export function formatDate(date: Date): string{
@@ -31,40 +33,9 @@ export function formatDateToInput(date: Date): string {
   return format(new Date(date), "yyyy-MM-dd");
 }
 
-// Allows to create a slug thanks to a string
-export function slugify(str: string): string {
-  // Trim leading/trailing white spaces
-  str = str.trim();
-  // Convert string to lowercase
-  str = str.toLowerCase();
-  // Remove accents
-  str = str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  // Remove any non-alphanumeric characters except spaces and hyphens
-  str = str.replace(/[^a-z0-9 -]/g, '');
-  // Replace spaces with hyphens
-  str = str.replace(/\s+/g, '-');
-  // Remove consecutive hyphens
-  str = str.replace(/-+/g, '-');
-  // delete '-' in the beginning or the end of the string
-  str = str.replace(/^-+|-+$/g, '');
-  
-  return str;
+export function generateUniqueClientNumber() {
+  return `CL-${uuidv4()}`;  // Génère un UUID unique et l'utilise comme numéro client
 }
-
-
-  const usedClientNumbers: Set<string> = new Set();
-
-  export function generateUniqueClientNumber() {
-    let clientNumber;
-    
-    do {
-      const randomNumber = Math.floor(Math.random() * 1000000); // Génère un nombre aléatoire
-      clientNumber = `CL-${randomNumber.toString().padStart(6, '0')}`;
-    } while (usedClientNumbers.has(clientNumber)); // Vérifie si le numéro existe déjà
-    
-    usedClientNumbers.add(clientNumber); // Ajoute le numéro à l'ensemble des numéros utilisés
-    return clientNumber;
-  }
 
 // Capitalize first letter of a string
 export function capitalizeFirstLetter(word: string){
@@ -85,5 +56,10 @@ export function formatDateForInput(date: string | Date | null): string {
   return `${year}-${month}-${day}`;
 }
 
+// utils/generateSlug.ts
+export function generateSlug(prefix: string) {
+  const id = uuidv4(); 
+  return `${prefix}-${id}`; 
+}
 
 

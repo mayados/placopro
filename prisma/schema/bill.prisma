@@ -62,6 +62,9 @@ model Bill{
 
     workSiteBackup Json?
 
+    slug String @unique
+
+
 
 
 	// Bill is created by a User
