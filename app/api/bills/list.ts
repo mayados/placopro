@@ -31,7 +31,8 @@ export async function GET(req: NextRequest) {
                 workSite: true,
                 workStartDate: true,
                 dueDate: true,
-                issueDate: true
+                issueDate: true,
+                slug: true,
             },
             skip,
             take: limit,
@@ -52,7 +53,9 @@ export async function GET(req: NextRequest) {
                 workSite: true,
                 workStartDate: true,
                 dueDate: true,
-                issueDate: true
+                issueDate: true,
+                slug: true,
+
             },
             skip : skipReadyToBeSent,
             take: limit,
@@ -73,7 +76,9 @@ export async function GET(req: NextRequest) {
                 workSite: true,
                 workStartDate: true,
                 dueDate: true,
-                issueDate: true
+                issueDate: true,
+                slug: true,
+
             },
             skip: skipSent,
             take: limit,
@@ -94,7 +99,9 @@ export async function GET(req: NextRequest) {
                 workSite: true,
                 workStartDate: true,
                 dueDate: true,
-                issueDate: true
+                issueDate: true,
+                slug: true,
+
             },
             skip: skipDraft,
             take: limit,
@@ -115,7 +122,9 @@ export async function GET(req: NextRequest) {
                 workSite: true,
                 workStartDate: true,
                 dueDate: true,
-                issueDate: true
+                issueDate: true,
+                slug: true,
+
             },
             skip: skipCanceled,
             take: limit,
