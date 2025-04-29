@@ -4,6 +4,7 @@ import { currentUser } from '@clerk/nextjs/server'
 import { createQuoteDraftSchema, createQuoteFinalSchema } from "@/validation/quoteValidation";
 import { sanitizeData } from "@/lib/sanitize"; 
 import { QuoteStatusEnum } from "@prisma/client";
+import { generateSlug } from "@/lib/utils";
 
 
 // Asynchrone : waits for a promise
@@ -220,12 +221,15 @@ export async function POST(req: NextRequest) {
         })
       );
       
+      const slug = generateSlug("dev");
+      
     
         // We create the quote thanks to te datas retrieved
         const quote = await db.quote.create({
             data: {
                 number: quoteNumber,
                 status: status,
+                slug: slug,
                 issueDate : new Date().toISOString(), 
                 validityEndDate: sanitizedData.validityEndDate, 
                 natureOfWork: sanitizedData.natureOfWork, 

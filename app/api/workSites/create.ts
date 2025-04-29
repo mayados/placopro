@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
-import { slugify } from '@/lib/utils'
+import { generateSlug, slugify } from '@/lib/utils'
 import { createWorkSiteSchema } from "@/validation/workSiteValidation";
 import { sanitizeData } from "@/lib/sanitize"; 
 import { WorkSiteStatusEnum } from "@prisma/client";
@@ -65,7 +65,8 @@ export async function POST(req: NextRequest) {
         const sanitizedData = sanitizeData(parsedData.data);
         console.log("Données nettoyées :", JSON.stringify(sanitizedData));
 
-        const slug = slugify(sanitizedData.title);
+        const slug = generateSlug("chantier");
+
 
         // We create the company thanks to te datas retrieved
         const workSite = await db.workSite.create({

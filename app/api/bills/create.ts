@@ -4,6 +4,7 @@ import { currentUser } from '@clerk/nextjs/server'
 import { createBillDraftSchema, createBillFinalSchema } from "@/validation/billValidation";
 import { sanitizeData } from "@/lib/sanitize"; 
 import { BillStatusEnum, BillTypeEnum } from "@prisma/client";
+import { generateSlug } from "@/lib/utils";
 
 
 export async function POST(req: NextRequest) {
@@ -126,11 +127,13 @@ export async function POST(req: NextRequest) {
             const totalPaidDepositTTC = parseFloat(depositBills.reduce((acc, bill) => acc + bill.totalTtc, 0).toFixed(2));
             const totalPaidDepositHT = parseFloat(depositBills.reduce((acc, bill) => acc + bill.totalHt, 0).toFixed(2));
             const totalPaidDepositVAT = parseFloat(depositBills.reduce((acc, bill) => acc + bill.vatAmount, 0).toFixed(2));
+            const slug = generateSlug("fac");
 
             // Create initial bill with temporary values
             const bill = await prisma.bill.create({
                 data: {
                     number: billNumber,
+                    slug: slug,
                     issueDate: new Date().toISOString(),
                     billType: BillTypeEnum.FINAL,
                     dueDate: sanitizedData.dueDate ? new Date(sanitizedData.dueDate).toISOString() : null,

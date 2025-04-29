@@ -4,6 +4,7 @@ import { currentUser } from '@clerk/nextjs/server'
 import { createDepositBillDraftSchema, createDepositBillFinalSchema } from "@/validation/billValidation";
 import { sanitizeData } from "@/lib/sanitize"; 
 import { BillStatusEnum, BillTypeEnum } from "@prisma/client";
+import { generateSlug } from "@/lib/utils";
 
 
 export async function POST(req: NextRequest) {
@@ -164,6 +165,7 @@ console.log("depositVAT : " + depositVat);
 
 // Montant TTC de l'acompte
 const depositTtc = (depositHt + depositVat).toFixed(2);
+const slug = generateSlug("acompte");
 
 // Création de la facture d'acompte
 const bill = await prisma.bill.create({
@@ -179,6 +181,7 @@ const bill = await prisma.bill.create({
         description: sanitizedData.description,
         paymentTerms: sanitizedData.paymentTerms ,
         status,
+        slug: slug,
         discountAmount: sanitizedData.discountAmount || 0,
         travelCosts: sanitizedData.travelCosts,
         travelCostsType : sanitizedData.travelCostsType,

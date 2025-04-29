@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
-import { slugify } from '@/lib/utils'
+import { generateSlug, slugify } from '@/lib/utils'
 import { createCreditNoteSchema } from "@/validation/creditNoteValidation";
 import { CreditNoteReasonEnum } from "@prisma/client";
 import { sanitizeData } from "@/lib/sanitize"; 
@@ -97,6 +97,7 @@ export async function POST(req: NextRequest) {
   })
 
     const CreditNoteNumber =  await generateCreditNoteNumber();
+        const slug = generateSlug("avo");
 
         // We create the company thanks to te datas retrieved
         const creditNote = await db.creditNote.create({
@@ -104,6 +105,7 @@ export async function POST(req: NextRequest) {
                 number: CreditNoteNumber,
                 amount: sanitizedData.amount,
                 billId: billId,
+                slug: slug,
                 reason: sanitizedData.reason as CreditNoteReasonEnum,
                 issueDate: new Date(),
                 clientBackup: {
