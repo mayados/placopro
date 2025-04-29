@@ -1,7 +1,6 @@
 import { 
     formatDate, 
     formatDateToInput, 
-    slugify, 
     generateUniqueClientNumber, 
     capitalizeFirstLetter,
     formatDateForInput
@@ -23,11 +22,6 @@ global.TextEncoder = TextEncoder;
       expect(formatDateToInput(date)).toBe("2025-04-28");
     });
   
-    test("slugify should convert a string into a slug format", () => {
-      expect(slugify("Hi Everyone !")).toBe("hi-everyone");
-      expect(slugify("    Test  With  Spaces   ")).toBe("test-with-spaces");
-      expect(slugify("Work & Client")).toBe("work-client");
-    });
   
     test("generateUniqueClientNumber should return a unique client number", () => {
       const clientNumber1 = generateUniqueClientNumber();
