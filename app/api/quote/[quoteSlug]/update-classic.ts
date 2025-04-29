@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { updateClassicQuoteSchema } from "@/validation/quoteValidation";
 import { sanitizeData } from "@/lib/sanitize"; 
 import { QuoteStatusEnum } from "@prisma/client";
+import { currentUser } from "@clerk/nextjs/server";
 
 export async function PUT(req: NextRequest) {
    
@@ -23,6 +24,9 @@ export async function PUT(req: NextRequest) {
     "Refusé": QuoteStatusEnum.REFUSED,
     "Clos" : QuoteStatusEnum.CANCELED
   };
+
+  const user = await currentUser();
+  
 
   try {
 
@@ -79,7 +83,11 @@ export async function PUT(req: NextRequest) {
     // Update in database
     const updatedQuote = await db.quote.update({
       where: { id: id },
-      data: updateData,
+      data: {
+        ...updateData,
+        updatedAt : new Date().toISOString(),
+        modifiedBy: user?.id
+      },
       include: {
         client: true, 
         workSite: true,

@@ -105,6 +105,7 @@ export async function POST(req: NextRequest) {
                 number: CreditNoteNumber,
                 amount: sanitizedData.amount,
                 billId: billId,
+                author: user.id,
                 slug: slug,
                 reason: sanitizedData.reason as CreditNoteReasonEnum,
                 issueDate: new Date(),

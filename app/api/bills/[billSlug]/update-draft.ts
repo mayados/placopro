@@ -279,6 +279,8 @@ export async function PUT(req: NextRequest) {
                     totalHt: finalTotalHt,
                     vatAmount: finalVatAmount,
                     totalTtc: finalTotalTtc,
+                    updatedAt: new Date().toISOString(),
+                    modifiedBy: user?.id,
                 }
             });
 

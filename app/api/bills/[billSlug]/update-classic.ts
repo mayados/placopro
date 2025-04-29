@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { updateClassicBillSchema } from "@/validation/billValidation";
 import { sanitizeData } from "@/lib/sanitize";
 import { BillStatusEnum } from "@prisma/client";
+import { currentUser } from "@clerk/nextjs/server";
 
 export async function PUT(req: NextRequest) {
   const data = await req.json();
@@ -20,6 +21,9 @@ export async function PUT(req: NextRequest) {
     "Clos": BillStatusEnum.CANCELED,
     "Payé": BillStatusEnum.PAID,
   };
+  
+  const user = await currentUser();
+  
 
   try {
 
@@ -72,7 +76,11 @@ export async function PUT(req: NextRequest) {
     // Update in database
     const updatedBill = await db.bill.update({
       where: { id: sanitizedData.id },
-      data: updateData,
+      data: {
+        ...updateData,   
+        updatedAt: new Date().toISOString(),
+        modifiedBy: user?.id,
+      },
       include: {
         client: true, 
         workSite: true,

@@ -151,7 +151,7 @@ export async function POST(req: NextRequest) {
                     vatAmount: 0, // Will be calculated later
                     totalTtc: 0,  // Will be calculated later
                     totalHt: 0,   // Will be calculated later
-                    userId: user.id,
+                    author: user.id,
                     client: { connect: { id: data.clientId } },
                     workSite: { connect: { id: data.workSiteId } },
                     ...(data.quoteId && { quote: { connect: { id: data.quoteId } } })

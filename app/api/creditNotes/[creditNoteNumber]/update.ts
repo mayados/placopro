@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { updateCreditNoteSchema } from "@/validation/creditNoteValidation";
 import { sanitizeData } from "@/lib/sanitize"; 
+import { currentUser } from "@clerk/nextjs/server";
 
 
 export async function PUT(req: NextRequest) {
@@ -19,6 +20,9 @@ export async function PUT(req: NextRequest) {
     "Remboursement": CreditNoteSettlementTypeEnum.REFUND,
     "Compensation": CreditNoteSettlementTypeEnum.COMPENSATION,
   };
+
+  const user = await currentUser();
+
 
   try {
 
@@ -67,7 +71,11 @@ export async function PUT(req: NextRequest) {
     // Update in database
     const updatedCreditNote = await db.creditNote.update({
       where: { id: id },
-      data: updateData,
+      data: {
+        ...updateData,
+        updatedAt : new Date().toISOString(),
+        modifiedBy: user?.id
+      },
       include: {
         bill: true, 
 
