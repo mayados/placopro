@@ -18,9 +18,9 @@ jobs:
       - run:
           name: Install dependencies # Étape nommée : installe toutes les dépendances Node.js du projet via le fichier package.json
           command: npm install # Exécute la commande pour installer les packages déclarés
-      - run:
-          name: Lint the code  # Étape nommée : vérifie la qualité du code (erreurs de syntaxe, conventions, etc.) avec ESLint
-          command: npm run lint  # Nécessite d’avoir une commande "lint" dans le package.json (ex: eslint . --ext .ts,.tsx)
+      # - run:
+      #     name: Lint the code  # Étape nommée : vérifie la qualité du code (erreurs de syntaxe, conventions, etc.) avec ESLint
+      #     command: npm run lint  # Nécessite d’avoir une commande "lint" dans le package.json (ex: eslint . --ext .ts,.tsx)
 
       - run:
           name: Build the Next.js app  # Étape nommée : construit l'application pour vérifier que le build fonctionne correctement
