@@ -11,6 +11,7 @@ model CreditNote {
     settlementType CreditNoteSettlementTypeEnum? 
     // Indicates if the CreditNote was treated
     isSettled Boolean @default(false) 
+    slug String @unique
 
     // Have a backup in case of client's deletion
     clientBackup Json?
