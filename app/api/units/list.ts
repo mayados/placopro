@@ -13,9 +13,9 @@ export async function GET(req: NextRequest) {
             }
         );
 
-        return NextResponse.json({
-            units: units,
-        })
+        return NextResponse.json(
+            units,
+        )
 
     } catch (error) {
         console.log("[UNITS]", error)
