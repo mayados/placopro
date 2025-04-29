@@ -302,7 +302,7 @@ export default function Bill({csrfToken, billNumber}: BillProps){
                     </thead>
                     <tbody>
                     {/* bill.services => billService */}
-                    {(bill?.servicesBackup).map((service, index) => (
+                    {(bill?.servicesBackup)?.map((service, index) => (
                         <tr key={index}>
                         <td>{service.label} - {service.type}</td>
                         <td>{service.detailsService}</td>
@@ -335,7 +335,7 @@ export default function Bill({csrfToken, billNumber}: BillProps){
                     </thead>
                     <tbody>
                     {/* bill.services => billService */}
-                    {bill?.servicesBackup.map((service, index) => {
+                    {bill?.servicesBackup?.map((service, index) => {
 
                         return (
                         <tr key={index}>
