@@ -29,9 +29,9 @@ export const fetchBills = async ({
   };
 
 // Retrieve a specific Bill
-export const fetchBill = async (billNumber: string): Promise<BillTypeSingle> => {
+export const fetchBill = async (billSlug: string): Promise<BillTypeSingle> => {
     try {
-        const response = await fetch(`/api/bills/${billNumber}`);
+        const response = await fetch(`/api/bills/${billSlug}`);
         if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
       
         const data: BillTypeSingle = await response.json();
@@ -112,9 +112,9 @@ export const createDepositBillFromQuote = async (bill: CreateDepositBillFormValu
   };
 
 // Update draft bill
-export const updateDraftBill = async (billNumber: string, updatedBillWithStatus: UpdatedBillFormValueType, csrfToken: string): Promise<BillType> => {
+export const updateDraftBill = async (billSlug: string, updatedBillWithStatus: UpdatedBillFormValueType, csrfToken: string): Promise<BillType> => {
     try {
-        const response = await fetch(`/api/bills/${billNumber}`, {
+        const response = await fetch(`/api/bills/${billSlug}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -140,9 +140,9 @@ export const updateDraftBill = async (billNumber: string, updatedBillWithStatus:
   };
 
 // Update deposit draft bill
-export const updateDepositDraftBill = async (billNumber: string, updatedBillWithStatus: UpdatedDepositBillFormValueType, csrfToken: string): Promise<BillType> => {
+export const updateDepositDraftBill = async (billSlug: string, updatedBillWithStatus: UpdatedDepositBillFormValueType, csrfToken: string): Promise<BillType> => {
     try {
-        const response = await fetch(`/api/bills/${billNumber}`, {
+        const response = await fetch(`/api/bills/${billSlug}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -167,9 +167,9 @@ export const updateDepositDraftBill = async (billNumber: string, updatedBillWith
     }
   };
 
-  export const updateClassicBill = async (billNumber: string, formValues: FormValuesUpdateNotDraftBill, csrfToken: string): Promise<BillType> => {
+  export const updateClassicBill = async (billSlug: string, formValues: FormValuesUpdateNotDraftBill, csrfToken: string): Promise<BillType> => {
     try {
-        const response = await fetch(`/api/bills/${billNumber}`, {
+        const response = await fetch(`/api/bills/${billSlug}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
