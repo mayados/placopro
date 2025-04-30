@@ -218,12 +218,12 @@ const isForConnectedUsersApiRoute = createRouteMatcher([
   '/api/vatRates(.*)',
   '/api/workSites(.*)',
   '/api/plannings(.*)',
-  '/api/users(.*)',
+  // '/api/users(.*)',
 ]);
 
 const isDirectorApiRoute = createRouteMatcher([
   '/api/plannings(.*)',
-  '/api/users(.*)',
+  // '/api/users(.*)',
 ]);
 
 const isSecretaryOrDirectorApiRoute = createRouteMatcher([
@@ -270,10 +270,10 @@ if (!(err instanceof CsrfError)) throw err;
 return response;
 }
 
-  // Vérifier l'authentification
-  if (!userId) {
-    return redirectToSignIn();
-  }
+  // // Vérifier l'authentification
+  // if (!userId) {
+  //   return redirectToSignIn();
+  // }
 
   // Récupérer et décoder le token pour les rôles
   const token = await getToken({ template: "user_public_metadata_role" });

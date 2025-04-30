@@ -128,6 +128,9 @@ export async function PUT(req: NextRequest) {
             where: { id },
             data: {
                 ...updateData,
+                ...(status === BillStatusEnum.READY && existingBill.status === BillStatusEnum.DRAFT
+                  ? { number: billNumber }
+                  : {number : existingBill.number}),
                 updatedAt : new Date().toISOString(),
                 modifiedBy: user?.id
             } 

@@ -1118,3 +1118,10 @@ interface ServiceEntityType{
 interface ServiceForListType{
     services: ServiceEntityType[],
 }
+
+
+interface ApiResponse {
+    success: boolean;
+    message?: string; 
+  };
+  
