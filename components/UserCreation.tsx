@@ -44,7 +44,7 @@ export default function UserCreation({csrfToken}: UserCreationProps){
     const handleUserCreation = async () => {
         try{
 
-            
+            console.log("employé à créer : "+JSON.stringify(employee))
             // Validation des données du formulaire en fonction du statut
             const validationResult = createUserSchema.safeParse(employee);
             
