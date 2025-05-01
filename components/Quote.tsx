@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { formatDate } from '@/lib/utils'
 import DownloadPDF from "@/components/DownloadPDF";
 import { Field, Input, Label, Legend, Radio, RadioGroup, Select } from "@headlessui/react";
-import { fetchQuote, updateClassicQuote } from "@/services/api/quoteService";
+import { fetchQuote, sendQuote, updateClassicQuote } from "@/services/api/quoteService";
 import { fetchCompany } from "@/services/api/companyService";
 import { updateClassicQuoteSchema } from "@/validation/quoteValidation";
 import { toast } from 'react-hot-toast';
 import Breadcrumb from "@/components/BreadCrumb";
 import Link from "next/link";
+import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
+import Button from "./Button";
 
 
 // import { useRouter } from "next/navigation";
@@ -86,6 +88,19 @@ export default function Quote({csrfToken, quoteSlug}: QuoteProps){
             });
                   
         };
+
+        const sendQuoteToClient = async(quoteSlug: string, emailClient: string) => {
+          
+              try {
+
+                const data = await sendQuote(quoteSlug, emailClient, csrfToken);
+
+                toast.success("Devis envoyé avec succès");
+
+              } catch (error) {
+                toast.error("Erreur lors de l'envoi du devis")
+              }
+        };
     
         //   Retrieve datas from the radio buttons. Because they are in a RadioGroup, we can't retrieve the value just thanks to an event, we have to get the name (of the group) + the value selected
         const handleRadioChange = (name: string, value: string) => {
@@ -149,11 +164,11 @@ export default function Quote({csrfToken, quoteSlug}: QuoteProps){
             {/* <div><Toaster/></div> */}
             <h1 className="text-3xl text-white ml-3 text-center">Devis {quote?.number}</h1>
                 <Breadcrumb
-                items={[
-                    { label: "Tableau de bord", href: "/director" },
-                    { label: "Devis", href: "/director/quotes" },
-                    { label: `${quote.number}` }, 
-                ]}
+                    items={[
+                        { label: "Tableau de bord", href: "/director" },
+                        { label: "Devis", href: "/director/quotes" },
+                        { label: `${quote.number}` }, 
+                    ]}
                 />
             <ul>
                 <li>Statut : {quote.status}</li>
@@ -227,6 +242,8 @@ export default function Quote({csrfToken, quoteSlug}: QuoteProps){
                 Créer une facture d'acompte
             </Link>
             <DownloadPDF quote={quote} company={company as CompanyType} vatAmountTravelCost={vatAmountTravelCost} priceTTCTravelCost={priceTTCTravelCost} />
+            <Button label="Envoyer le devis au client" icon={faPaperPlane} type="button" action={() => sendQuoteToClient(quote.slug, quote.client.mail)} specifyBackground="text-red-500" />
+
             {/* <div><Toaster /></div> */}
             <section>
                 <div>
@@ -401,4 +418,4 @@ export default function Quote({csrfToken, quoteSlug}: QuoteProps){
  
         </>
     );
-};
+}
