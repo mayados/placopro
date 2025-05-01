@@ -87,6 +87,34 @@ export const createQuote = async (quote: QuoteFormValueType, csrfToken: string):
   }
 };
 
+// send quote to client with email
+export const sendQuote = async (quoteSlug: string, emailClient: string, csrfToken: string): Promise<ApiResponse> => {
+    try {
+        const response = await fetch(`/api/quote`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
+                "X-post-type": "send-quote",
+  
+            },
+            body: JSON.stringify({quoteSlug, emailClient}),
+        });
+  
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+  
+        const data: ApiResponse = await response.json();
+        console.log("Created quote :", data);
+  
+        return data; 
+    } catch (error) {
+        console.error("Erreur with quote creation :", error);
+        throw error; 
+    }
+  };
+
 // Update draft quote
 export const updateDraftQuote = async (quoteSlug: string, updatedQuoteWithStatus: UpdatedQuoteFormValueType, csrfToken: string): Promise<QuoteType> => {
   try {
