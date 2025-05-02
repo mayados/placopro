@@ -123,8 +123,8 @@ export const createQuoteFinalSchema = z.object({
 
 
 export const updateClassicQuoteSchema = z.object({
-    status: z.nativeEnum(QuoteStatusEnum).nullable(),
-    isSignedByClient: z.string().nullable(),
+    status: z.string().nullable().optional(),
+    isSignedByClient: z.boolean().nullable().optional(),
     signatureDate: createDateSchemaWithoutMessage(),
 })
   
