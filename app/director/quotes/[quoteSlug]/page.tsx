@@ -5,10 +5,13 @@ import Quote from '@/components/Quote'
 import { fetchQuote } from '@/services/api/quoteService';
 import { fetchCompany } from '@/services/api/companyService';
 
+type Params = Promise<{ quoteSlug: string }>;
 
-export default async function Page({ params }: { params: { quoteSlug: string } }) {
 
-  const { quoteSlug } = await params;
+export default async function Page({ params }: { params: Params }) {
+
+  const resolvedParams = await params;
+  const { quoteSlug } = resolvedParams;
 
   const h = await headers()
   const csrfToken = h.get('X-CSRF-Token') || 'missing'

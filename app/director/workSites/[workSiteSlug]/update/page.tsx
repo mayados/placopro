@@ -3,8 +3,12 @@ import { headers } from 'next/headers'
 // client component
 import UpdateWorkSite from '@/components/UpdateWorkSite' 
 
+type Params = Promise<{ workSiteSlug: string }>;
+
+
 export default async function Page({ params }: { params: { workSiteSlug: string } }) {
-  const { workSiteSlug } = await params;
+  const resolvedParams = await params;
+  const { workSiteSlug } = resolvedParams;
 
   const h = await headers()
   const csrfToken = h.get('X-CSRF-Token') || 'missing'
