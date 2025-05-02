@@ -1,8 +1,8 @@
 // allows to get all the users
 import { clerkClient} from "@clerk/express";
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
 
 
     try{

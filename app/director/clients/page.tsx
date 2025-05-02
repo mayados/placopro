@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Trash2 } from 'lucide-react';
 import Button from "@/components/Button";
 // import toast, { Toaster } from 'react-hot-toast';
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
 import Link from "next/link";
 import { deleteClient, fetchClients } from "@/services/api/clientService";
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
+import toast from "react-hot-toast";
 
 const Clients = () =>{
 
@@ -30,11 +31,12 @@ const Clients = () =>{
 
     const handleClientDeletion = async (clientSlug: string) => {
         try {
-            const data = await deleteClient(clientSlug);
+            await deleteClient(clientSlug);
             setIsOpen(false);  
-            // toast.success('Client deleted with success');                 
+            toast.success('Client supprimé avec succès');                 
             setClients(prevClients => prevClients.filter(client => client.slug !== clientSlug));
         } catch (error) {
+            toast.success('Erreur avec la suppression du client');                 
             console.error("Impossible to delete client :", error);               
         }
     }
@@ -89,7 +91,7 @@ const Clients = () =>{
                             </Link>
                           </td>
                             <td>
-                                <Button label="Remove" icon={Trash2} type="button" action={() => openDeleteDialog(clientSlug)} specifyBackground="text-red-500" />
+                                <Button label="Remove" icon={faXmark} type="button" action={() => openDeleteDialog(clientSlug)} specifyBackground="text-red-500" />
                             </td>
                         </tr>
                     );

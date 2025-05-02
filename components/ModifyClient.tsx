@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
-import { Field,Input, Select } from '@headlessui/react';
+import { useEffect, useState } from "react";
+import { Field,Input } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import { fetchClient, updateClient } from "@/services/api/clientService";
 // import toast, { Toaster } from 'react-hot-toast';
@@ -169,10 +169,10 @@ const handleClientUpdate = async () => {
                 </div>
                 {/* addressNumber */}
                 <div>
-                    <label htmlFor="addressNumber">Numéro d'adresse</label>
+                    <label htmlFor="addressNumber">Numéro d&apos;adresse</label>
                     <Field className="w-full">
                         <Input type="text" name="addressNumber" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={client.addressNumber}
+                            value={client.addressNumber || ""}
                             onChange={handleInputChange}
                             >
                         </Input>
@@ -195,10 +195,10 @@ const handleClientUpdate = async () => {
                 </div>
                 {/* additionnalAddress */}
                 <div>
-                    <label htmlFor="additionnalAddress">Complément d'adresse</label>
+                    <label htmlFor="additionnalAddress">Complément d&apos;adresse</label>
                     <Field className="w-full">
                         <Input type="text" name="additionnalAddress" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={client.additionalAddress}
+                            value={client.additionalAddress || ""}
                             onChange={handleInputChange}
                             >
                         </Input>
@@ -211,7 +211,7 @@ const handleClientUpdate = async () => {
                     <label htmlFor="postalCode">Code postal</label>
                     <Field className="w-full">
                         <Input type="text" name="postalCode" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={client.postalCode}
+                            value={client.postalCode || ""}
                             onChange={handleInputChange}
                             >
                         </Input>
@@ -224,7 +224,7 @@ const handleClientUpdate = async () => {
                     <label htmlFor="city">Ville</label>
                     <Field className="w-full">
                         <Input type="text" name="city" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={client.city}
+                            value={client.city || ""}
                             onChange={handleInputChange}
                             >
                         </Input>

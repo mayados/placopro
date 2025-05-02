@@ -1,11 +1,11 @@
 import { db } from "@/lib/db";
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
 import { BillStatusEnum, ClientOrProspectEnum, QuoteStatusEnum } from "@prisma/client";
 
 
 
-export async function GET(req: NextRequest) {
+export async function GET() {
 
 
     // currentUser() is a founction from Clerk which allows to retrieve the current User

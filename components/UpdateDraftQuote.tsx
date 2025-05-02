@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState } from "react";
 import { Field,Input, Label, Legend, Radio, RadioGroup, Select, Textarea } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
-import { CirclePlus, CircleX } from "lucide-react";
 import { capitalizeFirstLetter } from "@/lib/utils";
 import { formatDateForInput } from '@/lib/utils'
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
@@ -14,6 +13,7 @@ import { fetchUnits } from "@/services/api/unitService";
 import { fetchSuggestions } from "@/services/api/suggestionService";
 import { updateDraftQuoteSchema, updateDraftFinalQuoteSchema } from "@/validation/quoteValidation";
 import { toast } from 'react-hot-toast';
+import { faAdd, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 type UpdateDraftQuoteProps = {
     csrfToken: string;
@@ -80,9 +80,9 @@ export default function Bill({csrfToken, quoteSlug}: UpdateDraftQuoteProps){
     const travelCostsTypeChoices = ["forfait unique","forfait journalier"];
     // text visible in the client field
     const [clientInput, setClientInput] = useState(""); 
-    const [workSiteInput, setWorkSiteInput] = useState(""); 
-    const [unitInput, setUnitInput] = useState(""); 
-    const [vatRateInput, setVatRateInput] = useState(""); 
+    const [, setWorkSiteInput] = useState(""); 
+    const [, setUnitInput] = useState(""); 
+    const [, setVatRateInput] = useState(""); 
     // const [serviceInput, setServiceInput] = useState(""); 
     // Choices for boolean properties
     // const isQuoteFreeChoices = ["Oui","Non"];
@@ -98,9 +98,9 @@ export default function Bill({csrfToken, quoteSlug}: UpdateDraftQuoteProps){
                     const data = await fetchQuote(quoteSlug)
                     setUpdatedQuoteFormValues({
                         ...updatedQuoteFormValues,
-                        number: data.quote.number,
+                        number: data.number,
                     });
-                      setQuote(data.quote);
+                      setQuote(data);
 
                 }catch (error) {
                     console.error("Impossible to load the quote :", error);
@@ -137,9 +137,7 @@ export default function Bill({csrfToken, quoteSlug}: UpdateDraftQuoteProps){
         console.log("title du worksite retrieved de la database "+quote?.workSite.title)
         console.log("Frais de retard de paiement : "+quote?.latePaymentPenalties)
         console.log("type des frais de retard de paiement : "+typeof quote?.latePaymentPenalties)
-        quote?.services.map((service, index) => (
-            console.log("Un des services récupérés du devis en database : " +service)
-        ))
+   
 
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -788,7 +786,7 @@ export default function Bill({csrfToken, quoteSlug}: UpdateDraftQuoteProps){
                                 <option key={vatRate.id} value={vatRate.rate}>{vatRate.rate}</option>
                             ))}
                     </Select> 
-                    <Button label="Enlever le service" icon={CircleX} type="button" action={() => addServiceToUnlink(service, index)} specifyBackground="text-red-500" />
+                    <Button label="Enlever le service" icon={faXmark} type="button" action={() => addServiceToUnlink(service, index)} specifyBackground="text-red-500" />
                 </div>
                 ))}
             {/* end of services retrieved from database */}
@@ -879,10 +877,10 @@ export default function Bill({csrfToken, quoteSlug}: UpdateDraftQuoteProps){
                             <option key={vatRate.id} value={vatRate.rate}>{vatRate.rate}</option>
                         ))}
                 </Select> 
-                <Button label="Enlever le service" icon={CircleX} type="button" action={() => removeService(index)} specifyBackground="text-red-500" />
+                <Button label="Enlever le service" icon={faXmark} type="button" action={() => removeService(index)} specifyBackground="text-red-500" />
             </div>
             ))}
-            <Button label="Ajouter un service" icon={CirclePlus} type="button" action={() => addService()} specifyBackground="text-red-500" />
+            <Button label="Ajouter un service" icon={faAdd} type="button" action={() => addService()} specifyBackground="text-red-500" />
 
 
                 {/* Quote : validity end date */}
@@ -990,7 +988,7 @@ export default function Bill({csrfToken, quoteSlug}: UpdateDraftQuoteProps){
                 </div>
                 {/* has right of Withdrawal ? */}
                 <Field>
-                    <Legend>Y a t'il un droit de rétractation ?</Legend>
+                    <Legend>Y a t&apos;il un droit de rétractation ?</Legend>
                     <RadioGroup 
                         name="hasRightOfWithdrawal"
                         value={quote.hasRightOfWithdrawal ? "Oui" : "Non"}
@@ -1030,7 +1028,7 @@ export default function Bill({csrfToken, quoteSlug}: UpdateDraftQuoteProps){
                     onClick={() => {
                         handleDraftQuoteUpdate(); 
                     }}
-                    >Modifier et enregistrer à l'état de brouillon
+                    >Modifier et enregistrer à l&apos;état de brouillon
                 </button>
                 <button
                     // type="button" avoid the form to be automatically submitted

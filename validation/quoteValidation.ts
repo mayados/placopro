@@ -1,5 +1,5 @@
 // /validation/billValidation.ts
-import { QuoteDiscountReasonEnum, QuoteStatusEnum } from '@prisma/client';
+import { QuoteDiscountReasonEnum } from '@prisma/client';
 import { z } from 'zod';
 
 // Transformation of string into Date with personnalized message (Because when retrieving Date in JSON in API route they became string)

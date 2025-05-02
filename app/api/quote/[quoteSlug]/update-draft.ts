@@ -100,7 +100,7 @@ const calculateTotals = (baseAmount: number, vatRate: number = 0.2) => {
 const handleExistingService = async (
   service: ServiceAndQuoteServiceType,
   quoteId: string,
-  updateData: Record<string, string | number | boolean>
+  // updateData: Record<string, string | number | boolean>
 ) => {
   const totalHTService = service.unitPriceHT * service.quantity;
   const vatRateService = parseFloat(service.vatRate);
@@ -127,7 +127,7 @@ const handleExistingService = async (
 const createNewService = async (
   service: ServiceAndQuoteServiceType,
   quoteId: string,
-  updateData: Record<string, string | number | boolean>
+  // updateData: Record<string, string | number | boolean>
 ) => {
   const serviceUnit = await db.unit.findUnique({
     where: { label: service.unit },
@@ -166,7 +166,7 @@ const createNewService = async (
   return handleExistingService({
     ...service,
     id: createdService.id
-  }, quoteId, updateData);
+  }, quoteId);
 };
 
 // Generate an unique and chronological quote's number if the status is Ready / fictive number if the status is draft
@@ -245,11 +245,11 @@ const generateQuoteNumber = async (type = "quote", isDraft = false) => {
 
       const updateData: Record<string, string | number | boolean> = {};
 
-      // Check if we're changing from draft to ready status
-      const isChangingToReady = initialQuote.status === QuoteStatusEnum.DRAFT && data.status === QuoteStatusEnum.READY;
+      // // Check if we're changing from draft to ready status
+      // const isChangingToReady = initialQuote.status === QuoteStatusEnum.DRAFT && data.status === QuoteStatusEnum.READY;
       
       // Generate new number if status is draft and we're creating a new quote or changing to ready
-      if (data.status === 'ready' && (initialQuote.status === 'draft' || !initialQuote.number)) {
+      if (data.status === QuoteStatusEnum.READY && (initialQuote.status === QuoteStatusEnum.DRAFT || !initialQuote.number)) {
         const newQuoteNumber = await generateQuoteNumber();
         updateData.number = newQuoteNumber;
       } else {
@@ -276,7 +276,7 @@ const generateQuoteNumber = async (type = "quote", isDraft = false) => {
         const priceHTWithoutFormerTravelCosts = totalHTQuote - initialQuote.travelCosts;
         totalHTQuote = priceHTWithoutFormerTravelCosts + newTravelCosts;
         
-        const { vatAmount: newVatAmount, totalTTC } = calculateTotals(newTravelCosts);
+        const { vatAmount: newVatAmount } = calculateTotals(newTravelCosts);
         vatAmountQuote = vatAmountQuote - (initialQuote.travelCosts * 0.2) + newVatAmount;
         totalTTCQuote = totalHTQuote + vatAmountQuote;
 
@@ -291,8 +291,8 @@ const generateQuoteNumber = async (type = "quote", isDraft = false) => {
       if (data.services.length > 0) {
         for (const service of data.services) {
           const totals = service.id
-            ? await handleExistingService(service, data.quoteId, updateData)
-            : await createNewService(service, data.quoteId, updateData);
+            ? await handleExistingService(service, data.quoteId)
+            : await createNewService(service, data.quoteId);
 
           totalHTQuote += totals.totalHTService;
           vatAmountQuote += totals.vatAmountService;
@@ -332,8 +332,8 @@ const generateQuoteNumber = async (type = "quote", isDraft = false) => {
 
 
     // Before udpate, apply discount
-    let finalTotalHT = totalHTQuote;
-    let finalVatAmount = vatAmountQuote;
+    const finalTotalHT = totalHTQuote;
+    const finalVatAmount = vatAmountQuote;
     let finalTotalTTC = totalTTCQuote;
 
     // Apply discount if it exists

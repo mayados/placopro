@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState } from "react";
 import { Field,Input,Select} from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
@@ -150,12 +150,12 @@ export default function CreateCreditNote({csrfToken, billNumber}: CreateCreditNo
     return (
         <div className="relative">
             {/* <div><Toaster/></div> */}
-            <h1 className="text-3xl text-white ml-3 text-center">Création d'avoir lié à la facture n°{bill.number}</h1>
+            <h1 className="text-3xl text-white ml-3 text-center">Création d&apos;avoir lié à la facture n°{bill.number}</h1>
             <p>Client : {bill.clientBackup?.name} {bill.clientBackup?.firstName}</p>
             <p>Téléphone : {bill.clientBackup?.phone}</p>
             <p>Mail : {bill.clientBackup?.mail}</p>
             <p>Adresse : {bill.clientBackup?.addressNumber} {bill.clientBackup?.road} {bill.clientBackup?.postalCode} {bill.clientBackup?.city}</p>
-            <p>Complément d'adresse : {bill.clientBackup?.additionalAddress}</p>
+            <p>Complément d&apos;adresse : {bill.clientBackup?.additionalAddress}</p>
             {/* <div><Toaster /></div> */}
             <form 
                 autoComplete="off"
@@ -165,7 +165,7 @@ export default function CreateCreditNote({csrfToken, billNumber}: CreateCreditNo
                 }}
             >
                     <div>
-                        <label htmlFor="amount">Montant de l'avoir</label>
+                        <label htmlFor="amount">Montant de l&apos;avoir</label>
                         <Field className="w-full">
                             <Input type="number" name="amount" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                                 value={createCreditNoteFormValues.amount || ""}
@@ -184,7 +184,7 @@ export default function CreateCreditNote({csrfToken, billNumber}: CreateCreditNo
                         onChange={handleInputChange}
 
                         >
-                        <option value="" >Raison de l'avoir</option>
+                        <option value="" >Raison de l&apos;avoir</option>
                         {Object.entries(reasonChoices).map(([value, label]) => (
                             <option key={value} value={value}>
                             {label}
@@ -200,7 +200,7 @@ export default function CreateCreditNote({csrfToken, billNumber}: CreateCreditNo
                         onClick={openChoiceDialog}
                         className="bg-green-600 text-white px-4 py-2 rounded-md"
                     >
-                        Finaliser l'avoir 
+                        Finaliser l&apos;avoir 
                     </button>
             </form>
             {/* Dialog to save as final version of CreditNote*/}
@@ -208,9 +208,9 @@ export default function CreateCreditNote({csrfToken, billNumber}: CreateCreditNo
             {/* {isOpen ?? ( */}
                 <Dialog open={isOpen} onClose={closeChoiceDialog}  className="fixed top-[50%] left-[25%]" >
                     <DialogPanel className="bg-gray-300 p-5 rounded-md shadow-lg text-black">
-                    <DialogTitle>Etes-vous sûr de vouloir enregistrer l'avoir en version finale ?</DialogTitle>
+                    <DialogTitle>Etes-vous sûr de vouloir enregistrer l&apos;avoir en version finale ?</DialogTitle>
                     <Description>Cette action est irréversible</Description>
-                    <p>L'avoir ne pourra plus être modifié ultérieurement. </p>
+                    <p>L&apos;avoir ne pourra plus être modifié ultérieurement. </p>
                         <div className="flex justify-between mt-4">
                         <button
                         // choice to to finalize quote
@@ -220,7 +220,7 @@ export default function CreateCreditNote({csrfToken, billNumber}: CreateCreditNo
                             }}
                             className="bg-green-600 text-white px-4 py-2 rounded-md"
                         >
-                            Finaliser l'avoir
+                            Finaliser l&apos;avoir
                         </button>
                             <button onClick={closeChoiceDialog} className="bg-gray-300 text-black px-4 py-2 rounded-md">Annuler</button>
                         </div>

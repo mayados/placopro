@@ -27,7 +27,7 @@ const CreditNotes = () =>{
     const [totalSettledCreditNotes, setTotalSettledCreditNotes] = useState<number>(0)
     const [totalNotSettledCreditNotes, setTotalNotSettledCreditNotes] = useState<number>(0)
     // const for the modal
-    const [isOpen, setIsOpen] = useState(false);
+    // const [isOpen, setIsOpen] = useState(false);
 
     useEffect(() => {
         const loadCreditNotes = async () => {

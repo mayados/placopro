@@ -3,23 +3,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
 import { createQuoteDraftSchema, createQuoteFinalSchema } from "@/validation/quoteValidation";
 import { sanitizeData } from "@/lib/sanitize"; 
-import { QuoteStatusEnum } from "@prisma/client";
+import { Prisma, QuoteStatusEnum } from "@prisma/client";
 import { generateSlug } from "@/lib/utils";
 
 
 // Asynchrone : waits for a promise
 export async function POST(req: NextRequest) {
     const data = await req.json();
-      // Explicit validation of CSRF token (in addition of the middleware)
-      // const csrfToken = req.headers.get("x-csrf-token");
-      // if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
-      //   return new Response("Invalid CSRF token", { status: 403 });
-      // }
+
     console.log("Données reçues dans la requête :", data);
 
   
-
-        
     // currentUser() is a founction from Clerk which allows to retrieve the current User
     const user = await currentUser()
     if (!data) {
@@ -121,11 +115,11 @@ export async function POST(req: NextRequest) {
 
       // We have to know if the quote was saved as a draft
       const isDraft = status === QuoteStatusEnum.DRAFT;
-      const quoteNumber =  await generateQuoteNumber();
+      const quoteNumber =  await generateQuoteNumber("quote",isDraft);
       
       // for each data.services : see if it already exists. If it's the case, it has an id. In the other case, the Id is null.
       // we wait for all the promises to be resolved before to continue
-      const servicesManaged = await Promise.all(
+      await Promise.all(
         data.services.map(async (service: ServiceType) => {
           // Retrieve unit from database for each service : already existing because we have a list of it when creating the quote
           const serviceUnit = await db.unit.findUnique({
@@ -263,7 +257,7 @@ export async function POST(req: NextRequest) {
         });
 
       // stock datas for backup for quoteServices
-      const quoteServicesWithData = [];
+      const quoteServicesWithData: ServiceBackup[] = [];
 
 
       // global variables to use later in the code for Quote update
@@ -273,7 +267,7 @@ export async function POST(req: NextRequest) {
 
 
       // now we know each service is in the database, and the quote is created we can make operations on it
-      const quoteServices = await Promise.all(
+      await Promise.all(
         data.services.map(async (service: ServiceAndQuoteServiceType) => {
           // First, we retrieve the id of the service, because now, all services have an ID. We can retrieve it thanks to its unique label. 
           const serviceRetrieved = await db.service.findUnique({
@@ -403,7 +397,8 @@ export async function POST(req: NextRequest) {
                             postalCode: workSite?.postalCode,
                             additionalAddress: workSite?.additionalAddress,
                         },
-                        servicesBackup: quoteServicesWithData,
+                        // transform in generical type, because ServiceBackup[] declared is not json format
+                        servicesBackup: quoteServicesWithData as unknown as Prisma.JsonValue,
                         elementsBackup: {
                           vatAmount: vatAmountQuote,
                           priceHT: Number(totalHtQuote),

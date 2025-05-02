@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Trash2 } from 'lucide-react';
-import Button from "@/components/Button";
 import { formatDate } from '@/lib/utils'
 // import toast, { Toaster } from 'react-hot-toast';
 import { Dialog, DialogTitle, DialogPanel, Description, Tab, TabGroup ,TabList, TabPanel, TabPanels } from '@headlessui/react';
@@ -10,6 +8,8 @@ import Link from "next/link";
 import { deleteQuote, fetchQuotes } from "@/services/api/quoteService";
 import { useSearchParams } from "next/navigation";
 import { Pagination } from "@/components/Pagination";
+import Button from "@/components/Button";
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
 
 const LIMIT = 15;
@@ -124,7 +124,7 @@ const Quotes = () =>{
                 <TabList className="my-3 flex gap-3">
                     <Tab className="text-lg lg:text-base flex data-[selected]:bg-pink-600  data-[hover]:bg-pink-500 p-2 rounded-md">Tous ({totalQuotes})</Tab>
                     <Tab className="text-lg lg:text-base flex data-[selected]:bg-pink-600  data-[hover]:bg-pink-500 p-2 rounded-md">Brouillons ({totalDraftQuotes})</Tab>
-                    <Tab className="text-lg lg:text-base flex data-[selected]:bg-pink-600  data-[hover]:bg-pink-500 p-2 rounded-md">Prêts à l'envoi ({totalReadyToBeSentQuotes})</Tab>
+                    <Tab className="text-lg lg:text-base flex data-[selected]:bg-pink-600  data-[hover]:bg-pink-500 p-2 rounded-md">Prêts à l&apos;envoi ({totalReadyToBeSentQuotes})</Tab>
                     <Tab className="text-lg lg:text-base flex data-[selected]:bg-pink-600  data-[hover]:bg-pink-500 p-2 rounded-md">Envoyés ({totalSentQuotes})</Tab>
                     <Tab className="text-lg lg:text-base flex data-[selected]:bg-pink-600  data-[hover]:bg-pink-500 p-2 rounded-md">Acceptés ({totalAcceptedQuotes})</Tab>
                     <Tab className="text-lg lg:text-base flex data-[selected]:bg-pink-600  data-[hover]:bg-pink-500 p-2 rounded-md">Refusés ({totalRefusedQuotes})</Tab>
@@ -146,7 +146,6 @@ const Quotes = () =>{
                             <tbody>
                             {
                                 quotes.map((quote) => {
-                                    const quoteId = quote.id;
                                 
                                 return (
                                     <tr key={quote.id}>
@@ -185,7 +184,6 @@ const Quotes = () =>{
                             <tbody>
                             {
                                 draftQuotes.map((quote) => {
-                                    const quoteId = quote.id;
                                 
                                 return (
                                     <tr key={quote.id}>
@@ -203,6 +201,9 @@ const Quotes = () =>{
                                             <Link href={`/director/quotes/${quote?.slug}/update`}>
                                                 Modifier
                                             </Link>
+                                        </td>
+                                        <td>
+                                            <Button label="Remove" icon={faXmark} type="button" action={() => openDeleteDialog(quote.id)} specifyBackground="text-red-500" />
                                         </td>
                                     </tr>
                                 );
@@ -227,7 +228,6 @@ const Quotes = () =>{
                             <tbody>
                             {
                                 readyToBeSentQuotes.map((quote) => {
-                                    const quoteId = quote.id;
                                 
                                 return (
                                     <tr key={quote.id}>
@@ -264,7 +264,6 @@ const Quotes = () =>{
                             <tbody>
                             {
                                 sentQuotes.map((quote) => {
-                                    const quoteId = quote.id;
                                 
                                 return (
                                     <tr key={quote.id}>
@@ -302,7 +301,6 @@ const Quotes = () =>{
                             <tbody>
                             {
                                 acceptedQuotes.map((quote) => {
-                                    const quoteId = quote.id;
                                 
                                 return (
                                     <tr key={quote.id}>
@@ -340,7 +338,6 @@ const Quotes = () =>{
                             <tbody>
                             {
                                 refusedQuotes.map((quote) => {
-                                    const quoteId = quote.id;
                                 
                                 return (
                                     <tr key={quote.id}>

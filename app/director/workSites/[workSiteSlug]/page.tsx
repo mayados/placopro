@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState } from "react";
 import { formatDate } from '@/lib/utils'
 import { fetchWorkSite } from "@/services/api/workSiteService";
 // import toast, { Toaster } from 'react-hot-toast';
@@ -58,10 +58,10 @@ const WorkSite = ({ params }: { params: Promise<{ workSiteSlug: string }>}) => {
                 <h2>Adresse</h2>
                 <p>Numéro : {workSite.addressNumber}</p>
                 <p>Voie : </p>
-                <p>Complément d'adresse : 
-                {workSite.additionnalAddress === undefined
+                <p>Complément d&apos;adresse : 
+                {workSite.additionalAddress === undefined
                     ? <span>/</span> 
-                    : <span>{workSite.additionnalAddress}</span>
+                    : <span>{workSite.additionalAddress}</span>
                 }
                 </p>
                 <p>Code postal : {workSite.postalCode}</p>

@@ -8,18 +8,18 @@ export async function PUT(req: NextRequest) {
   const data = await req.json();
 
   const { 
-        id,
-        title,
-        // slug,
-        description,
-        beginsThe,
-        status,
-        completionDate,
-        road,
-        additionalAddress,
-        addressNumber,
-        postalCode,
-        city,
+        // id,
+        // title,
+        // // slug,
+        // description,
+        // beginsThe,
+        // status,
+        // completionDate,
+        // road,
+        // additionalAddress,
+        // addressNumber,
+        // postalCode,
+        // city,
         client
     } = data;
 

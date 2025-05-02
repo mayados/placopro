@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import Button from "@/components/Button";
 import { toast } from 'react-hot-toast';
-import { Dialog, DialogTitle, DialogPanel, Description, Tab, TabGroup, TabList, TabPanel, TabPanels, Textarea } from '@headlessui/react';
+import { Dialog, DialogTitle, DialogPanel, Description} from '@headlessui/react';
 import Link from "next/link";
-import { faArchive, faXmark, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
+import { faXmark, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import { Field, Input } from '@headlessui/react';
 import { createUnit, deleteUnit, fetchUnits, updateUnit } from "@/services/api/unitService";
 import { createUnitSchema } from "@/validation/unitValidation";
@@ -239,7 +239,7 @@ export default function ToDos({ csrfToken }: UnitsProps) {
                                         />
                                         <Dialog open={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} className="absolute top-[50%] left-[25%]">
                                             <DialogPanel>
-                                                <DialogTitle>Modifier l'unité</DialogTitle>
+                                                <DialogTitle>Modifier l&apos;unité</DialogTitle>
 
                                                 <label>Unité</label>
                                                 <Input
@@ -265,7 +265,7 @@ export default function ToDos({ csrfToken }: UnitsProps) {
                 {isOpen && unitToDelete && (
                     <Dialog open={isOpen} onClose={closeDeleteDialog} className="absolute top-[50%] left-[25%]" >
                         <DialogPanel className="bg-gray-300 p-5 rounded-md shadow-lg text-black">
-                            <DialogTitle>Supprimer l'unité</DialogTitle>
+                            <DialogTitle>Supprimer l&apos;unité</DialogTitle>
                             <Description>Cette action est irréversible</Description>
                             <p>Etes-vous sûr de vouloir supprimer cette unité ? Toutes ses données seront supprimées de façon permanente. Cette action est irréversible.</p>
                             <div className="flex justify-between mt-4">

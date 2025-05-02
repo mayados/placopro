@@ -221,7 +221,7 @@ export default function UpdateWorkSite({csrfToken, workSiteSlug}: UpdateWorkSite
                 </div>
                 {/* WorkSite addressNumber */}
                 <div>
-                    <label htmlFor="addressNumber">Numéro d'adresse du chantier</label>
+                    <label htmlFor="addressNumber">Numéro d&apos;adresse du chantier</label>
                     <Field className="w-full">
                         <Input type="text" name="addressNumber" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             value={workSite.addressNumber}
@@ -247,7 +247,7 @@ export default function UpdateWorkSite({csrfToken, workSiteSlug}: UpdateWorkSite
                 </div>
                 {/* WorkSite additionnalAddress */}
                 <div>
-                    <label htmlFor="additionalAddress">Complément d'adresse</label>
+                    <label htmlFor="additionalAddress">Complément d&apos;adresse</label>
                     <Field className="w-full">
                         <Input type="text" name="additionalAddress" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             value={workSite.additionalAddress}

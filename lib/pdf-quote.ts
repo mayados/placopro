@@ -1,7 +1,7 @@
 import { jsPDF } from "jspdf";
 
 
-export async function generateQuotePDF(quote: any): Promise<Buffer> {
+export async function generateQuotePDF(quote: QuoteType): Promise<Buffer> {
   const doc = new jsPDF();
   
   // HEADER - centrer le texte
@@ -54,7 +54,7 @@ const services = quote.servicesBackup || [];
 let yPosition = 260;
 
 if (services.length > 0) {
-  services.forEach((service: any) => {
+  services.forEach((service: ServiceBackup) => {
     // Vérification des données et accès aux bonnes propriétés
     if (service.label && !isNaN(service.unitPriceHT) && !isNaN(service.quantity)) {
       const totalHT = service.unitPriceHT * service.quantity;

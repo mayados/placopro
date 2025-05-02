@@ -4,9 +4,9 @@ import { POST as createToDoForSecretary } from "@/app/api/todos/create-for-secre
 import { POST as createToDo } from "@/app/api/todos/create"; 
 import { GET as getToDos } from "@/app/api/todos/list"; 
 
-export async function GET(req: NextRequest) {
+export async function GET() {
 
-    return getToDos(req); 
+    return getToDos(); 
 }
 
 export async function POST(req: NextRequest) {

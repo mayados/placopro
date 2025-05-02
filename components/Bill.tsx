@@ -79,7 +79,7 @@ export default function Bill({csrfToken, billSlug}: BillProps){
                 try{
                     const companySlug = "placopro";
                     const data = await fetchCompany(companySlug)
-                    setCompany(data.company); 
+                    setCompany(data); 
                 }catch (error) {
                     console.error("Impossible to load the bill :", error);
                 }

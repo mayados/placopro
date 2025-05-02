@@ -2,7 +2,6 @@ import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { updateClassicQuoteSchema } from "@/validation/quoteValidation";
 import { sanitizeData } from "@/lib/sanitize"; 
-import { QuoteStatusEnum } from "@prisma/client";
 import { currentUser } from "@clerk/nextjs/server";
 
 export async function PUT(req: NextRequest, {params}: {params: {quoteSlug: string}}) {

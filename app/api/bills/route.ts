@@ -1,5 +1,5 @@
 // This file allows to handle different actions based on the http method retrieved
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { POST as createBillFromQuote } from "@/app/api/bills/create"; 
 import { POST as createDepositBillFromQuote } from "@/app/api/bills/create-deposit"; 
 import { GET as getBills} from "@/app/api/bills/list"; 

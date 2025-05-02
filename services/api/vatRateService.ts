@@ -12,7 +12,7 @@ export const fetchVatRates = async (): Promise<VatRateType[]> => {
   }
 };
 
-export const updateVatRate = async (vatRateId: string, updatedValues: UnitUpdateType, csrfToken: string): Promise<VatRateType> => {
+export const updateVatRate = async (vatRateId: string, updatedValues: VatRateUpdateType, csrfToken: string): Promise<VatRateType> => {
   try {
     const response = await fetch(`/api/vatRates/${vatRateId}`, {
       method: "PATCH",

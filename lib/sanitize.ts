@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import DOMPurify from "dompurify";
 import { JSDOM } from "jsdom";
 
