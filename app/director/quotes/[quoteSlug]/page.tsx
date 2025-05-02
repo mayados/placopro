@@ -2,7 +2,8 @@
 import { headers } from 'next/headers'
 // client component
 import Quote from '@/components/Quote' 
-// import { cookies } from 'next/headers';  // Utilisation de la fonction cookies pour récupérer les cookies
+import { fetchQuote } from '@/services/api/quoteService';
+import { fetchCompany } from '@/services/api/companyService';
 
 
 export default async function Page({ params }: { params: { quoteSlug: string } }) {
@@ -11,16 +12,16 @@ export default async function Page({ params }: { params: { quoteSlug: string } }
 
   const h = await headers()
   const csrfToken = h.get('X-CSRF-Token') || 'missing'
-  // Récupérer les cookies (attendre que la promesse soit résolue)
-  // const cookieStore = await cookies();
-  // console.log(JSON.stringify(cookieStore))
-  // const csrfToken = cookieStore.get('_csrfSecret')?.value || 'missing';  // Récupérer le token CSRF du cookie
+
+  const  quote  = await fetchQuote(quoteSlug)
+  const  company  = await fetchCompany('placopro')
   
-  console.log("CSRF Token:", csrfToken);  // Vérifier si tu récupères bien le token
+  console.log("CSRF Token:", csrfToken);  
   // Once we get the csrf token and billNumber, we can give it to the component
   return (
     <Quote
-      quoteSlug={quoteSlug}
+      quote={quote}
+      company={company}
       csrfToken={csrfToken}
     />
   )

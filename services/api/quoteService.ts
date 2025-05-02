@@ -1,3 +1,6 @@
+
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || 
+(typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
 // Retrieve all the quotes
 // Return a promise with object of type QuoteWithTotalsAndStatus
 export const fetchQuotes = async ({
@@ -31,12 +34,16 @@ export const fetchQuotes = async ({
   };
 
   // Retrieve a specific Quote
-  export const fetchQuote = async (quoteSlug: string): Promise<QuoteTypeSingle> => {
+  export const fetchQuote = async (quoteSlug: string): Promise<QuoteType> => {
     try {
-      const response = await fetch(`/api/quote/${quoteSlug}`);
+    const url = `${baseUrl}/api/quote/${quoteSlug}`
+      console.log("Fetching quote from:", url);
+
+      const response = await fetch(`${baseUrl}/api/quote/${quoteSlug}`);
+
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
-      const data: QuoteTypeSingle = await response.json();
+      const data: QuoteType = await response.json();
       console.log("Données reçues après le fetch :", data);
       return data;
     } catch (error) {

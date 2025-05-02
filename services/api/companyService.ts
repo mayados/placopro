@@ -1,10 +1,12 @@
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || 
+(typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
   // Retrieve a specific Company
-  export const fetchCompany = async (companySlug: string): Promise<CompanyTypeSingle> => {
+  export const fetchCompany = async (companySlug: string): Promise<CompanyType> => {
     try {
-      const response = await fetch(`/api/companies/${companySlug}`);
+      const response = await fetch(`${baseUrl}/api/companies/${companySlug}`);
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
-      const data: CompanyTypeSingle = await response.json();
+      const data: CompanyType = await response.json();
       console.log("Données reçues après le fetch :", data);
       return data;
     } catch (error) {

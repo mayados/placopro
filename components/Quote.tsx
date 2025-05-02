@@ -19,13 +19,14 @@ import Button from "./Button";
 
 type QuoteProps = {
     csrfToken: string;
-    quoteSlug: string;
-  };
+    quote: QuoteType;
+    company: CompanyType;
+};
 
-export default function Quote({csrfToken, quoteSlug}: QuoteProps){
-
-    const [quote, setQuote] = useState<QuoteType | null>(null);
-    const [company, setCompany] = useState<CompanyType | null>(null);
+export default function Quote({ csrfToken, quote: initialQuote, company: initialCompany }: QuoteProps) {
+    console.log("token dans le colmposant : " + csrfToken)
+    const [quote, setQuote] = useState<QuoteType | null>(initialQuote);
+    const [company, setCompany] = useState<CompanyType | null>(initialCompany);
     const [vatAmountTravelCost, setVatAmountTravelCost] = useState<number>(0)
     const [priceTTCTravelCost, setPriceTTCTravelCost] = useState<number>(0)
     const quoteStatusChoices = {
@@ -34,142 +35,142 @@ export default function Quote({csrfToken, quoteSlug}: QuoteProps){
         REFUSED: "Refusé",
         CANCELED: "Clos"
     };
-    const isSignedByClientChoices = ["Oui","Non"];
+    const isSignedByClientChoices = ["Oui", "Non"];
     const [formValues, setFormValues] = useState<FormValuesUpdateNotDraftQuote>({
-        id: null,
         status: null,
         isSignedByClient: null,
         signatureDate: null,
     })
     const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
 
-    
-        useEffect(() => {
-            async function loadQuote() {
 
-                try{
-                    const data = await fetchQuote(quoteSlug)
-                    setQuote(data.quote); 
-                    setFormValues({
-                        ...formValues,
-                        id: data.quote.id,
-                    });
-                    if(data.quote.travelCosts){
-                        // travelCosts cost => vatAmount and priceTTC
-                        setVatAmountTravelCost((data.quote.travelCosts) * (20/100))  
-                        setPriceTTCTravelCost((data.quote.travelCosts) + vatAmountTravelCost )            
-                    }
-                }catch (error) {
-                    console.error("Impossible to load the quote :", error);
-                }
+    // useEffect(() => {
+    //     async function loadQuote() {
+
+    //         try{
+    //             const data = await fetchQuote(quoteSlug)
+    //             setQuote(data.quote); 
+    //             setFormValues({
+    //                 ...formValues,
+    //                 id: data.quote.id,
+    //             });
+    //             if(data.quote.travelCosts){
+    //                 // travelCosts cost => vatAmount and priceTTC
+    //                 setVatAmountTravelCost((data.quote.travelCosts) * (20/100))  
+    //                 setPriceTTCTravelCost((data.quote.travelCosts) + vatAmountTravelCost )            
+    //             }
+    //         }catch (error) {
+    //             console.error("Impossible to load the quote :", error);
+    //         }
+    //     }
+
+    //     async function loadCompany() {
+    //         try{
+    //             const companySlug = "placopro";
+    //             const data = await fetchCompany(companySlug)
+    //             setCompany(data.company); 
+    //         }catch (error) {
+    //             console.error("Impossible to load the quote :", error);
+    //         }
+    //     }
+
+    //   loadQuote();
+    //   loadCompany()
+    // }, [quoteSlug, csrfToken]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        console.log("évènement reçu : " + e)
+        const { name, value } = e.target;
+        console.log("select :" + name + " valeur : " + value)
+        setFormValues({
+            ...formValues,
+            [name]: value,
+        });
+
+    };
+
+    const sendQuoteToClient = async (quoteSlug: string, emailClient: string) => {
+
+        try {
+
+            const data = await sendQuote(quoteSlug, emailClient, csrfToken);
+
+            toast.success("Devis envoyé avec succès");
+
+        } catch (error) {
+            toast.error("Erreur lors de l'envoi du devis")
+        }
+    };
+
+    //   Retrieve datas from the radio buttons. Because they are in a RadioGroup, we can't retrieve the value just thanks to an event, we have to get the name (of the group) + the value selected
+    const handleRadioChange = (name: string, value: string) => {
+        const boolValue = value === "Oui" ? true : false;
+        setFormValues((formValues) => ({
+            ...formValues,
+            [name]: boolValue,
+        }));
+    };
+
+    const handleQuoteUpdateClassic = async () => {
+
+        if (!quote?.number) {
+            return
+        }
+
+        console.log("données de formulaire : " + JSON.stringify(formValues))
+        try {
+
+            // Validation des données du formulaire en fonction du statut
+            const validationResult = updateClassicQuoteSchema.safeParse(formValues);
+
+            if (!validationResult.success) {
+                // Si la validation échoue, afficher les erreurs
+                console.error("Erreurs de validation :", validationResult.error.errors);
+                // Transformer les erreurs Zod en un format utilisable dans le JSX
+                const formattedErrors = validationResult.error.flatten().fieldErrors;
+
+                // Afficher les erreurs dans la console pour débogage
+                console.log(formattedErrors);
+
+                // Mettre à jour l'état avec les erreurs
+                setErrors(formattedErrors);
+                return;  // Ne pas soumettre si la validation échoue
             }
 
-            async function loadCompany() {
-                try{
-                    const companySlug = "placopro";
-                    const data = await fetchCompany(companySlug)
-                    setCompany(data.company); 
-                }catch (error) {
-                    console.error("Impossible to load the quote :", error);
-                }
-            }
-      
-          loadQuote();
-          loadCompany()
-        }, [quoteSlug, csrfToken]);
-
-        const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-            console.log("évènement reçu : "+e)
-            const { name, value } = e.target;
-            console.log("select :"+name+" valeur : "+value)
-            setFormValues({
-                ...formValues,
-                [name]: value,
-            });
-                  
-        };
-
-        const sendQuoteToClient = async(quoteSlug: string, emailClient: string) => {
-          
-              try {
-
-                const data = await sendQuote(quoteSlug, emailClient, csrfToken);
-
-                toast.success("Devis envoyé avec succès");
-
-              } catch (error) {
-                toast.error("Erreur lors de l'envoi du devis")
-              }
-        };
-    
-        //   Retrieve datas from the radio buttons. Because they are in a RadioGroup, we can't retrieve the value just thanks to an event, we have to get the name (of the group) + the value selected
-        const handleRadioChange = (name: string, value: string) => {
-            setFormValues((formValues) => ({
-              ...formValues,
-              [name]: value,
-            }));
-          };
-
-        const handleQuoteUpdateClassic = async () => {
-
-            if(!quote?.number){
-                return
-            }        
-        
-            try{
-
-                // Validation des données du formulaire en fonction du statut
-                const validationResult = updateClassicQuoteSchema.safeParse(formValues);
-
-                if (!validationResult.success) {
-                    // Si la validation échoue, afficher les erreurs
-                    console.error("Erreurs de validation :", validationResult.error.errors);
-                        // Transformer les erreurs Zod en un format utilisable dans le JSX
-                    const formattedErrors = validationResult.error.flatten().fieldErrors;
-
-                    // Afficher les erreurs dans la console pour débogage
-                    console.log(formattedErrors);
-                
-                    // Mettre à jour l'état avec les erreurs
-                    setErrors(formattedErrors);
-                    return;  // Ne pas soumettre si la validation échoue
-                }
-
-                // Delete former validation errors
-                setErrors({})
-
-                const data = await updateClassicQuote(quote.slug,formValues, csrfToken)
-                const updatedQuote = data;
-                console.log("voici le devis mis à jour : "+updatedQuote.number)
-                setQuote(updatedQuote)
-                toast.success("Devis mis à jour avec succès");
-       
-                
-            }catch (error) {
-                toast.error("Erreur lors de la mise à jour du devis ");
-                
-                console.error("Erreur lors de la mise à jour du devis :", error);
-            }
-    
-        };
-    
-
-        if (!quote) return <div>Loading...</div>;
-
-        console.log("backups des elements : "+JSON.stringify(quote.elementsBackup))
+            // Delete former validation errors
+            setErrors({})
+            const data = await updateClassicQuote(quote.slug, formValues, csrfToken)
+            const updatedQuote = data;
+            console.log("voici le devis mis à jour : " + updatedQuote.number)
+            setQuote(updatedQuote)
+            toast.success("Devis mis à jour avec succès");
 
 
-        return (
+        } catch (error) {
+            toast.error("Erreur lors de la mise à jour du devis ");
+
+            console.error("Erreur lors de la mise à jour du devis :", error);
+        }
+
+    };
+
+
+    if (!quote) return <div>Loading...</div>;
+
+    console.log("backups des elements : " + JSON.stringify(quote.elementsBackup))
+
+
+    return (
         <>
             {/* <div><Toaster/></div> */}
             <h1 className="text-3xl text-white ml-3 text-center">Devis {quote?.number}</h1>
-                <Breadcrumb
-                    items={[
-                        { label: "Tableau de bord", href: "/director" },
-                        { label: "Devis", href: "/director/quotes" },
-                        { label: `${quote.number}` }, 
-                    ]}
-                />
+            <Breadcrumb
+                items={[
+                    { label: "Tableau de bord", href: "/director" },
+                    { label: "Devis", href: "/director/quotes" },
+                    { label: `${quote.number}` },
+                ]}
+            />
             <ul>
                 <li>Statut : {quote.status}</li>
                 <li>Signé par le client ? {quote.isSignedByClient ? "Oui" : 'Non'}</li>
@@ -177,64 +178,64 @@ export default function Quote({csrfToken, quoteSlug}: QuoteProps){
 
             </ul>
             {/* If the quote's status is different from draft, we can display the form */}
-                {quote.status !== "DRAFT" && (
-                    <section>
-                        <h2>Modifier les informations</h2>
-                        <form 
-                            autoComplete="off"
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                handleQuoteUpdateClassic();
-                            }}
-                        >
-                            <div>
-                                <Select
-                                    name="status"
-                                    onChange={handleInputChange}
-                                    value={formValues.status || ""}
-                                    className="w-full rounded-md bg-gray-700 text-white pl-3"
-                                >
-                                    <option value="" >Statut du devis</option>
-                                    {Object.entries(quoteStatusChoices).map(([value, label]) => (
-                                        <option key={value} value={value}>
+            {quote.status !== "DRAFT" && (
+                <section>
+                    <h2>Modifier les informations</h2>
+                    <form
+                        autoComplete="off"
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            handleQuoteUpdateClassic();
+                        }}
+                    >
+                        <div>
+                            <Select
+                                name="status"
+                                onChange={handleInputChange}
+                                value={formValues.status || ""}
+                                className="w-full rounded-md bg-gray-700 text-white pl-3"
+                            >
+                                <option value="" >Statut du devis</option>
+                                {Object.entries(quoteStatusChoices).map(([value, label]) => (
+                                    <option key={value} value={value}>
                                         {label}
-                                        </option>
+                                    </option>
+                                ))}
+                            </Select>
+                        </div>
+                        <div>
+                            <Field>
+                                <Legend>Le devis a t-il été signé par le client ?</Legend>
+                                <RadioGroup
+                                    name="isSignedByClient"
+                                    onChange={(value) => handleRadioChange("isSignedByClient", value)}
+
+                                >
+                                    {isSignedByClientChoices.map((choice) => (
+                                        <Field key={choice} className="flex gap-2 items-center">
+                                            <Radio value={choice} className="group flex size-5 items-center justify-center rounded-full border bg-white data-[checked]:bg-pink-600" />
+                                            <Label>{choice}</Label>
+                                        </Field>
                                     ))}
-                                </Select>
-                            </div>
-                            <div>
-                                <Field>
-                                    <Legend>Le devis a t-il été signé par le client ?</Legend>
-                                    <RadioGroup 
-                                        name="isSignedByClient"
-                                        onChange={(value)=> handleRadioChange("isSignedByClient",value)}
+                                </RadioGroup>
+                            </Field>
+                        </div>
+                        <div>
+                            <label htmlFor="signatureDate">Date de signature</label>
+                            <Field className="w-full">
+                                <Input type="date" name="signatureDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
+                                    onChange={handleInputChange}
+                                >
+                                </Input>
+                            </Field>
+                        </div>
+                        <Input type="hidden" name="csrf_token" value={csrfToken} />
 
-                                    >
-                                        {isSignedByClientChoices.map((choice) => (
-                                            <Field key={choice} className="flex gap-2 items-center">
-                                                <Radio value={choice} className="group flex size-5 items-center justify-center rounded-full border bg-white data-[checked]:bg-pink-600" />
-                                                <Label>{choice}</Label>
-                                            </Field>
-                                        ))}
-                                    </RadioGroup>
-                                </Field>
-                            </div>
-                            <div>
-                                <label htmlFor="signatureDate">Date de signature</label>
-                                <Field className="w-full">
-                                    <Input type="date" name="signatureDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                                        onChange={handleInputChange}
-                                    >
-                                    </Input>
-                                </Field>
-                            </div>
-                            <Input type="hidden" name="csrf_token" value={csrfToken} />
-                            
-                            <button type="submit">Modifier</button>
-                        </form>                        
-                    </section>
+                        <button type="submit">Modifier</button>
+                    </form>
+                </section>
 
-                )}
+            )}
             <Link href={`/director/bills/create/${quote?.number}`}>
                 Créer une facture finale
             </Link>
@@ -276,7 +277,7 @@ export default function Quote({csrfToken, quoteSlug}: QuoteProps){
                                 Service
                             </th>
                             <th>
-                                Description 
+                                Description
                             </th>
                             <th>
                                 Quantité
@@ -296,7 +297,7 @@ export default function Quote({csrfToken, quoteSlug}: QuoteProps){
                             <th>
                                 Prix TTC
                             </th>
-                        </tr>                        
+                        </tr>
                     </thead>
                     <tbody>
                         {/* quote.services => quoteService */}
@@ -315,10 +316,10 @@ export default function Quote({csrfToken, quoteSlug}: QuoteProps){
                                     <td>{service.totalTTC}</td>
                                 </tr>
                             );
-                        })}                      
+                        })}
                     </tbody>
                 </table>
-                {/* Travel costs */} 
+                {/* Travel costs */}
                 <table>
                     <thead>
                         <tr>
@@ -337,7 +338,7 @@ export default function Quote({csrfToken, quoteSlug}: QuoteProps){
                             <th>
                                 Frais TTC
                             </th>
-                        </tr>                        
+                        </tr>
                     </thead>
                     <tbody>
                         <tr>
@@ -345,7 +346,7 @@ export default function Quote({csrfToken, quoteSlug}: QuoteProps){
                                 {quote?.travelCosts} €
                             </td>
                             <td>
-                                Forfait unique 
+                                Forfait unique
                             </td>
                             <td>
                                 20%
@@ -356,7 +357,7 @@ export default function Quote({csrfToken, quoteSlug}: QuoteProps){
                             <td>
                                 {priceTTCTravelCost} €
                             </td>
-                        </tr>                        
+                        </tr>
                     </tbody>
                 </table>
                 {/* Total du devis  */}
@@ -372,7 +373,7 @@ export default function Quote({csrfToken, quoteSlug}: QuoteProps){
                             <th>
                                 Montant TTC
                             </th>
-                        </tr>                        
+                        </tr>
                     </thead>
                     <tbody>
                         <tr>
@@ -406,16 +407,16 @@ export default function Quote({csrfToken, quoteSlug}: QuoteProps){
                 <p>Frais forfaitaires de recouvrement : {quote.recoveryFee} €</p>
 
 
-                {/* right of withdrawal */} 
+                {/* right of withdrawal */}
                 {
                     (quote.hasRightOfWithdrawal) && <p>Droit de rétractation : {quote.withdrawalPeriod} jours. </p>
-                }               
+                }
             </section>
 
 
 
 
- 
+
         </>
     );
 }

@@ -5,8 +5,10 @@ import { sanitizeData } from "@/lib/sanitize";
 import { QuoteStatusEnum } from "@prisma/client";
 import { currentUser } from "@clerk/nextjs/server";
 
-export async function PUT(req: NextRequest) {
-   
+export async function PUT(req: NextRequest, {params}: {params: {quoteSlug: string}}) {
+  const resolvedParams = await params;
+  const quoteSlug = resolvedParams.quoteSlug; 
+
   const data = await req.json();
     // Explicit validation of CSRF token (in addition of the middleware)
     // const csrfToken = req.headers.get("x-csrf-token");
@@ -17,13 +19,13 @@ export async function PUT(req: NextRequest) {
   // const { id, status, isSignedByClient, signatureDate } = data;
 
   // Mapping of french statuts to english
-  const statusMapping: Record<string, string> = {
-    "Prêt à l'envoi": QuoteStatusEnum.READY,
-    "Envoyé": QuoteStatusEnum.SENT,
-    "Accepté": QuoteStatusEnum.ACCEPTED,
-    "Refusé": QuoteStatusEnum.REFUSED,
-    "Clos" : QuoteStatusEnum.CANCELED
-  };
+  // const statusMapping: Record<string, string> = {
+  //   "Prêt à l'envoi": QuoteStatusEnum.READY,
+  //   "Envoyé": QuoteStatusEnum.SENT,
+  //   "Accepté": QuoteStatusEnum.ACCEPTED,
+  //   "Refusé": QuoteStatusEnum.REFUSED,
+  //   "Clos" : QuoteStatusEnum.CANCELED
+  // };
 
   const user = await currentUser();
   
@@ -58,12 +60,10 @@ export async function PUT(req: NextRequest) {
 
     // status conversion
     if (sanitizedData.status !== null) {
-        const mappedStatus = statusMapping[sanitizedData.status];
-        if (mappedStatus) {
-            updateData.status = mappedStatus;
-        } else {
-            return new NextResponse("Invalid status value", { status: 400 });
-        }
+
+            updateData.status = sanitizedData.status;
+            console.log("statut sanitize  : "+updateData.status)
+
     }
 
     if (sanitizedData.isSignedByClient !== null) {
@@ -82,7 +82,7 @@ export async function PUT(req: NextRequest) {
 
     // Update in database
     const updatedQuote = await db.quote.update({
-      where: { id: id },
+      where: { slug: quoteSlug },
       data: {
         ...updateData,
         updatedAt : new Date().toISOString(),
@@ -99,7 +99,7 @@ export async function PUT(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ updatedQuote }, { status: 200 });
+    return NextResponse.json(updatedQuote);
   } catch (error) {
     console.error("Error with quote's update:", error);
     return new NextResponse("Internal error", { status: 500 });
