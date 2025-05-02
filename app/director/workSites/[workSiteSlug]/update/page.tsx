@@ -6,7 +6,7 @@ import UpdateWorkSite from '@/components/UpdateWorkSite'
 type Params = Promise<{ workSiteSlug: string }>;
 
 
-export default async function Page({ params }: { params: { workSiteSlug: string } }) {
+export default async function Page({ params }: { params: Params }) {
   const resolvedParams = await params;
   const { workSiteSlug } = resolvedParams;
 
