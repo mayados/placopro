@@ -15,11 +15,7 @@ export async function GET(req: NextRequest, {params}: {params: {companySlug: str
         })
 
 
-        return NextResponse.json({ 
-            success: true, 
-            company: company,
-            status: 200,
-        })
+        return NextResponse.json(company)
 
     } catch (error) {
         console.log("[COMPANY]", error)

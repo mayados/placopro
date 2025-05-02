@@ -2,6 +2,7 @@ model Report{
     id String @id @default(auto()) @map("_id") @db.ObjectId
     createdAt DateTime @default(now())
     description String
+    status ReportMaterialStatusEnum
     // One user created the report
     authorId String @db.ObjectId
     user User @relation(fields: [authorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
@@ -9,4 +10,9 @@ model Report{
     materials MaterialReport[]
     @@index([authorId])
 
+}
+
+enum ReportMaterialStatusEnum {
+    TREATED
+    UNTREATED
 }

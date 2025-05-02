@@ -3,6 +3,8 @@ model CreditNote {
     id String @id @default(auto()) @map("_id") @db.ObjectId
     number String @unique
     issueDate DateTime 
+    updatedAt DateTime?
+    modifiedBy String?
     // mistake, return..
     reason CreditNoteReasonEnum 
     // amount (positive if refund)
@@ -11,6 +13,12 @@ model CreditNote {
     settlementType CreditNoteSettlementTypeEnum? 
     // Indicates if the CreditNote was treated
     isSettled Boolean @default(false) 
+    slug String @unique
+    author String?
+    // Have a backup in case of client's deletion
+    clientBackup Json?
+    // Have a backup of different elements such as services, price, VAT... In case of change
+    elementsBackup Json?
 
     // Linked to a Bill (mandatory)
     billId String @db.ObjectId
@@ -28,7 +36,7 @@ enum CreditNoteSettlementTypeEnum {
 }
 
 enum CreditNoteReasonEnum {
-    MISTAKE
+  MISTAKE
   CANCELLATION
   DISCOUNT
   COMPENSATION
@@ -37,3 +45,4 @@ enum CreditNoteReasonEnum {
   DEPOSIT_REFUND
   DEPOSIT_ADJUSTMENT
 }
+

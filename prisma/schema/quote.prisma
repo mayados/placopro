@@ -5,11 +5,11 @@ model Quote{
     // Date d’émission
     issueDate DateTime
     // Date limite de validité du devis
-    validityEndDate DateTime 
+    validityEndDate DateTime? 
     // Nature des travaux
     natureOfWork String
     // Description des travaux
-    description String 
+    description String? 
     // Date prévue de début des travaux
     workStartDate DateTime? 
     // Date prévue de fin des travaux
@@ -20,6 +20,7 @@ model Quote{
     isQuoteFree Boolean 
     // Le coût du devis si la réalisation de ce dernier est payante
     quoteCost Float?
+    slug String @unique
     // Brouillon, envoyé, signé, etc.
     status String 
     // Montant (€) de l'accompte demandé
@@ -31,15 +32,14 @@ model Quote{
     // prix HT
     priceHT Float
     // Frais de déplacement
-    travelCosts Float 
+    travelCosts Float @default(0)
+
     // Type de frais de déplacement (forfait unique / journalier...)
     travelCostsType String?
-    // Taux horaire de la main-d'œuvre
-    hourlyLaborRate Float? 
     // Conditions de paiement
     paymentTerms String 
     // Délais de paiement (ex. : 30 jours)
-    paymentDelay Int 
+    paymentDelay Int @default(0)
     // Pénalités de retard 
     latePaymentPenalties Float? 
     // Frais forfaitaires de recouvrement
@@ -52,20 +52,29 @@ model Quote{
     hasRightOfWithdrawal Boolean 
     // Délai de rétractation (en jours)
     withdrawalPeriod Int? 
-    userId String
-    discountReason String?
+    author String?
+    updatedAt DateTime?
+    modifiedBy String?
+    discountReason QuoteDiscountReasonEnum?
     // global discount HT amount
     discountAmount Float? @default(0) 
+
+    // Have a backup in case of client's deletion
+    clientBackup Json?
+    // Have a backup of different elements such as price, VAT... In case of change
+    elementsBackup Json?
+    // Have a backup for services
+    servicesBackup Json?
+
+    workSiteBackup Json?
     // in % 
     // discountPercentage Float? 
 
 	// Quote is created by a User
 
-    // userId String @db.ObjectId
-    // user User @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 	// One Quote is linked to 1 Client
-    clientId String @db.ObjectId
-    client Client @relation(fields: [clientId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+    clientId String? @db.ObjectId
+    client Client? @relation(fields: [clientId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 	// One Quote is linked to 1 WorkSite
     workSiteId String @db.ObjectId
     workSite WorkSite @relation(fields: [workSiteId], references: [id], onUpdate: Cascade, onDelete: Cascade)
@@ -76,4 +85,18 @@ model Quote{
     // @@index([userId])
     @@index([clientId])
     @@index([workSiteId])
+}
+
+enum QuoteStatusEnum {
+  DRAFT
+  READY
+  ACCEPTED
+  REFUSED
+  CANCELED
+  SENT
+}
+
+enum QuoteDiscountReasonEnum {
+    FIDELITY
+    EXCEPTIONAL
 }

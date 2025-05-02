@@ -1,37 +1,47 @@
 import React from 'react'
-// On importe le type LucideIcon pour pouvoir faire passer l'icone voulue
-import {LucideIcon} from 'lucide-react'
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 
 interface ButtonProps {
-  label:string;
-  icon: LucideIcon;
-  iconFill?: string ;
+  label: string;
+  icon?: IconDefinition; 
+  iconColor?: string;    
   specifyBackground: string;
-  action?: (e: React.MouseEvent<HTMLButtonElement>) => void; 
-  type?:  "submit" | "reset" | "button" | undefined;
+  action?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  type?: "submit" | "reset" | "button";
 }
 
-const findBackgroundColor =  (specifyBackground: string)  => {
-  if(specifyBackground === "none"){
+const findBackgroundColor = (specifyBackground: string) => {
+  if (specifyBackground === "none") {
     return "";
-  } else{
-    return "bg-pink-600"
+  } else {
+    return specifyBackground || "bg-pink-600";
   }
-
 }
 
-const Button:React.FC<ButtonProps> = ({label, icon: Icon, specifyBackground, action, type, iconFill=""}) => {
+const Button: React.FC<ButtonProps> = ({
+  label,
+  icon,
+  iconColor = "white",
+  specifyBackground,
+  action,
+  type = "button"
+}) => {
 
   const backgroundColor = findBackgroundColor(specifyBackground);
 
   return (
-        <button onClick={action} type={type} className={`flex items-center px-3 py-1 mt-1 ${backgroundColor} from-white hover:bg-pink-500 cursor-pointer rounded-lg`}>
-            <Icon className="mx-2" fill={iconFill} /> 
-            {label} 
-        </button>
-    )    
+    <button
+      onClick={action}
+      type={type}
+      className={`flex items-center px-3 py-1 mt-1 ${backgroundColor} hover:opacity-90 cursor-pointer rounded-lg text-white`}
+    >
+      {icon && (
+        <FontAwesomeIcon icon={icon} className="mr-2" color={iconColor} />
+      )}
+      {label}
+    </button>
+  );
+};
 
-}
-
-export default Button
+export default Button;

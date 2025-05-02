@@ -1,8 +1,22 @@
 // Retrieve all the bills
 // Return a promise with object of type BillsWithTotalsAndStatus
-export const fetchBills = async (): Promise<BillsWithTotalsAndStatus> => {
+export const fetchBills = async ({
+    page,
+    pageReadyToBeSent,
+    pageSent,
+    pageDraft,
+    pageCanceled,
+    limit,
+} : {
+    page: number,
+    pageReadyToBeSent: number,
+    pageSent: number,
+    pageDraft: number,
+    pageCanceled: number,
+    limit: number,
+}): Promise<BillsWithTotalsAndStatus> => {
     try {
-      const response = await fetch(`/api/bills`);
+      const response = await fetch(`/api/bills?page=${page}&pageReadyToBeSent=${pageReadyToBeSent}&pageSent=${pageSent}&pageDraft=${pageDraft}&pageCanceled=${pageCanceled}&limit=${limit}`);
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
       const data: BillsWithTotalsAndStatus = await response.json();
@@ -15,9 +29,9 @@ export const fetchBills = async (): Promise<BillsWithTotalsAndStatus> => {
   };
 
 // Retrieve a specific Bill
-export const fetchBill = async (billNumber: string): Promise<BillTypeSingle> => {
+export const fetchBill = async (billSlug: string): Promise<BillTypeSingle> => {
     try {
-        const response = await fetch(`/api/bills/${billNumber}`);
+        const response = await fetch(`/api/bills/${billSlug}`);
         if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
       
         const data: BillTypeSingle = await response.json();
@@ -45,12 +59,13 @@ export const deleteBill = async (billId: string): Promise<void> => {
 };
 
 // Create bill
-export const createBillFromQuote = async (bill: CreateBillFormValueType): Promise<BillType> => {
+export const createBillFromQuote = async (bill: CreateBillFormValueType, csrfToken: string): Promise<BillType> => {
     try {
         const response = await fetch(`/api/bills`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
             },
             body: JSON.stringify(bill),
         });
@@ -70,13 +85,14 @@ export const createBillFromQuote = async (bill: CreateBillFormValueType): Promis
   };
 
 // Create DEPOSIT bill
-export const createDepositBillFromQuote = async (bill: CreateDepositBillFormValueType): Promise<BillType> => {
+export const createDepositBillFromQuote = async (bill: CreateDepositBillFormValueType, csrfToken: string): Promise<BillType> => {
     try {
         const response = await fetch(`/api/bills`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "X-Create-Type": "deposit",
+                "X-CSRF-Token": csrfToken,
             },
             body: JSON.stringify(bill),
         });
@@ -96,14 +112,15 @@ export const createDepositBillFromQuote = async (bill: CreateDepositBillFormValu
   };
 
 // Update draft bill
-export const updateDraftBill = async (billNumber: string, updatedBillWithStatus: UpdatedBillFormValueType): Promise<BillType> => {
+export const updateDraftBill = async (billSlug: string, updatedBillWithStatus: UpdatedBillFormValueType, csrfToken: string): Promise<BillType> => {
     try {
-        const response = await fetch(`/api/bills/${billNumber}`, {
+        const response = await fetch(`/api/bills/${billSlug}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
                 "X-Update-Type": "draft",
-  
+                "X-CSRF-Token": csrfToken,
+
             },
             body: JSON.stringify(updatedBillWithStatus),
         });
@@ -123,14 +140,15 @@ export const updateDraftBill = async (billNumber: string, updatedBillWithStatus:
   };
 
 // Update deposit draft bill
-export const updateDepositDraftBill = async (billNumber: string, updatedBillWithStatus: UpdatedDepositBillFormValueType): Promise<BillType> => {
+export const updateDepositDraftBill = async (billSlug: string, updatedBillWithStatus: UpdatedDepositBillFormValueType, csrfToken: string): Promise<BillType> => {
     try {
-        const response = await fetch(`/api/bills/${billNumber}`, {
+        const response = await fetch(`/api/bills/${billSlug}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
                 "X-Update-Type": "draft-deposit",
-  
+                "X-CSRF-Token": csrfToken,
+
             },
             body: JSON.stringify(updatedBillWithStatus),
         });
@@ -149,12 +167,13 @@ export const updateDepositDraftBill = async (billNumber: string, updatedBillWith
     }
   };
 
-  export const updateClassicBill = async (billNumber: string, formValues: FormValuesUpdateNotDraftBill): Promise<BillType> => {
+  export const updateClassicBill = async (billSlug: string, formValues: FormValuesUpdateNotDraftBill, csrfToken: string): Promise<BillType> => {
     try {
-        const response = await fetch(`/api/bills/${billNumber}`, {
+        const response = await fetch(`/api/bills/${billSlug}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
             },
             body: JSON.stringify(formValues),
         });

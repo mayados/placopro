@@ -1,7 +1,7 @@
 "use client";
 
 import { fetchCompany } from "@/services/api/companyService";
-import { useEffect, useState, use } from "react";
+import { useEffect, useState } from "react";
 // import toast, { Toaster } from 'react-hot-toast';
 // import { useRouter } from "next/navigation";
 
@@ -15,11 +15,11 @@ const Company = ({ params }: { params: Promise<{ companySlug: string }>}) => {
                 // Params is now asynchronous. It's a Promise
                 // So we need to await before access its properties
                 const resolvedParams = await params;
-                const companySlug = resolvedParams.companySlug;
+                const {companySlug} = resolvedParams;
                     
                 try{
                 const data = await fetchCompany(companySlug)
-                setCompany(data.company);
+                setCompany(data);
                 }catch (error) {
                     console.error("Impossible to load the company :", error);
                 }

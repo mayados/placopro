@@ -7,10 +7,10 @@ import {
   SignedIn,
   SignedOut,
   UserButton,
-  useSession
+  // useSession
 } from '@clerk/nextjs'
 // import { checkUserRole } from '../lib/utils';
-import Link from 'next/link';
+// import Link from 'next/link';
 
 
 
@@ -22,7 +22,7 @@ interface NavProps{
 const Nav:React.FC<NavProps> = ({ logo}) => {
 
   // a hook from clerk which enables to retrieve user's session data
-  const { session } = useSession();
+  // const { session } = useSession();
 //   const userRole = checkUserRole(session);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -33,7 +33,8 @@ const Nav:React.FC<NavProps> = ({ logo}) => {
   return (
     <nav className="bg-slate-800 relative flex px-3 text-white h-[8vh] items-center justify-between">
     {/* Logo */}
-    <a className='text-pink-600' href="/">{logo}</a>
+    <p>{logo}</p>
+    {/* <a className='text-pink-600' href="/">{logo}</a> */}
 
     {/* Menu burger button for mobile */}
     <button

@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Trash2, SendHorizontal } from 'lucide-react';
 import Button from "@/components/Button";
 // import toast, { Toaster } from 'react-hot-toast';
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
-import {Input} from '@headlessui/react';
 import Link from "next/link";
 import { deleteCompany, fetchCompanies } from "@/services/api/companyService";
+import Breadcrumb from "@/components/BreadCrumb";
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
 const Companies = () =>{
 
@@ -58,6 +58,12 @@ const Companies = () =>{
 
         <section className="border-2 border-green-800 flex-[8]">
             <h1 className="text-3xl text-white text-center">Entreprises</h1>
+            <Breadcrumb
+                items={[
+                    { label: "Tableau de bord", href: "/director" },
+                    { label: "Entreprises"},
+                ]}
+            />
             <Link href={`/director/companies/create`}>Créer une entreprise</Link>
             <table className="table-auto">
                 <thead>
@@ -87,7 +93,7 @@ const Companies = () =>{
                             </Link>
                           </td>
                             <td>
-                                <Button label="Remove" icon={Trash2} type="button" action={() => openDeleteDialog(companySlug)} specifyBackground="text-red-500" />
+                                <Button label="Remove" icon={faXmark} type="button" action={() => openDeleteDialog(companySlug)} specifyBackground="text-red-500" />
                             </td>
                         </tr>
                     );
@@ -100,7 +106,7 @@ const Companies = () =>{
         {isOpen && companyToDelete && (
         <Dialog open={isOpen} onClose={closeDeleteDialog} className="absolute top-[50%] left-[25%]" >
             <DialogPanel className="bg-gray-300 p-5 rounded-md shadow-lg text-black">
-            <DialogTitle>Supprimer l'entreprise</DialogTitle>
+            <DialogTitle>Supprimer l&apos;entreprise</DialogTitle>
             <Description>Cette action est irréversible</Description>
             <p>Etes-vous sûr de vouloir supprimer cette entreprise ? Toutes ses données seront supprimées de façon permanente. Cette action est irréversible.</p>
                 <div className="flex justify-between mt-4">

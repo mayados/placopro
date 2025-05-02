@@ -3,14 +3,13 @@ model Estimation{
     city String
     postalCode  String
     createdAt DateTime @default(now())
-    status String
+    status EstimationStatusEnum
     natureOfWork String
     priceHT  Float
     priceTTC Float
     vatAmount Float ?
     estimatedWorkDuration Int
     travelCosts  Float
-    hourlyLaborRate Float
     services EstimationService[]
 
 	// One Estimation was created by 1 User
@@ -18,9 +17,15 @@ model Estimation{
     author User @relation(fields: [authorId], references: [id])
 
 	// One Estimation is linked to 1 Prospect
-    prospectId String @db.ObjectId
-    prospect Prospect @relation(fields: [prospectId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+    clientId String @db.ObjectId
+    client Client @relation(fields: [clientId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
-    @@index([prospectId])
+    @@index([clientId])
     @@index([authorId])
+}
+
+enum EstimationStatusEnum {
+  DRAFT
+  READY
+  SENT 
 }

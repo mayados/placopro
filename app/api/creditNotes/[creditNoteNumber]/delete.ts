@@ -21,6 +21,8 @@ export async function DELETE(req: NextRequest, {params}: {params: {creditNoteNum
         });
 
     } catch (error) {
+        console.error("Erreur détaillée :", error instanceof Error ? error.message : error);
+
         // servor side : SSR
         return new NextResponse("Internal error, {status: 500}")
     }

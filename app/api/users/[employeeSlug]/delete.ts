@@ -19,6 +19,7 @@ export async function DELETE(req: NextRequest, {params}: {params: {employeeSlug:
 
     } catch (error) {
         // servor side : SSR
+        console.error("Erreur détaillée :", error instanceof Error ? error.message : error);
         return new NextResponse("Internal error, {status: 500}")
     }
 

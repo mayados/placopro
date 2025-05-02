@@ -1,41 +1,35 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
-import { slugify } from '@/lib/utils'
+import { generateSlug} from '@/lib/utils'
 import { generateUniqueClientNumber } from '@/lib/utils'
+import { createClientSchema } from "@/validation/clientValidation";
+import { ClientOrProspectEnum } from "@prisma/client";
 
 
 // Asynchrone : waits for a promise
 export async function POST(req: NextRequest) {
     const data = await req.json();
-    const { 
-            name,
-            firstName,
-            mail,
-            phone,
-            road,
-            addressNumber,
-            postalCode,
-            city,
-            additionalAddress,
-            prospectNumber,
-            } = data;
+
+    console.log("Données reçues dans l'API :", JSON.stringify(data));
+
+    // const { 
+    //         name,
+    //         firstName,
+    //         mail,
+    //         phone,
+    //         road,
+    //         addressNumber,
+    //         postalCode,
+    //         city,
+    //         additionalAddress,
+    //     } = data;
             // currentUser() is a founction from Clerk which allows to retrieve the current User
             const user = await currentUser()
 
 
     try {
 
-        console.log("nom du client : "+name)
-        console.log("Prénom du client : "+firstName)
-        console.log("Mail du client : "+mail)
-        console.log("Téléphone du client : "+phone)
-        console.log("Rue du client : "+road)
-        console.log("Numéro d'adresse du client : "+addressNumber)
-        console.log("Code postal : "+postalCode)
-        console.log("Ville : "+city)
-        console.log("Complément d'adresse : "+additionalAddress)
-        console.log("numéro de prospect : "+prospectNumber)
         
         if (!user) {
             return NextResponse.json({ 
@@ -44,47 +38,44 @@ export async function POST(req: NextRequest) {
             }, { status: 401 });
         }
 
+        // Validation avec Zod (sans 'status')
+        const parsedData = createClientSchema.safeParse(data);
+        if (!parsedData.success) {
+            console.error("Validation Zod échouée :", parsedData.error.format());
+        
+            return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
+        }
+                
+        // Validation réussie, traiter les données avec le statut
+        const validatedData = parsedData.data;
+                
+
         const clientNumber = generateUniqueClientNumber();
-        const slug = slugify(name+" "+firstName+" "+clientNumber)
-        console.log("Slug du client : "+slug)
         console.log("client number : "+clientNumber)
         console.log("type de clientNumber : "+typeof(clientNumber))
-        console.log("type de slug : "+typeof(slug))
-        console.log("type de code postal : "+typeof(postalCode))
-        console.log("type de téléphone : "+typeof(phone))
+        console.log("type de code postal : "+typeof(validatedData.postalCode))
+        console.log("type de téléphone : "+typeof(validatedData.phone))
 
-        let prospectId = null;
-        if (prospectNumber && prospectNumber.trim() !== "") {
-            const prospect = await db.prospect.findUnique({
-                where: { prospectNumber },
-            });
-            if (prospect) {
-                prospectId = prospect.id;
-                console.log("Prospect trouvé, ID : ", prospectId);
-            } else {
-                console.log("Aucun prospect trouvé pour le numéro fourni.");
-            }
-        }
-
-        console.log("valeur de prospectId : "+prospectId)
+        console.log("Tentative de création du client...");
+        const slug = generateSlug(`${validatedData.name}-${validatedData.firstName}`);
 
           // Création du client
           const client = await db.client.create({
               data: {
-                  name,
-                  firstName,
-                  mail,
-                  phone,
-                  road,
-                  addressNumber,
-                  postalCode,
-                  city,
-                  additionalAddress,
-                  slug,
-                  clientNumber,
-                  isAnonymized: false,
-                  prospectId: prospectId,
-                //   ...(prospectId !== null && { prospectId }), // Inclure prospectId uniquement s'il existe
+                name: validatedData.name,
+                firstName: validatedData.firstName,
+                mail: validatedData.mail,
+                phone: validatedData.phone,
+                road: validatedData.road,
+                addressNumber: validatedData.addressNumber,
+                postalCode: validatedData.postalCode,
+                city: validatedData.city,
+                additionalAddress: validatedData.additionalAddress,
+                slug: slug,
+                clientNumber,
+                isAnonymized: false,
+                convertedAt: null,
+                status: ClientOrProspectEnum.CLIENT
               },
           });
 

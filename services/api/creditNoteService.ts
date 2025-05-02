@@ -1,10 +1,12 @@
 // Create Credit Note
-export const createCreditNote = async (creditNote : CreateCreditNoteFormValueType): Promise<CreditNoteType> => {
+export const createCreditNote = async (creditNote : CreateCreditNoteFormValueType, csrfToken: string): Promise<CreditNoteType> => {
     try {
         const response = await fetch(`/api/creditNotes`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
+
             },
             body: JSON.stringify(creditNote),
         });
@@ -23,12 +25,14 @@ export const createCreditNote = async (creditNote : CreateCreditNoteFormValueTyp
     }
   };
 
-export const updateCreditNote = async (creditNoteNumber: string, formValues: UpdateCreditNoteFormValueType): Promise<CreditNoteType> => {
+export const updateCreditNote = async (creditNoteNumber: string, formValues: UpdateCreditNoteFormValueType, csrfToken: string): Promise<CreditNoteType> => {
     try {
         const response = await fetch(`/api/creditNotes/${creditNoteNumber}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
+
             },
             body: JSON.stringify(formValues),
         });
@@ -50,7 +54,7 @@ export const updateCreditNote = async (creditNoteNumber: string, formValues: Upd
 // Retrieve a specific credit note
 export const fetchCreditNote = async (creditNoteNumber: string): Promise<CreditNoteType> => {
     try {
-        const response = await fetch(`/api/creditNote/${creditNoteNumber}`);
+        const response = await fetch(`/api/creditNotes/${creditNoteNumber}`);
         if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
       
         const data: CreditNoteType = await response.json();
@@ -59,6 +63,33 @@ export const fetchCreditNote = async (creditNoteNumber: string): Promise<CreditN
     } catch (error) {
         console.error("Erreur lors de la récupération de l'avoir :", error);
         throw error;
+    }
+};
+
+// Retrieve all the credit notes
+// Return a promise with object of type CreditNotesWithTotalsAndStatus
+export const fetchCreditNotes = async ({
+    page,
+    pageSettled,
+    pageNotSettled,
+    limit,  
+    }: {
+    page: number;
+    pageSettled: number;
+    pageNotSettled: number;
+    limit: number;
+  }): Promise<CreditNotesWithTotalsAndStatus> => {
+    try {
+      const response = await fetch(`/api/creditNotes?page=${page}&pageSettled=${pageSettled}&pageNotSettled=${pageNotSettled}&limit=${limit}`);
+      if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
+  
+      
+      const data: CreditNotesWithTotalsAndStatus = await response.json();
+      console.log("Données reçues après le fetch :", data);
+      return data;
+    } catch (error) {
+      console.error("Erreur lors de la récupération des credit notes :", error);
+      throw error;
     }
 };
 

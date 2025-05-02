@@ -47,12 +47,14 @@ export const deleteClient = async (clientSlug: string): Promise<void> => {
 };
 
 // Create client
-export const createClient = async (client: ClientFormValueType): Promise<ClientType> => {
+export const createClient = async (client: ClientFormValueType, csrfToken: string): Promise<ClientType> => {
     try {
         const response = await fetch(`/api/clients`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
+
             },
             body: JSON.stringify(client),
         });
@@ -72,12 +74,13 @@ export const createClient = async (client: ClientFormValueType): Promise<ClientT
 };
 
 // Update client
-export const updateClient = async (client: ClientType): Promise<ClientType> => {
+export const updateClient = async (client: ClientType, csrfToken: string): Promise<ClientType> => {
     try {
         const response = await fetch(`/api/clients/${client.slug}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
             },
             body: JSON.stringify(client),
         });

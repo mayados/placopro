@@ -1,42 +1,21 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
+import { createQuoteDraftSchema, createQuoteFinalSchema } from "@/validation/quoteValidation";
+import { sanitizeData } from "@/lib/sanitize"; 
+import { Prisma, QuoteStatusEnum } from "@prisma/client";
+import { generateSlug } from "@/lib/utils";
 
 
 // Asynchrone : waits for a promise
 export async function POST(req: NextRequest) {
     const data = await req.json();
+
     console.log("Données reçues dans la requête :", data);
 
-    const { 
-            validityEndDate, 
-            natureOfWork, 
-            description, 
-            workStartDate, 
-            estimatedWorkEndDate, 
-            estimatedWorkDuration, 
-            isQuoteFree, 
-            quoteCost, 
-            priceTTC, 
-            priceHT, 
-            travelCosts, 
-            hourlyLaborRate, 
-            paymentDelay,
-            paymentTerms,
-            latePaymentPenalities,
-            recoveryFees,
-            hasRightOfWithdrawal,
-            withdrawalPeriod,
-            clientId,
-            workSiteId,
-            services,
-            discountAmount,
-            depositAmount,
-            discountReason,
-            status
-        } = data;
-            // currentUser() is a founction from Clerk which allows to retrieve the current User
-            const user = await currentUser()
+  
+    // currentUser() is a founction from Clerk which allows to retrieve the current User
+    const user = await currentUser()
     if (!data) {
         return NextResponse.json({ success: false, message: "Aucune donnée reçue." }, { status: 400 });
     }
@@ -50,28 +29,31 @@ export async function POST(req: NextRequest) {
 
     try {
 
-      const sanitizedData = {
-        ...data,
-        workStartDate: data.workStartDate ? new Date(data.workStartDate).toISOString() : null,
-        validityEndDate: data.validityEndDate ? new Date(data.validityEndDate).toISOString() : null,
-        estimatedWorkEndDate: data.estimatedWorkEndDate ? new Date(data.estimatedWorkEndDate).toISOString() : null,
-        isQuoteFree: isQuoteFree === "Oui" ? true : false,
-        hasRightOfWithdrawal: hasRightOfWithdrawal=== "Oui" ? true : false,
-        vatAmount: parseFloat(data.vatAmount) || 0,
-        estimatedWorkDuration: parseInt(data.estimatedWorkDuration, 10) || 0,
-        priceTTC: parseFloat(data.priceTTC) || 0,
-        priceHT: parseFloat(data.priceHT) || 0,
-        travelCosts: parseFloat(data.travelCosts) || 0,
-        hourlyLaborRate: parseFloat(data.hourlyLaborRate) || 0,
-        paymentDelay: parseInt(data.paymentDelay, 10) || 0,
-        latePaymentPenalities: parseFloat(data.latePaymentPenalities) || 0,
-        recoveryFees: parseFloat(data.recoveryFees) || 0,
-        withdrawalPeriod: parseInt(data.withdrawalPeriod, 10) || 0,
-        quoteCost: parseFloat(data.quoteCost) || 0,
-        discountAmount: parseFloat(data.discountAmount) || 0,
-        discountReason: data.discountReason || null,
-        status: data.status || "Ready",
-    };
+      // Détecter si la facture est en "brouillon" ou en "final"
+        // Exclure 'status' du schéma de validation Zod
+        const { status, ...dataWithoutStatus } = data;
+      
+        // Choisir le schéma en fonction du statut (avant ou après validation)
+        const schema = status === QuoteStatusEnum.READY ? createQuoteFinalSchema : createQuoteDraftSchema;
+              
+        // Validation avec Zod (sans 'status')
+        const parsedData = schema.safeParse(dataWithoutStatus);
+        if (!parsedData.success) {
+            console.error("Validation Zod échouée :", parsedData.error.format());
+      
+            return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
+        }
+       
+      // Validation réussie, traiter les données avec le statut
+      // Sanitizing datas
+      const sanitizedData = sanitizeData(parsedData.data);
+      console.log("Données nettoyées :", JSON.stringify(sanitizedData));
+    
+      // Ajoute le statut aux données validées
+      sanitizedData.status = status;
+              
+
+
 
 
       // Generate an unique and chronological quote's number if the status is Ready / fictive number if the status is draft
@@ -85,7 +67,7 @@ export async function POST(req: NextRequest) {
           const currentYear = new Date().getFullYear();
           
             // Get the counter for current year for quote
-            let counter = await db.documentCounter.findFirst({
+            const counter = await db.documentCounter.findFirst({
               where: {
                 year: currentYear,
                 type: type, 
@@ -132,12 +114,12 @@ export async function POST(req: NextRequest) {
       };
 
       // We have to know if the quote was saved as a draft
-      const isDraft = sanitizedData.status === "draft";
-      const quoteNumber =  await generateQuoteNumber();
+      const isDraft = status === QuoteStatusEnum.DRAFT;
+      const quoteNumber =  await generateQuoteNumber("quote",isDraft);
       
       // for each data.services : see if it already exists. If it's the case, it has an id. In the other case, the Id is null.
       // we wait for all the promises to be resolved before to continue
-      const servicesManaged = await Promise.all(
+      await Promise.all(
         data.services.map(async (service: ServiceType) => {
           // Retrieve unit from database for each service : already existing because we have a list of it when creating the quote
           const serviceUnit = await db.unit.findUnique({
@@ -195,6 +177,7 @@ export async function POST(req: NextRequest) {
       
             try {
               await db.$transaction(async (tx) => {
+
                 const createdService = await tx.service.create({
                   data: {
                     label: service.label,
@@ -232,12 +215,15 @@ export async function POST(req: NextRequest) {
         })
       );
       
+      const slug = generateSlug("dev");
+      
     
         // We create the quote thanks to te datas retrieved
         const quote = await db.quote.create({
             data: {
                 number: quoteNumber,
-                status: sanitizedData.status,
+                status: status,
+                slug: slug,
                 issueDate : new Date().toISOString(), 
                 validityEndDate: sanitizedData.validityEndDate, 
                 natureOfWork: sanitizedData.natureOfWork, 
@@ -245,30 +231,34 @@ export async function POST(req: NextRequest) {
                 workStartDate: sanitizedData.workStartDate, 
                 estimatedWorkEndDate: sanitizedData.estimatedWorkEndDate, 
                 estimatedWorkDuration: sanitizedData.estimatedWorkDuration, 
-                isQuoteFree: sanitizedData.isQuoteFree, 
-                quoteCost: sanitizedData.quoteCost, 
+                isQuoteFree: sanitizedData.isQuoteFree === "Oui" ? true : false, 
+                quoteCost: 0, 
                 vatAmount: 0,  
                 priceTTC: 0, 
                 priceHT: 0, 
-                depositAmount: depositAmount,
-                discountAmount: discountAmount,
-                discountReason: discountReason,
-                travelCosts: sanitizedData.travelCosts, 
-                hourlyLaborRate: sanitizedData.hourlyLaborRate, 
-                paymentDelay: sanitizedData.paymentDelay,
-                paymentTerms: sanitizedData.paymentTerms,
+                depositAmount: sanitizedData.depositAmount,
+                discountAmount: sanitizedData.discountAmount,
+                discountReason: sanitizedData.discountReason,
+                travelCosts: sanitizedData.travelCosts ?? 0, 
+                // hourlyLaborRate: 0, 
+                paymentDelay: sanitizedData.paymentDelay ?? 0,
+                paymentTerms: sanitizedData.paymentTerms ?? "",
                 latePaymentPenalties: sanitizedData.latePaymentPenalities,
                 recoveryFee: sanitizedData.recoveryFees,
                 isSignedByClient: false,
                 signatureDate: null,
-                hasRightOfWithdrawal: sanitizedData.hasRightOfWithdrawal,
+                hasRightOfWithdrawal: sanitizedData.hasRightOfWithdrawal=== "Oui" ? true : false,
                 withdrawalPeriod: sanitizedData.withdrawalPeriod,
-                clientId: clientId,
-                workSiteId: workSiteId,
-                userId: user.id,
+                clientId: sanitizedData.clientId,
+                workSiteId: sanitizedData.workSiteId,
+                author: user.id,
 
             },
         });
+
+      // stock datas for backup for quoteServices
+      const quoteServicesWithData: ServiceBackup[] = [];
+
 
       // global variables to use later in the code for Quote update
       let totalHtQuote = 0;
@@ -277,7 +267,7 @@ export async function POST(req: NextRequest) {
 
 
       // now we know each service is in the database, and the quote is created we can make operations on it
-      const quoteServices = await Promise.all(
+      await Promise.all(
         data.services.map(async (service: ServiceAndQuoteServiceType) => {
           // First, we retrieve the id of the service, because now, all services have an ID. We can retrieve it thanks to its unique label. 
           const serviceRetrieved = await db.service.findUnique({
@@ -297,12 +287,12 @@ export async function POST(req: NextRequest) {
             console.log("type de données de unitPriceHt du service : "+typeof(service.unitPriceHT))
             console.log("Type de quantity :", typeof service.quantity, "Valeur :", service.quantity);
 
-            let totalHTService = service.unitPriceHT * service.quantity;
+            const totalHTService = service.unitPriceHT * service.quantity;
             console.log("total HT pour le service "+service.label+" : "+totalHTService+" €")
-            let vatRateService = parseFloat(service.vatRate);
-            let vatAmountService = totalHTService * (vatRateService / 100);
+            const vatRateService = parseFloat(service.vatRate);
+            const vatAmountService = totalHTService * (vatRateService / 100);
             console.log("total montant de la TVA pour le service "+service.label+" : "+vatAmountService+" €")
-            let totalTTCService = totalHTService+vatAmountService; 
+            const totalTTCService = totalHTService+vatAmountService; 
             console.log("total TTC pour le service "+service.label+" : "+totalTTCService+" €")
 
 
@@ -324,11 +314,32 @@ export async function POST(req: NextRequest) {
                 totalHT: totalHTService,
                 vatAmount: vatAmountService,
                 totalTTC: totalTTCService,
-                detailsService: service.detailsService,
+                detailsService: service.detailsService || "",
                 quoteId: quote.id,
                 serviceId: serviceRetrieved.id,
               },
-            });  
+              include: {
+                // essential to access service object for backup
+                service: true 
+            }
+          });  
+          // we add services to the backup's datas
+          quoteServicesWithData.push({
+            // datas of the associated service
+            label: quoteService.service.label,
+            unitPriceHT: quoteService.service.unitPriceHT,
+            type: quoteService.service.type,
+            // datas of billService
+            quantity: quoteService.quantity,
+            unit: quoteService.unit,
+            vatRate: quoteService.vatRate,
+            totalHT: quoteService.totalHT,
+            vatAmount: quoteService.vatAmount,
+            totalTTC: quoteService.totalTTC,
+            detailsService: quoteService.detailsService || '',
+            discountAmount: quoteService.discountAmount || 0,
+            discountReason: quoteService.discountReason || null
+          });         
             
           }
 
@@ -337,17 +348,29 @@ export async function POST(req: NextRequest) {
       )
 
       // add travelCosts to totalHtQuote (which contains services costs HT)
-      totalHtQuote += parseFloat(travelCosts)
-      totalHtQuote-= discountAmount
+      totalHtQuote += sanitizedData.travelCosts ?? 0
+      // totalHtQuote-= sanitizedData.discountAmount ?? 0
       // Count vatAmount for travelCosts and add the result to vatAmountQuote
-      const vatAmountForTravelCosts = travelCosts * (20 / 100);
+      const vatAmountForTravelCosts = (sanitizedData.travelCosts ?? 0) * (20 / 100);
       console.log("montant tva pour les trajets : "+vatAmountForTravelCosts)
       vatAmountQuote += vatAmountForTravelCosts
       console.log("montant tva du devis : "+vatAmountQuote)
       // add totalTTC travelCosts to totalTTCQuote
-      totalTTCQuote += parseFloat(travelCosts) + Number(vatAmountForTravelCosts)
+      totalTTCQuote += (sanitizedData.travelCosts ?? 0) + Number(vatAmountForTravelCosts)
       console.log("total du prix du devis : "+totalTTCQuote)
 
+      const clientId = sanitizedData.clientId
+
+      const workSiteId = sanitizedData.workSiteId
+
+      const client = await db.client.findUnique({
+        where: {id: clientId},
+      })
+
+      const workSite = await db.workSite.findUnique({
+        where: {id: workSiteId},
+      })
+      
         //update Quote
         const newQuote = await db.quote.update({
               where: { id: quote.id },
@@ -355,12 +378,39 @@ export async function POST(req: NextRequest) {
                 vatAmount: vatAmountQuote,
                 priceHT: Number(totalHtQuote),
                 priceTTC: totalTTCQuote,
+                     // Add backup fields only for FINAL bills
+                    ...(status === QuoteStatusEnum.READY && {
+                        clientBackup: {
+                            firstName: client?.firstName,
+                            name: client?.name,
+                            mail: client?.mail,
+                            road: client?.road,
+                            addressNumber: client?.addressNumber,
+                            city: client?.city,
+                            postalCode: client?.postalCode,
+                            additionalAddress: client?.additionalAddress,
+                        },
+                        workSiteBackup: {
+                            road: workSite?.road,
+                            addressNumber: workSite?.addressNumber,
+                            city: workSite?.city,
+                            postalCode: workSite?.postalCode,
+                            additionalAddress: workSite?.additionalAddress,
+                        },
+                        // transform in generical type, because ServiceBackup[] declared is not json format
+                        servicesBackup: quoteServicesWithData as unknown as Prisma.JsonValue,
+                        elementsBackup: {
+                          vatAmount: vatAmountQuote,
+                          priceHT: Number(totalHtQuote),
+                          priceTTC: totalTTCQuote,
+                        },
+                    }),
               }
         })
 
         console.log("Quote created with success.");
         
-        return NextResponse.json({ success: true, data: newQuote });
+        return NextResponse.json(newQuote);
 
 
     } catch (error) {

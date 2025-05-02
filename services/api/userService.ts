@@ -44,12 +44,14 @@ export const deleteEmployee = async (employeeSlug: string): Promise<void> => {
 };
 
 // Create employee
-export const createEmployee = async (employee: UserFormValueType): Promise<UserType> => {
+export const createEmployee = async (employee: UserFormValueType, csrfToken: string): Promise<UserType> => {
     try {
         const response = await fetch(`/api/users`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
+
             },
             body: JSON.stringify(employee),
         });
@@ -68,14 +70,45 @@ export const createEmployee = async (employee: UserFormValueType): Promise<UserT
     }
   };
 
+// set password
+export const setUserPassword = async (password: string, csrfToken: string, token: string): Promise<ApiResponse> => {
+    try {
+        const response = await fetch(`/api/users`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
+                "X-post-type": "set-password"
+
+            },
+            body: JSON.stringify({ token, password }),
+
+        });
+  
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+  
+        const data: ApiResponse = await response.json();
+        console.log("Created user :", data);
+  
+        return data; 
+    } catch (error) {
+        console.error("Error with employee creation :", error);
+        throw error; 
+    }
+  };
+
 
 // Update employee
-export const updateUser = async (employee: UserType): Promise<UserType> => {
+export const updateUser = async (employee: UserType, csrfToken: string): Promise<UserType> => {
     try {
         const response = await fetch(`/api/users/${employee.slug}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
+
             },
             body: JSON.stringify(employee),
         });

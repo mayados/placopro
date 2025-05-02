@@ -1,7 +1,7 @@
 "use client";
 
 import { fetchClient } from "@/services/api/clientService";
-import { useEffect, useState, use } from "react";
+import { useEffect, useState } from "react";
 // import toast, { Toaster } from 'react-hot-toast';
 // import { useRouter } from "next/navigation";
 
@@ -15,7 +15,7 @@ const Client = ({ params }: { params: Promise<{ clientSlug: string }>}) => {
                 // Params is now asynchronous. It's a Promise
                 // So we need to await before access its properties
                 const resolvedParams = await params;
-                const clientSlug = resolvedParams.clientSlug;
+                const {clientSlug} = resolvedParams;
           
                 try{
                 const data = await fetchClient(clientSlug)
@@ -53,7 +53,7 @@ const Client = ({ params }: { params: Promise<{ clientSlug: string }>}) => {
                     <p>Numéro : {client?.addressNumber}</p>
                     <p>Voie : {client?.road}</p>
                     {/* Display "/" if the additionnalAddress is null or undefined */}
-                    <p>Complément d'adresse : {client?.additionalAddress ?? '/'}</p>
+                    <p>Complément d&apos;adresse : {client?.additionalAddress ?? '/'}</p>
                     <p>Code postal : {client?.postalCode}</p>
                     <p>Ville : {client?.city}</p>
                 </div>

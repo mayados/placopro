@@ -28,7 +28,7 @@ export async function GET(req: NextRequest)
             status: 200,
         })
 
-    } catch (error) {
+    } catch{
         // console.log("[Suggestions]", error)
 
         return new NextResponse("Internal error, {status: 500}")

@@ -6,8 +6,8 @@ import React, { useEffect, useState } from 'react'
 // use Dialog when click on delete an employee, because it's a permanent action
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
 import Button from '@/components/Button';
-import { Trash2 } from 'lucide-react';
 import { deleteEmployee, fetchEmployees } from '@/services/api/userService';
+import { faXmark } from '@fortawesome/free-solid-svg-icons';
 
 
 const Employees = () =>  {
@@ -95,7 +95,7 @@ const Employees = () =>  {
                             </Link>
                           </td>
                           <td>
-                            <Button label="Supprimer" icon={Trash2} type="button" action={() => openDeleteDialog(employee.slug)} specifyBackground="text-red-500" />
+                            <Button label="Supprimer" icon={faXmark} type="button" action={() => openDeleteDialog(employee.slug)} specifyBackground="text-red-500" />
                           </td>
                       </tr>
                   );
@@ -108,9 +108,9 @@ const Employees = () =>  {
           {isOpen && employeeToDelete && (
             <Dialog open={isOpen} onClose={closeDeleteDialog} className="absolute top-[50%] left-[25%]" >
                 <DialogPanel className="bg-gray-300 p-5 rounded-md shadow-lg text-black">
-                <DialogTitle>Supprimer l'utilisateur</DialogTitle>
+                <DialogTitle>Supprimer l&apos;utilisateur</DialogTitle>
                 <Description>Cette action est irréversible</Description>
-                <p>Etes-vous sûr de vouloir supprimer l'utilisateur ? Toutes ses données seront supprimées de façon permanente. Cette action est irréversible.</p>
+                <p>Etes-vous sûr de vouloir supprimer l&apos;utilisateur ? Toutes ses données seront supprimées de façon permanente. Cette action est irréversible.</p>
                     <div className="flex justify-between mt-4">
                         <button onClick={() => handleDeleteEmployee(employeeToDelete)} className="bg-red-600 text-white px-4 py-2 rounded-md">Supprimer</button>
                         <button onClick={closeDeleteDialog} className="bg-gray-300 text-black px-4 py-2 rounded-md">Annuler</button>

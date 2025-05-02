@@ -1,5 +1,5 @@
 // This file allows to handle different actions based on the http method retrieved
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { POST as createWorkSite } from "@/app/api/workSites/create"; 
 import { GET as getWorkSites} from "@/app/api/workSites/list"; 
 import { GET as findWorkSite} from "@/app/api/workSites/find"; 

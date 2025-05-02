@@ -1,3 +1,4 @@
+/* eslint-disable */
 
 // Each User of clerkClient.users.getUserList() has originally this type
 interface GetUserType{
@@ -133,7 +134,7 @@ interface WorkSiteType{
     addressNumber: string;
     postalCode: string;
     city: string;
-    additionnalAddress: string;
+    additionalAddress: string;
     client: ClientTypeSuggestion;
     quotes: QuoteType[];
     plannings: PlanningType[];
@@ -157,14 +158,14 @@ interface WorkSiteTypeWithoutQuotesAndPlannings{
     title: string;
     slug: string;
     description: string;
-    beginsThe: Date;
+    beginsThe: Date | null;
     status: string;
     completionDate: Date | null;
     road: string;
     addressNumber: string;
     postalCode: string;
     city: string;
-    additionnalAddress: string;
+    additionalAddress: string;
     client: ClientType;
 }
 
@@ -202,10 +203,6 @@ interface EstimationType{
     id: string;
 }
 
-interface PlanningType{
-    id: string;
-}
-
 interface BillType{
     id: string;
     number: string;
@@ -217,6 +214,7 @@ interface BillType{
     issueDate: Date;
     dueDate: Date;
     status: string;
+    slug: string;
     billType: string;
     paymentDate?: Date;
     paymentMethod?: string,
@@ -235,12 +233,16 @@ interface BillType{
     workStartDate: Date,
     workEndDate: Date,
     workDuration: number,
-    quote: QuoteType
+    quote: QuoteType,
+    clientBackup?: ClientBackup,
+    elementsBackup?: BillElementsBackup,
+    servicesBackup?: ServiceBackup[],
+    workSiteBackup?: WorkSiteBackup,
 }
 //
 interface CreateBillFormValueType{
     number: string | null;
-    dueDate: string | null;
+    dueDate: Date | null;
     natureOfWork: string | null,
     description: string | null,
     issueDate: string | null,
@@ -249,7 +251,7 @@ interface CreateBillFormValueType{
     totalHt: number | null,
     discountAmount: number | null | undefined;
     isDiscountFromQuote: boolean,
-    serviceType: string | null;
+    // serviceType: string | null;
     workSiteId: string | null;
     quoteId:  string | null | undefined,
     clientId:  string | null,
@@ -262,8 +264,24 @@ interface CreateBillFormValueType{
     travelCostsType: string | null,
     workStartDate: Date | null,
     workEndDate: Date | null,
-    workDuration: Date | null,
+    workDuration: number | null,
     discountReason: string | null | undefined
+}
+
+
+
+interface BillForListType{
+    id: string;
+    number: string;
+    client: ClientType;
+    issueDate: Date;
+    dueDate: Date;
+    status: string;
+    slug: string;
+}
+
+interface BillTypeSingle{
+    bill: BillType;
 }
 
 interface CreateDepositBillFormValueType{
@@ -292,17 +310,12 @@ interface CreateDepositBillFormValueType{
     discountReason: string | null | undefined
 }
 
-interface BillForListType{
-    id: string;
-    number: string;
-    client: ClientType;
-    issueDate: Date;
-    dueDate: Date;
-    status: string;
-}
-
-interface BillTypeSingle{
-    bill: BillType;
+interface FormValuesUpdateNotDraftBill{
+    id: string | null,
+    status: string | null,
+    paymentDate: Date | null,
+    canceledAt: Date | null,
+    paymentMethod: string | null,
 }
 
 interface UpdatedBillFormValueType{
@@ -314,7 +327,7 @@ interface UpdatedBillFormValueType{
     vatAmount: number | null;
     // issueDate: Date | null;
     dueDate: Date | null;
-    paymentDate?: Date | null;
+    // paymentDate?: Date | null;
     status: string | null,
     clientId: string | null;
     serviceType: string | null,
@@ -324,7 +337,7 @@ interface UpdatedBillFormValueType{
     workStartDate: Date | null,
     workEndDate: Date | null,
     workDuration: number | null,
-    isDiscountFromQuote: boolean | null,
+    // isDiscountFromQuote: boolean | null,
     // services: BillServiceType[];
     services: ServiceFormBillType[];
     discountAmount: number | null,
@@ -343,17 +356,10 @@ interface UpdatedDepositBillFormValueType{
     paymentTerms: string
 }
 
-interface FormValuesUpdateNotDraftBill{
-    id: string | null,
-    status: string | null,
-    paymentDate: Date | null,
-    canceledAt: Date | null,
-    paymentMethod: string | null,
-}
-
 interface QuoteType{
     id:string;
     number: string;
+    slug: string,
     issueDate: Date;
     validityEndDate: Date;
     natureOfWork: string;
@@ -384,8 +390,69 @@ interface QuoteType{
     workSite: WorkSiteType;
     services : QuoteServiceType[];
     discountAmount?: number;
-    discountReason?: string
+    discountReason?: string,
+    clientBackup?: ClientBackup,
+    elementsBackup?: QuoteElementsBackup,
+    servicesBackup?: ServiceBackup[],
+    workSiteBackup?: WorkSiteBackup,
+
 }
+
+interface ClientBackup {
+    firstName: string;
+    phone?: string,
+    name: string;
+    mail: string;
+    road: string;
+    addressNumber: string;
+    city: string;
+    postalCode: string;
+    additionalAddress?: string;
+}
+
+interface WorkSiteBackup {
+    road: string;
+    addressNumber: string;
+    city: string;
+    postalCode: string;
+    additionalAddress?: string;
+}
+
+interface ServiceBackup {
+    label: string;
+    unitPriceHT: number;
+    quantity: number;
+    unit: string;
+    vatRate: string;
+    totalHT: number;
+    vatAmount: number;
+    totalTTC: number;
+    detailsService: string;
+    discountAmount: number;
+    type: string,
+    discountReason: string | null;
+  }
+
+  interface QuoteElementsBackup {
+    vatAmount: number;
+    priceHT: number;
+    priceTTC: number;
+  }
+
+  interface BillElementsBackup {
+    vatAmount: number,
+    totalTtc: null,
+    totalHt: number,
+    quoteNumber: string
+  }
+
+  interface CreditNoteElementsBackup {
+    billNumber: string
+  }
+
+
+  
+  
 
 interface QuoteTypeSingle{
     quote: QuoteType;
@@ -419,6 +486,8 @@ interface QuoteFormValueType{
     workSiteId: string | null,
     services: ServiceFormQuoteType[],
     serviceType: string,
+    clientName?: string,
+    workSiteName?: string
 }
 
 // The values can be null, it means the form field hasn't been updated, so the quote either
@@ -464,6 +533,7 @@ interface QuoteForListType{
     workStartDate: Date;
     validityEndDate: Date;
     status: string;
+    slug: string,
 }
 
 interface QuotesWithTotalsAndStatus{
@@ -553,6 +623,15 @@ interface ServiceAndBillServiceType{
     serviceId : string,
 }
 
+interface ServiceCompleteVerificationType{
+    label: string,
+    unitPriceHT: string,
+    type: string;
+    vatRate: string;
+    unit: string,  
+    quantity: number
+}
+
 interface ServiceType{
     id: string,
     label: string,
@@ -614,44 +693,120 @@ interface ServiceFormBillType{
     // };
 }
 
+enum EstimationStatusEnumDescription {
+    DRAFT = "Brouillon",
+    READY = "Prêt à l'envoi",
+    SENT  = "Envoyé",
+}
+
+enum UpdateClassicEstimationStatusEnumDescription {
+    READY = "Prêt à l'envoi",
+    SENT  = "Envoyé",
+}
+
+enum QuoteStatusEnumDescription {
+    DRAFT = "Brouillon",
+    READY = "Prêt à l'envoi",
+    ACCEPTED = "Accepté",
+    REFUSED = "Refusé",
+    CANCELED = "Clos"
+}
+
+
+enum UpdateClassicQuoteStatusEnumDescription {
+    READY = "Prêt à l'envoi",
+    ACCEPTED = "Accepté",
+    REFUSED = "Refusé",
+    CANCELED = "Clos"
+}
+
+enum ReportMaterialStatusEnumDescription {
+    TREATED = "Traité",
+    UNTREATED = "Non traité"
+}
+
+enum ClientOrProspectEnum {
+  CLIENT= 'Client',
+  PROSPECT= 'Prospect',
+};
+
+enum UserRoleEnumDescription {
+    DIRECTOR = "Directeur",
+    SECRETARY = "Secrétaire",
+    EMPLOYEE = "Employé"
+}
+
 enum CreditNoteSettlementTypeEnum {
   REFUND = "Remboursement",
   COMPENSATION = "Compensation"
 }
 
-enum CreditNoteReasonEnum {
+enum CreditNoteReasonEnumDescription {
     MISTAKE = "Erreur de facturation",
-  CANCELLATION = "Remise exceptionnelle",
-  DISCOUNT = "Remise exceptionnelle",
-  COMPENSATION = "Compensation",
-  DUPLICATE = "Duplication de facture",
-  WRONG_CUSTOMER = "Mauvais client",
-  DEPOSIT_REFUND = "Remboursement d'acompte",
-  DEPOSIT_ADJUSTMENT = "Ajustement d'acompte"
+    CANCELLATION = "Annulation",
+    DISCOUNT = "Remise exceptionnelle",
+    COMPENSATION = "Compensation",
+    DUPLICATE = "Duplication de facture",
+    WRONG_CUSTOMER = "Mauvais client",
+    DEPOSIT_REFUND = "Remboursement d'acompte",
+    DEPOSIT_ADJUSTMENT = "Ajustement d'acompte"
 }
 
+enum BillTypeEnum {
+    DEPOSIT = "DEPOSIT",
+    FINAL = "FINAL",
+}
+
+// to not have the possibility to re put in DRAFT
+enum UpdateClassicBillStatusEnumDescription{
+    READY = "Prêt à l'envoi",
+    SENT = "Envoyé",
+    CANCELED = "Clos"
+}
+  
 interface CreditNoteType{
     id: string,
     number: string,
     issueDate: Date,
-    reason: CreditNoteReasonEnum,
+    reason: CreditNoteReasonEnumDescription,
     amount: number,
     settlementType?: CreditNoteSettlementTypeEnum,
     isSettled: boolean, 
     billId: string,
     bill: BillType,
+    clientBackup?: ClientBackup,
+    elementsBackup?: CreditNoteElementsBackup,
+}
+
+interface CreditNoteForListType{
+    id: string,
+    number: string,
+    reason: CreditNoteReasonEnumDescription,
+    isSettled: boolean,
+    bill: BillType,
+    issueDate: Date
 }
 
 interface CreateCreditNoteFormValueType{
     amount: number;
     billId: string | null;
-    reason: string | null | CreditNoteReasonEnum;
+    reason: string | CreditNoteReasonEnumDescription;
 }
 
 interface UpdateCreditNoteFormValueType{
     id: string | null;
     isSettled: boolean | null;
     settlementType: null | CreditNoteSettlementTypeEnum;
+}
+
+interface CreditNotesWithTotalsAndStatus{
+    success: boolean,
+    creditNotes: CreditNoteForListType[],
+    settledCreditNotes: CreditNoteForListType[],
+    notSettledCreditNotes: CreditNoteForListType[],
+    totalCreditNotes : number,
+    totalSettledCreditNotes : number,
+    totalNotSettledCreditNotes : number,
 }
 
 interface ServiceSuggestionType{
@@ -710,10 +865,10 @@ interface ClientType{
     mail: string;
     phone: string;
     road: string
-    addressNumber: string;
-    postalCode: string;
-    city: string;
-    additionalAddress: string;
+    addressNumber: string | null;
+    postalCode: string | null;
+    city: string | null;
+    additionalAddress: string | null;
     isAnonymized: boolean;
     prospect?: ProspectType | null;
     workSites?: WorkSiteType[];
@@ -775,7 +930,6 @@ interface ServiceSuggestionsListType{
 }
 
 interface FormValuesUpdateNotDraftQuote{
-    id: string | null,
     status: string | null,
     isSignedByClient: string | null,
     signatureDate: Date | null,
@@ -788,3 +942,195 @@ interface SuggestionsResponse<T> {
 interface UpdatedDraftQuoteResponse{
     updatedQuote: QuoteType;
 }
+
+interface PlanningType{
+    id: string,
+    task: string,
+    startTime: Date,
+    endTime: Date,
+    clerkUserId: string,
+    employee?: string,
+    workSiteId: string,
+    workSite: WorkSiteType
+}
+
+interface PlanningsListType{
+    success: boolean,
+    plannings: PlanningType[], 
+}
+
+// For FullCalendar event
+interface CalendarEvent {
+    id?: string;
+    title: string;
+    start: Date;
+    end: Date;
+    clerkUserId: string,
+    workSiteId: string,
+}
+
+// For FullCalendar event update
+interface UpdateCalendarEventType {
+    id: string;
+    title: string | null;
+    start: Date | null;
+    end: Date | null;
+    clerkUserId: string | null,
+    workSiteId: string | null,
+}
+
+// For FullCalendar event update
+interface CreateOrUpdateCalendarEventType {
+    id?: string;
+    title?: string | null;
+    start?: Date | null;
+    end?: Date | null;
+    clerkUserId?: string | null,
+    workSiteId?: string | null,
+}
+
+interface EmployeeType {
+    id: string;
+    firstName: string;
+    lastName: string;
+  }
+
+interface FormErrors {
+    [key: string]: string;
+}
+
+interface ToDoForListType{
+    id: string;
+    task: string;
+    description: string;
+    createdAt: Date;
+    assignedToClerkId?: null | undefined | string,
+    assignedToName?: null | undefined | string,
+    isChecked?: boolean
+}
+
+interface SecretariesForListType{
+    id: string,
+    firstName: string,
+    lastName: string
+}
+
+interface ToDosWithTotalsAndStatus{
+    success: boolean,
+    toDos: ToDoForListType[],
+    archivedToDos: ToDoForListType[],
+    assignedToDos: ToDoForListType[],
+    checkedToDos: ToDoForListType[],
+    totalToDos : number,
+    totalArchivedToDos : number,
+    totalAssignedToDos : number,
+    totalCheckedToDos: number,
+    secretaries: [],
+}
+
+interface ClassicToDoCreationType{
+    task: string | null,
+    description: string | null,
+}
+
+interface ClassicToDoUpdateType{
+    task?: string;
+    description?: string | null;
+}
+
+interface AssignedToDoUpdateType{
+    task?: string;
+    description?: string | null;
+    assignedToClerkId?: string | null,
+    // assignedToName?: string
+}
+
+interface AssignedToDoCreationType{
+    task: string | null,
+    description: string | null,
+    assignedToClerkId: string | null,
+    assignedToName: string | null
+}
+
+interface ClassicToDoType{
+    id: string,
+    task: string,
+    description: string | null,
+    isChecked: boolean,
+    isArchived: boolean,
+    authorClerkId: string,
+}
+
+interface AssignedToDoType{
+    id: string;
+    task: string;
+    description: string;
+    createdAt: Date;
+    assignedToClerkId?: null | undefined | string,
+    assignedToName?: null | undefined | string,
+    isChecked?: boolean
+}
+
+interface UnitCreationType{
+    label: string | null,
+}
+
+interface UnitUpdateType{
+    label?: string;
+}
+
+interface UnitType{
+    id: string;
+    label: string;
+}
+
+interface UnitForListType{
+    units: UnitType[],
+}
+
+interface VatRateCreationType{
+    rate: number | null,
+}
+
+interface VatRateUpdateType{
+    rate?: number;
+}
+
+interface VatRateType{
+    id: string;
+    rate: number;
+}
+
+interface VatRateForListType{
+    vatRates: VatRateType[],
+}
+
+interface ServiceCreationType{
+    label: string | null,
+    unitPriceHT: number | null,
+    type: string | null,
+}
+
+interface ServiceUpdateType{
+    label?: string | null,
+    unitPriceHT?: number | null,
+    type?: string | null,
+}
+
+interface ServiceEntityType{
+    id: string;
+    label: string,
+    unitPriceHT: number,
+    type: string,
+}
+
+interface ServiceForListType{
+    services: ServiceEntityType[],
+}
+
+
+interface ApiResponse {
+    success: boolean;
+    message?: string; 
+  };
+  

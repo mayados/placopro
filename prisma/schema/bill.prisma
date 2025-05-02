@@ -7,7 +7,7 @@ model Bill{
     totalTtc Float
     vatAmount Float
     issueDate DateTime
-    dueDate DateTime
+    dueDate DateTime?
     workStartDate DateTime?
     workEndDate DateTime?
     workDuration Int?
@@ -15,7 +15,8 @@ model Bill{
     // We have the user in Clerk, so we can't make a relation
     userId String?
     canceledAt DateTime?
-    status String @default("draft")
+    // status String @default("draft")
+    status BillStatusEnum
     paymentMethod PaymentMethodEnum?
     discountReason String?
     // Deposit or invoice
@@ -52,12 +53,30 @@ model Bill{
     // Due amount after deposits
     remainingDueAmount Float? 
 
+    // Have a backup in case of client's deletion
+    clientBackup Json?
+    // Have a backup of different elements such as price, VAT... In case of change
+    elementsBackup Json?
+    // Have a backup for services
+    servicesBackup Json?
+    author String?
+    updatedAt DateTime?
+    modifiedBy String?
+
+    workSiteBackup Json?
+
+    slug String @unique
+
+
+
+
 	// Bill is created by a User
     // userId String? @db.ObjectId
     // user User? @relation(fields: [userId], references: [id], onDelete: SetNull)  
 	// One Bill is linked to 1 Client
-    clientId String @db.ObjectId
-    client Client @relation(fields: [clientId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+    clientId String? @db.ObjectId
+    client Client? @relation(fields: [clientId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
 
     // In all cases, a Bill is linked to a WorkSite
     workSiteId String @db.ObjectId
@@ -77,7 +96,6 @@ model Bill{
 enum BillTypeEnum {
   DEPOSIT
   FINAL
-  INVOICE
 }
 
 enum PaymentMethodEnum {
@@ -85,4 +103,12 @@ enum PaymentMethodEnum {
   BANK_TRANSFER
   CASH
   CHECK  
+}
+
+enum BillStatusEnum{
+  DRAFT
+  READY
+  SENT 
+  CANCELED
+  PAID
 }

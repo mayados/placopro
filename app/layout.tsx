@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { Toaster } from 'react-hot-toast';  
 import {
   ClerkProvider,
-  SignInButton,
-  SignedIn,
-  SignedOut,
-  UserButton
+
 } from '@clerk/nextjs'
 import Nav from "@/components/Nav";
 
@@ -39,7 +37,8 @@ export default function RootLayout({
         >
           <Nav logo="Placopro" />
           <main>
-            {children}            
+            {children} 
+            <Toaster />           
           </main>
 
         </body>

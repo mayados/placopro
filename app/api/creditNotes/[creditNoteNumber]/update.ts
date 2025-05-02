@@ -1,23 +1,56 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
+import { updateCreditNoteSchema } from "@/validation/creditNoteValidation";
+import { sanitizeData } from "@/lib/sanitize"; 
+import { currentUser } from "@clerk/nextjs/server";
+
 
 export async function PUT(req: NextRequest) {
   const data = await req.json();
-  const { id, isSettled, settlementType } = data;
+  // Explicit validation of CSRF token (in addition of the middleware)
+  // const csrfToken = req.headers.get("x-csrf-token");
+  // if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
+  //   return new Response("Invalid CSRF token", { status: 403 });
+  // }
+  // const { id, isSettled, settlementType } = data;
+  
 
   // Mapping of french statuts to english
   const statusMapping: Record<string, string> = {
-    "Remboursement": "REFUND",
-    "Compensation": "COMPENSATION",
+    "Remboursement": CreditNoteSettlementTypeEnum.REFUND,
+    "Compensation": CreditNoteSettlementTypeEnum.COMPENSATION,
   };
 
+  const user = await currentUser();
+
+
   try {
+
+    const { id, ...dataWithoutProspectNumber } = data;
+    data.id = id;
+    
+    // Validation avec Zod (sans 'status')
+    const parsedData = updateCreditNoteSchema.safeParse(dataWithoutProspectNumber);
+    if (!parsedData.success) {
+        console.error("Validation Zod échouée :", parsedData.error.format());
+            
+        return NextResponse.json({ success: false, message: parsedData.error.errors }, { status: 400 });
+    }
+                    
+    // Validation réussie
+    // Sanitizing datas
+    const sanitizedData = sanitizeData(parsedData.data);
+    console.log("Données nettoyées :", JSON.stringify(sanitizedData));
+        
+    // Ajoute le statut aux données validées
+    sanitizedData.id = id;
+    
     // construct dynamically update's object
-    const updateData: Record<string, any> = {};
+    const updateData: Record<string, unknown> = {};
 
     // status conversion
-    if (settlementType !== null) {
-        const mappedStatus = statusMapping[settlementType];
+    if (sanitizedData.settlementType !== null) {
+        const mappedStatus = statusMapping[sanitizedData.settlementType];
         if (mappedStatus) {
             updateData.status = mappedStatus;
         } else {
@@ -25,8 +58,8 @@ export async function PUT(req: NextRequest) {
         }
     }
 
-    if (isSettled !== null){
-        updateData.isSettled = isSettled
+    if (sanitizedData.isSettled !== null){
+        updateData.isSettled = sanitizedData.isSettled
     }
 
 
@@ -38,7 +71,11 @@ export async function PUT(req: NextRequest) {
     // Update in database
     const updatedCreditNote = await db.creditNote.update({
       where: { id: id },
-      data: updateData,
+      data: {
+        ...updateData,
+        updatedAt : new Date().toISOString(),
+        modifiedBy: user?.id
+      },
       include: {
         bill: true, 
 

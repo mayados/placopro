@@ -1,10 +1,12 @@
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || 
+(typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
   // Retrieve a specific Company
-  export const fetchCompany = async (companySlug: string): Promise<CompanyTypeSingle> => {
+  export const fetchCompany = async (companySlug: string): Promise<CompanyType> => {
     try {
-      const response = await fetch(`/api/companies/${companySlug}`);
+      const response = await fetch(`${baseUrl}/api/companies/${companySlug}`);
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
-      const data: CompanyTypeSingle = await response.json();
+      const data: CompanyType = await response.json();
       console.log("Données reçues après le fetch :", data);
       return data;
     } catch (error) {
@@ -44,12 +46,14 @@ export const deleteCompany = async (companySlug: string): Promise<void> => {
 };
 
 // Update company
-export const updateCompany = async (company: CompanyType): Promise<CompanyType> => {
+export const updateCompany = async (company: CompanyType, csrfToken: string): Promise<CompanyType> => {
   try {
       const response = await fetch(`/api/companies/${company.slug}`, {
           method: "PUT",
           headers: {
               "Content-Type": "application/json",
+              "X-CSRF-Token": csrfToken,
+
           },
           body: JSON.stringify(company),
       });
@@ -69,12 +73,14 @@ export const updateCompany = async (company: CompanyType): Promise<CompanyType> 
 };
 
 // Create company
-export const createCompany = async (company: CompanyFormValueType): Promise<CompanyType> => {
+export const createCompany = async (company: CompanyFormValueType, csrfToken: string): Promise<CompanyType> => {
   try {
       const response = await fetch(`/api/companies`, {
           method: "POST",
           headers: {
               "Content-Type": "application/json",
+              "X-CSRF-Token": csrfToken,
+
           },
           body: JSON.stringify(company),
       });

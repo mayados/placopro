@@ -1,8 +1,27 @@
+
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || 
+(typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
 // Retrieve all the quotes
 // Return a promise with object of type QuoteWithTotalsAndStatus
-export const fetchQuotes = async (): Promise<QuotesWithTotalsAndStatus> => {
+export const fetchQuotes = async ({
+    page,
+    pageDraft,
+    pageReadyToBeSent,
+    pageSent,
+    pageAccepted,
+    pageRefused,
+    limit,
+  }: {
+    page: number;
+    pageDraft: number;
+    pageReadyToBeSent: number;
+    pageSent: number;
+    pageAccepted: number;
+    pageRefused: number;
+    limit: number;
+}): Promise<QuotesWithTotalsAndStatus> => {
     try {
-      const response = await fetch(`/api/quote`);
+      const response = await fetch(`/api/quote?page=${page}&pageDraft=${pageDraft}&pageReadyToBeSent=${pageReadyToBeSent}&pageSent=${pageSent}&pageAccepted=${pageAccepted}&pageRefused=${pageRefused}&limit=${limit}`);
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
       const data: QuotesWithTotalsAndStatus = await response.json();
@@ -15,12 +34,16 @@ export const fetchQuotes = async (): Promise<QuotesWithTotalsAndStatus> => {
   };
 
   // Retrieve a specific Quote
-  export const fetchQuote = async (quoteNumber: string): Promise<QuoteTypeSingle> => {
+  export const fetchQuote = async (quoteSlug: string): Promise<QuoteType> => {
     try {
-      const response = await fetch(`/api/quote/${quoteNumber}`);
+    const url = `${baseUrl}/api/quote/${quoteSlug}`
+      console.log("Fetching quote from:", url);
+
+      const response = await fetch(`${baseUrl}/api/quote/${quoteSlug}`);
+
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
-      const data: QuoteTypeSingle = await response.json();
+      const data: QuoteType = await response.json();
       console.log("Données reçues après le fetch :", data);
       return data;
     } catch (error) {
@@ -45,12 +68,14 @@ export const deleteQuote = async (quoteId: string): Promise<void> => {
 };
 
 // Create quote
-export const createQuote = async (quote: QuoteFormValueType): Promise<QuoteType> => {
+export const createQuote = async (quote: QuoteFormValueType, csrfToken: string): Promise<QuoteType> => {
   try {
-      const response = await fetch(`/api/quotes`, {
+      const response = await fetch(`/api/quote`, {
           method: "POST",
           headers: {
               "Content-Type": "application/json",
+              "X-CSRF-Token": csrfToken,
+
           },
           body: JSON.stringify(quote),
       });
@@ -69,14 +94,43 @@ export const createQuote = async (quote: QuoteFormValueType): Promise<QuoteType>
   }
 };
 
+// send quote to client with email
+export const sendQuote = async (quoteSlug: string, emailClient: string, csrfToken: string): Promise<ApiResponse> => {
+    try {
+        const response = await fetch(`/api/quote`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
+                "X-post-type": "send-quote",
+  
+            },
+            body: JSON.stringify({quoteSlug, emailClient}),
+        });
+  
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+  
+        const data: ApiResponse = await response.json();
+        console.log("Created quote :", data);
+  
+        return data; 
+    } catch (error) {
+        console.error("Erreur with quote creation :", error);
+        throw error; 
+    }
+  };
+
 // Update draft quote
-export const updateDraftQuote = async (quoteNumber: string, updatedQuoteWithStatus: UpdatedQuoteFormValueType): Promise<QuoteType> => {
+export const updateDraftQuote = async (quoteSlug: string, updatedQuoteWithStatus: UpdatedQuoteFormValueType, csrfToken: string): Promise<QuoteType> => {
   try {
-      const response = await fetch(`/api/quote/${quoteNumber}`, {
+      const response = await fetch(`/api/quote/${quoteSlug}`, {
           method: "PUT",
           headers: {
               "Content-Type": "application/json",
               "X-Update-Type": "draft",
+              "X-CSRF-Token": csrfToken,
 
           },
           body: JSON.stringify(updatedQuoteWithStatus),
@@ -97,12 +151,14 @@ export const updateDraftQuote = async (quoteNumber: string, updatedQuoteWithStat
 };
 
 // Update classic quote
-export const updateClassicQuote = async (quoteNumber: string, formValues: FormValuesUpdateNotDraftQuote): Promise<QuoteType> => {
+export const updateClassicQuote = async (quoteSlug: string, formValues: FormValuesUpdateNotDraftQuote, csrfToken: string): Promise<QuoteType> => {
   try {
-      const response = await fetch(`/api/quote/${quoteNumber}`, {
+      const response = await fetch(`/api/quote/${quoteSlug}`, {
           method: "PUT",
           headers: {
               "Content-Type": "application/json",
+              "X-CSRF-Token": csrfToken,
+
           },
           body: JSON.stringify(formValues),
       });
