@@ -5,7 +5,7 @@ import Bill from '@/components/Bill'
 
 export default async function Page({ params }: { params: { billSlug: string } }) {
   
-  const { billSlug } = await params;
+  const { billSlug } = params;
 
   const h = await headers()
   const csrfToken = h.get('X-CSRF-Token') || 'missing'
