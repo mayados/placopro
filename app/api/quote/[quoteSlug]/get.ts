@@ -26,11 +26,7 @@ export async function GET(req: NextRequest, {params}: {params: {quoteSlug: strin
 
         console.log("Je récupère un certain devis : "+quote)
 
-        return NextResponse.json({ 
-            success: true, 
-            quote: quote,
-            status: 200,
-        })
+        return NextResponse.json(quote)
 
     } catch (error) {
         console.log("[QUOTE]", error)
