@@ -29,5 +29,5 @@ export async function PUT(req: NextRequest) {
     return updateDraftQuote(req);
   }
   // Classic update by default
-  return updateClassicQuote(req);
+  return updateClassicQuote(req, { params: { quoteSlug } });
 }
