@@ -3,9 +3,13 @@ import { headers } from 'next/headers'
 // client component
 import UpdateDraftQuote from '@/components/UpdateDraftQuote' 
 
-export default async function Page({ params }: { params: { quoteSlug: string } }) {
+type Params = Promise<{ quoteSlug: string }>;
+
+
+export default async function Page({ params }: { params: Params }) {
   
-  const { quoteSlug } = await params;
+  const resolvedParams = await params;
+  const { quoteSlug } = resolvedParams;
 
   const h = await headers()
   const csrfToken = h.get('X-CSRF-Token') || 'missing'

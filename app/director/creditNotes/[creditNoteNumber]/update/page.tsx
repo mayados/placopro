@@ -2,9 +2,11 @@
 import { headers } from 'next/headers'
 // client component
 import UpdateCreditNote from '@/components/UpdateCreditNote' 
+type Params = Promise<{ creditNoteNumber: string }>;
 
-export default async function Page({ params }: { params: { creditNoteNumber: string } }) {
-  const { creditNoteNumber } = await params;
+export default async function Page({ params }: { params: Params }) {
+  const resolvedParams = await params;
+  const { creditNoteNumber } = resolvedParams;
 
   const h = await headers()
   const csrfToken = h.get('X-CSRF-Token') || 'missing'

@@ -18,7 +18,7 @@ const Employee = ({ params }: { params: Promise<{ employeeSlug: string }>}) => {
                 // Params is now asynchronous. It's a Promise
                 // So we need to await before access its properties
                 const resolvedParams = await params;
-                const employeeSlug = resolvedParams.employeeSlug;
+                const {employeeSlug} = resolvedParams;
                     
                 try{
                   const data = await fetchEmployee(employeeSlug)
