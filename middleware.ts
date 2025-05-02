@@ -379,6 +379,7 @@ if (userId && (isForConnectedUsersApiRoute(req) || isForConnectedUsersPage(req))
 
 export const config = {
   matcher: ['/((?!.clerk|_next/static|_next/image|favicon.ico).*)'],
+  runtime: 'nodejs',
 };
 
 
