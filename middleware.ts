@@ -93,7 +93,7 @@
 //     const payload = decodedToken?.payload;  
 
 //     const role = payload?.role
- 
+
 //   console.log("role : "+role)
 //   // ROUTES PUBLICS : skip auth + csrf
 //   if (isAuthRoute(req)) return NextResponse.next();
@@ -132,7 +132,7 @@
 //   // Vérifier si la route est une API qui nécessite une protection CSRF
 //   const isProtectedApiRoute = request.nextUrl.pathname.startsWith('/api/') && 
 //                               !request.nextUrl.pathname.startsWith('/api/auth/');
-  
+
 //   try {
 //     // Pour les routes API protégées, appliquer la validation complète
 //     // Pour les autres routes, cela génère uniquement le cookie sans valider
@@ -178,8 +178,8 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { CsrfError, createCsrfProtect } from '@edge-csrf/nextjs';
 import { hasRole } from '@/lib/clerk_utils';
-import { NextRequest, NextResponse } from "next/server";
-import jwt from 'jsonwebtoken';
+import { NextResponse } from "next/server";
+import jwt,{ JwtPayload } from 'jsonwebtoken';
 // import { csrfMiddleware } from "./lib/csrf";
 
 // ----- Matchers -----
@@ -189,9 +189,9 @@ const isAuthRoute = createRouteMatcher([
   '/sign-in',
   '/sign-up',
   '/sso-callback',
-  '/v1/(.*)',             
-  '/oauth/(.*)',         
-  '/.clerk/(.*)',         
+  '/v1/(.*)',
+  '/oauth/(.*)',
+  '/.clerk/(.*)',
   '/favicon.ico',
   '/_next/(.*)',
   'director/quotes',
@@ -248,39 +248,67 @@ const csrfProtect = createCsrfProtect({
 export const middleware = clerkMiddleware(async (auth, req) => {
   // Créer une réponse par défaut pour pouvoir y ajouter le cookie CSRF
   const response = NextResponse.next();
-  
-  const url = new URL(req.url);
-  const { userId, sessionClaims, redirectToSignIn, getToken } = await auth();
 
+  // const url = new URL(req.url);
+  const { userId, redirectToSignIn, getToken } = await auth();
+  // Déterminer si c'est une requête serveur ou client
+  const isServerSideRequest = req.headers.get('x-middleware-prefetch') === '1' ||
+    !req.headers.get('sec-fetch-dest');
   // ROUTES PUBLICS : skip auth (mais on génère quand même un token CSRF)
-   // Vérifier si c'est une route API qui nécessite une protection CSRF
-   const isProtectedApiRoute = req.nextUrl.pathname.startsWith('/api/') && 
-   !req.nextUrl.pathname.startsWith('/api/auth/') &&
-   !req.nextUrl.pathname.startsWith('/api/clerk/');
-
-// ROUTES PUBLICS : skip auth + appliquer CSRF de manière sélective
-if (isAuthRoute(req)) {
-// Pour les routes d'authentification, uniquement générer le cookie sans validation
-try {
-await csrfProtect(req, response);
-} catch (err) {
-// Ignorer les erreurs CSRF sur les routes d'authentification
-if (!(err instanceof CsrfError)) throw err;
-}
-return response;
-}
+  // Vérifier si c'est une route API qui nécessite une protection CSRF
+  const isProtectedApiRoute = req.nextUrl.pathname.startsWith('/api/') &&
+    !req.nextUrl.pathname.startsWith('/api/auth/') &&
+    !req.nextUrl.pathname.startsWith('/api/clerk/');
+  // Pour les requêtes GET api depuis le serveur, on ignore la validation CSRF
+  if (isServerSideRequest && req.method === 'GET' && isProtectedApiRoute) {
+    // Ne pas appliquer CSRF pour les requêtes GET côté serveur vers les API
+    return response;
+  }
+  // ROUTES PUBLICS : skip auth + appliquer CSRF de manière sélective
+  if (isAuthRoute(req)) {
+    // Pour les routes d'authentification, uniquement générer le cookie sans validation
+    try {
+      await csrfProtect(req, response);
+    } catch (err) {
+      // Ignorer les erreurs CSRF sur les routes d'authentification
+      if (!(err instanceof CsrfError)) throw err;
+    }
+    return response;
+  }
 
   // // Vérifier l'authentification
   // if (!userId) {
   //   return redirectToSignIn();
   // }
 
-  // Récupérer et décoder le token pour les rôles
+
+  let role: string | undefined = undefined;
+let payload: JwtPayload | undefined = undefined;
+
+if (userId && (isForConnectedUsersApiRoute(req) || isForConnectedUsersPage(req))) {
   const token = await getToken({ template: "user_public_metadata_role" });
-  const decodedToken = jwt.decode(token, { complete: true });
-  const payload = decodedToken?.payload;  
-  const role = payload?.role;
- 
+
+  if (token) {
+    const decodedToken = jwt.decode(token, { complete: true });
+    payload = (decodedToken as jwt.Jwt | null)?.payload as JwtPayload | undefined;
+    role = payload?.role;
+    console.log("role du user :", role);
+  } else {
+    console.warn("Token introuvable pour utilisateur connecté.");
+  }
+}
+  // Récupérer et décoder le token pour les rôles
+  // const token = await getToken({ template: "user_public_metadata_role" });
+  // if (!token) {
+  //   throw new Error("Token non disponible");
+  // }
+  // const decodedToken = jwt.decode(token, { complete: true });
+  // // const payload = decodedToken?.payload;
+  // // const role = payload?.role;
+  // const payload = (decodedToken as jwt.Jwt | null)?.payload as JwtPayload | undefined;
+  // const role = payload?.role;
+  // console.log("role du user : "+role)
+
   // AUTHORIZATION LOGIC
   if (isForConnectedUsersPage(req) && !userId) {
     return redirectToSignIn();
@@ -312,21 +340,40 @@ return response;
 
   // --- CSRF Protection ---
   // Vérifier si c'est une route API qui nécessite une protection CSRF
-  try {
-    // Appliquer CSRF pour toutes les routes après autorisation
-    await csrfProtect(req, response);
-  } catch (err) {
-    if (err instanceof CsrfError && isProtectedApiRoute) {
-      // Renvoyer une erreur 403 uniquement pour les routes API protégées
-      return new NextResponse(JSON.stringify({ error: "Invalid CSRF token" }), { status: 403 });
-    }
-    // Pour les autres routes, ignorer l'erreur CSRF
-    if (!(err instanceof CsrfError)) {
-      throw err;
+  // try {
+  //   // Appliquer CSRF pour toutes les routes après autorisation
+  //   await csrfProtect(req, response);
+  // } catch (err) {
+  //   if (err instanceof CsrfError && isProtectedApiRoute) {
+  //     // Renvoyer une erreur 403 uniquement pour les routes API protégées
+  //     return new NextResponse(JSON.stringify({ error: "Invalid CSRF token" }), { status: 403 });
+  //   }
+  //   // Pour les autres routes, ignorer l'erreur CSRF
+  //   if (!(err instanceof CsrfError)) {
+  //     throw err;
+  //   }
+  // }
+
+  // --- CSRF Protection ---
+  // Apply csrf only for not GET requests or client requests (if we don't add this block of code, SSR won't pass)
+  if (req.method !== 'GET' || !isServerSideRequest) {
+    try {
+      // Apply CSRF for all routes after authorization
+      await csrfProtect(req, response);
+    } catch (err) {
+      if (err instanceof CsrfError && isProtectedApiRoute) {
+        // Return 403 error only for protected API routes
+        return new NextResponse(JSON.stringify({ error: "Invalid CSRF token" }), { status: 403 });
+      }
+      // For other routes, ignore csrf error
+      if (!(err instanceof CsrfError)) {
+        throw err;
+      }
     }
   }
-  
-  // Tout est OK, continuer
+
+
+  // evrything is okay, continue
   return response;
 });
 
@@ -340,7 +387,7 @@ export const config = {
 //   //   '/((?!_next|.*\\.(?:ico|jpg|png|svg|css|js|woff2?|ttf|map)).*)',
 //   //   '/(api|trpc)(.*)',
 //   // ],
-//     matcher: ['/((?!api/csrf|.clerk|_next|favicon.ico).*)'], 
+//     matcher: ['/((?!api/csrf|.clerk|_next|favicon.ico).*)'],
 // };
 
 
