@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Field,Input, Label, Legend, Radio, RadioGroup, Select, Textarea } from '@headlessui/react';
+import { Field, Input, Label, Legend, Radio, RadioGroup, Select, Textarea } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import { capitalizeFirstLetter, formatDateForInput } from "@/lib/utils";
@@ -16,9 +16,9 @@ import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
 type QuoteCreationProps = {
     csrfToken: string;
-  };
+};
 
-export default function QuoteCreation({csrfToken}: QuoteCreationProps){
+export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
 
     const [quote, setQuote] = useState<QuoteFormValueType>({
         clientName: "",
@@ -51,14 +51,14 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
         services: [],
         serviceType: "",
     })
-    const discountReasonChoices = 
+    const discountReasonChoices =
     {
         FIDELITY: "Fidelité",
         EXCEPTIONAL: "Remise exceptionnelle"
     };
-    const travelCostsTypeChoices = ["Forfait unique","Forfait journalier"];
+    const travelCostsTypeChoices = ["Forfait unique", "Forfait journalier"];
     // Define options for select for services
-    const serviceTypeChoices = ["plâtrerie","Peinture"];
+    const serviceTypeChoices = ["plâtrerie", "Peinture"];
     const [vatRateChoices, setVatRateChoices] = useState<VatRateChoiceType[]>([])
     const [unitChoices, setUnitChoices] = useState<UnitChoiceType[]>([])
 
@@ -69,18 +69,18 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
     const [workSiteSuggestions, setWorkSiteSuggestions] = useState<WorkSiteSuggestionType[] | null>(null)
     const [servicesSuggestions, setServiceSuggestions] = useState<ServiceSuggestionType[] | null>(null)
     // text visible in the client field
-    const [clientInput, setClientInput] = useState(""); 
+    const [clientInput, setClientInput] = useState("");
 
 
-    const [workSiteInput, setWorkSiteInput] = useState(""); 
-    const [unitInput, setUnitInput] = useState(""); 
-    const [vatRateInput, setVatRateInput] = useState(""); 
-    const [serviceInput, setServiceInput] = useState(""); 
+    const [workSiteInput, setWorkSiteInput] = useState("");
+    const [unitInput, setUnitInput] = useState("");
+    const [vatRateInput, setVatRateInput] = useState("");
+    const [serviceInput, setServiceInput] = useState("");
     // Choices for boolean properties
-    const hasRightOfWithdrawalChoices = ["Oui","Non"];
+    const hasRightOfWithdrawalChoices = ["Oui", "Non"];
     const [isOpen, setIsOpen] = useState(false);
     const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
-    
+
 
 
     useEffect(() => {
@@ -90,50 +90,50 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
             try {
                 // Parse les données du localStorage
                 const parsedQuote = JSON.parse(savedQuote);
-    
+
                 // Mettre à jour l'objet global quote
                 setQuote(parsedQuote);
-    
+
                 // Initialiser clientInput et workSiteInput avec les valeurs du localStorage
                 if (parsedQuote.clientName) {
                     setClientInput(parsedQuote.clientName);  // Mettre à jour clientInput avec le nom du client
                 }
-    
+
                 if (parsedQuote.workSiteName) {
                     setWorkSiteInput(parsedQuote.workSiteName);  // Mettre à jour workSiteInput avec le nom du chantier
                 }
-    
+
             } catch (error) {
                 console.error("Erreur de parsing du localStorage quoteFormData :", error);
                 // Nettoyer si les données sont corrompues
-                localStorage.removeItem('quoteFormData'); 
+                localStorage.removeItem('quoteFormData');
             }
         }
 
         const loadVatRates = async () => {
-            try{
+            try {
                 const data = await fetchVatRates();
                 setVatRateChoices(data)
 
-            }catch (error) {
+            } catch (error) {
                 console.error("Impossible to load VAT rates :", error);
-                }
+            }
         };
 
         const loadUnits = async () => {
-            try{
+            try {
                 const data = await fetchUnits();
                 setUnitChoices(data)
 
-            }catch (error) {
+            } catch (error) {
                 console.error("Impossible to load units :", error);
-            }     
+            }
         };
 
         loadVatRates()
         loadUnits();
-    },[]);
-    
+    }, []);
+
     //Util function to update the Quote and the localStorage
     const updateQuoteAndStorage = (updatedQuote: QuoteFormValueType) => {
         setQuote(updatedQuote);
@@ -141,32 +141,32 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        console.log("évènement reçu : "+e)
+        console.log("évènement reçu : " + e)
         const { name, value } = e.target;
-        console.log("select :"+name+" valeur : "+value)
+        console.log("select :" + name + " valeur : " + value)
         // setQuote({
         //     ...quote,
         //     [name]: value,
         // });
         const updatedQuote = { ...quote, [name]: value };
         updateQuoteAndStorage(updatedQuote);
-    
 
-        if(name === "client"){
+
+        if (name === "client") {
             setClientInput(value)
-            console.log("input client : "+clientInput)
-        }else if(name === "workSite"){
+            console.log("input client : " + clientInput)
+        } else if (name === "workSite") {
             setWorkSiteInput(value)
-        }else if(name === "unit"){
+        } else if (name === "unit") {
             setUnitInput(value)
-        }else if(name === "vatRate"){
+        } else if (name === "vatRate") {
             setVatRateInput(value)
         }
 
-        if(name === "client" || name === "workSite"){
+        if (name === "client" || name === "workSite") {
             handleDisplaySuggestions(e)
         }
-          
+
     };
 
     //   Retrieve datas from the radio buttons. Because they are in a RadioGroup, we can't retrieve the value just thanks to an event, we have to get the name (of the group) + the value selected
@@ -179,49 +179,49 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
         const updatedQuote = {
             ...quote,
             [name]: value,
-          };
-          updateQuoteAndStorage(updatedQuote); 
-      };
+        };
+        updateQuoteAndStorage(updatedQuote);
+    };
 
     //   console.log("Contenu du localStorage 'quoteFormData' :", JSON.parse(localStorage.getItem('quoteFormData') || '{}'));
 
 
-      const handleDisplaySuggestions = async (
+    const handleDisplaySuggestions = async (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-      ) => {
+    ) => {
         const { name, value } = e.target;
-      
+
         if (name !== "client" && name !== "workSite") return;
-      
+
         if (value.trim().length < 2) {
-          if (name === "client") {
-            setClientSuggestions(null);
-            setClientInput(value);
-            setQuote((prev) => ({ ...prev, clientId: null }));
-          } else if (name === "workSite") {
-            setWorkSiteSuggestions(null);
-            setWorkSiteInput(value);
-            setQuote((prev) => ({ ...prev, workSiteId: null }));
-          }
-          return;
+            if (name === "client") {
+                setClientSuggestions(null);
+                setClientInput(value);
+                setQuote((prev) => ({ ...prev, clientId: null }));
+            } else if (name === "workSite") {
+                setWorkSiteSuggestions(null);
+                setWorkSiteInput(value);
+                setQuote((prev) => ({ ...prev, workSiteId: null }));
+            }
+            return;
         }
-      
+
         try {
-          const data = await fetchSuggestions(name, value);
-      
-          if (name === "client") {
-            setClientSuggestions(data.suggestions as ClientSuggestionType[]);
-          } else if (name === "workSite") {
-            setWorkSiteSuggestions(data.suggestions as WorkSiteSuggestionType[]);
-          }
+            const data = await fetchSuggestions(name, value);
+
+            if (name === "client") {
+                setClientSuggestions(data.suggestions as ClientSuggestionType[]);
+            } else if (name === "workSite") {
+                setWorkSiteSuggestions(data.suggestions as WorkSiteSuggestionType[]);
+            }
         } catch (error) {
-          console.error(`Erreur lors de la récupération des suggestions pour ${name} :`, error);
+            console.error(`Erreur lors de la récupération des suggestions pour ${name} :`, error);
         }
-      };
-      
+    };
+
     const handleClickSuggestion = (inputName: string, id: string, fieldValue: string) => {
-        console.log("valeur du champ : "+fieldValue)
-        if(inputName === "client"){
+        console.log("valeur du champ : " + fieldValue)
+        if (inputName === "client") {
             // setClientInput(fieldValue)
             // setQuote((prev) => ({
             //     ...prev,
@@ -232,12 +232,12 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
             updateQuoteAndStorage({
                 ...quote,
                 clientId: id,
-                clientName: fieldValue, 
+                clientName: fieldValue,
 
             });
             // Close suggestions list
-            setClientSuggestions(null); 
-        }else if(inputName === "workSite"){
+            setClientSuggestions(null);
+        } else if (inputName === "workSite") {
             // setWorkSiteInput(fieldValue)
             // setQuote((prev) => ({
             //     ...prev,
@@ -252,7 +252,7 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                 workSiteId: id,
             });
             // Close suggestions list
-            setWorkSiteSuggestions(null); 
+            setWorkSiteSuggestions(null);
         }
     }
 
@@ -260,20 +260,20 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
     const handleClickServiceSuggestion = (
         index: number,
         suggestion: ServiceSuggestionType
-      ) => {
+    ) => {
         const newServices = [...quote.services];
         newServices[index] = {
-          ...newServices[index],
-          id: suggestion.id,
-          label: suggestion.label,
-          // Fil unitPriceHT and type fields with the values of the suggestion
-          unitPriceHT: suggestion.unitPriceHT, 
-          type: capitalizeFirstLetter(suggestion.type),
-          // Allows to know if a service comes from a suggestion to manage automatic fill fields
-          selectedFromSuggestions: true, 
+            ...newServices[index],
+            id: suggestion.id,
+            label: suggestion.label,
+            // Fil unitPriceHT and type fields with the values of the suggestion
+            unitPriceHT: suggestion.unitPriceHT,
+            type: capitalizeFirstLetter(suggestion.type),
+            // Allows to know if a service comes from a suggestion to manage automatic fill fields
+            selectedFromSuggestions: true,
         };
-      
-        console.log("le type de la suggestion est "+suggestion.type)
+
+        console.log("le type de la suggestion est " + suggestion.type)
 
         // setQuote({
         //   ...quote,
@@ -287,11 +287,11 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
 
         // Delete suggestions after the clic
         setServiceSuggestions([]);
-      };
+    };
 
-      const handleQuoteCreation = async (statusReady?: string) => {
-        console.log("lors du submit, le status est : "+statusReady)
-        const status = statusReady ? "READY": "DRAFT"
+    const handleQuoteCreation = async (statusReady?: string) => {
+        console.log("lors du submit, le status est : " + statusReady)
+        const status = statusReady ? "READY" : "DRAFT"
 
         try {
             const createQuoteWithStatus = {
@@ -301,24 +301,24 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
             console.log("Payload envoyé au backend :", JSON.stringify(createQuoteWithStatus));
             // Choisir le schéma de validation en fonction du statut
             const schema = statusReady === "READY" ? createQuoteFinalSchema : createQuoteDraftSchema;
-            
+
             // Validation des données du formulaire en fonction du statut
             const validationResult = schema.safeParse(createQuoteWithStatus);
-            
+
             if (!validationResult.success) {
                 // Si la validation échoue, afficher les erreurs
                 console.error("Erreurs de validation :", validationResult.error.errors);
-                    // Transformer les erreurs Zod en un format utilisable dans le JSX
+                // Transformer les erreurs Zod en un format utilisable dans le JSX
                 const formattedErrors = validationResult.error.flatten().fieldErrors;
-            
+
                 // Afficher les erreurs dans la console pour débogage
                 console.log(formattedErrors);
-                          
+
                 // Mettre à jour l'état avec les erreurs
                 setErrors(formattedErrors);
                 return;  // Ne pas soumettre si la validation échoue
             }
-            
+
             // Delete former validation errors
             setErrors({})
             const newQuote = await createQuote(createQuoteWithStatus, csrfToken);
@@ -328,7 +328,7 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
             // Clear localStorage
             localStorage.removeItem('quoteFormData');
 
-    
+
             try {
                 // Redirection vers le devis créé
                 router.push(`/director/quotes/${newQuote.number}`);
@@ -344,23 +344,23 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
 
     const addService = () => {
         setQuote({
-          ...quote,
-          services: [
-            ...quote.services,
-            {
-                id : null,
-              label: "",
-              unitPriceHT: "",
-              type: "",
-              unit: "",
-              vatRate: "",
-              selectedFromSuggestions: false,
-              quantity: 0,
-              detailsService: "",
-            },
-          ],
+            ...quote,
+            services: [
+                ...quote.services,
+                {
+                    id: null,
+                    label: "",
+                    unitPriceHT: "",
+                    type: "",
+                    unit: "",
+                    vatRate: "",
+                    selectedFromSuggestions: false,
+                    quantity: 0,
+                    detailsService: "",
+                },
+            ],
         });
-      };
+    };
 
     const removeService = (index: number) => {
         const newServices = quote.services.filter((_, i) => i !== index);
@@ -373,43 +373,43 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
     // We search services suggestions with the letters the user submit (= the query)
     // We don't search if the query is less than 2 characters
     const loadServiceSuggestions = async (value: string) => {
-        if (value.length < 2) return; 
-        try{
-            const data = await fetchSuggestions("service",value);
+        if (value.length < 2) return;
+        try {
+            const data = await fetchSuggestions("service", value);
             if (Array.isArray(data.suggestions) && data.suggestions.length > 0) {
-                setServiceSuggestions(data.suggestions as ServiceSuggestionType[]); 
+                setServiceSuggestions(data.suggestions as ServiceSuggestionType[]);
                 console.log("Les datas reçues sont supérieures à 0")
             } else {
-                setServiceSuggestions([]); 
+                setServiceSuggestions([]);
                 console.log("Pas de datas reçues")
 
             }
-        }catch(error){
+        } catch (error) {
             console.error("Erreur lors de la récupération des suggestions de services :", error);
         }
     }
 
 
-// Fonction pour gérer les changements sur les champs autres que le label
+    // Fonction pour gérer les changements sur les champs autres que le label
     const handleServiceFieldChange = (
         index: number,
         fieldName: string,
-        value: string 
+        value: string
     ) => {
         console.log("Avant mise à jour : ", quote.services[index]);
         console.log("Champ modifié : ", fieldName, " Nouvelle valeur : ", value);
         // console.log("la valeur saisie dans le champ est : "+value+" qui provient du champ "+fieldName)
-        
+
         const newServices = [...quote.services];
         newServices[index] = {
-        ...newServices[index],
-        // Update only targeted field
-        [fieldName]: value, 
+            ...newServices[index],
+            // Update only targeted field
+            [fieldName]: value,
         };
 
         console.log("Après mise à jour : ", newServices[index]);
 
-    
+
         // setQuote({
         // ...quote,
         // services: newServices,
@@ -419,19 +419,19 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
             services: newServices,
         });
 
-        if(fieldName === "label"){
+        if (fieldName === "label") {
             loadServiceSuggestions(value);
         }
     };
 
     const openChoiceDialog = () => {
-        setIsOpen(true);  
+        setIsOpen(true);
         console.log("la fenetre de dialog devrait être ouverte")
-        
+
     };
 
     const closeChoiceDialog = () => {
-        setIsOpen(false);  
+        setIsOpen(false);
     };
 
     return (
@@ -439,7 +439,7 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
             {/* <div><Toaster/></div> */}
             <h1 className="text-3xl text-white ml-3 text-center">Création de devis</h1>
             {/* <div><Toaster /></div> */}
-            <form 
+            <form
                 autoComplete="off"
                 onSubmit={(e) => {
                     e.preventDefault();
@@ -450,60 +450,60 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                 <div>
                     <label htmlFor="client">Client</label>
                     <Field className="w-full">
-                        <Input type="text" name="client" value={clientInput} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="text" name="client" value={clientInput} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
                             onChange={handleInputChange}
                         >
                         </Input>
-                    </Field>   
+                    </Field>
                     {errors.clientId && <p style={{ color: "red" }}>{errors.clientId}</p>}
- 
+
                     {clientSuggestions && (
                         <ul className="bg-gray-700 rounded-md text-white">
                             {clientSuggestions.map((suggestion) => (
                                 <li
                                     key={suggestion.id}
                                     className="cursor-pointer p-2 hover:bg-gray-600"
-                                    onClick={() => handleClickSuggestion("client",suggestion.id, suggestion.name+" "+suggestion.firstName)}
+                                    onClick={() => handleClickSuggestion("client", suggestion.id, suggestion.name + " " + suggestion.firstName)}
                                 >
                                     {suggestion.name} {suggestion.firstName} - {suggestion.clientNumber}
                                 </li>
                             ))}
                         </ul>
-                    )}               
+                    )}
                 </div>
                 <h2>Chantier</h2>
                 {/* WorkSite of the quote */}
                 <div>
                     <label htmlFor="workSite">Chantier</label>
                     <Field className="w-full">
-                        <Input type="text" name="workSite" value={workSiteInput} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="text" name="workSite" value={workSiteInput} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
                             onChange={handleInputChange}
                         >
                         </Input>
-                    </Field>  
+                    </Field>
                     {errors.workSiteId && <p style={{ color: "red" }}>{errors.workSiteId}</p>}
-  
+
                     {workSiteSuggestions && (
                         <ul className="bg-gray-700 rounded-md text-white">
                             {workSiteSuggestions.map((suggestion) => (
                                 <li
                                     key={suggestion.id}
                                     className="cursor-pointer p-2 hover:bg-gray-600"
-                                    onClick={() => handleClickSuggestion("workSite",suggestion.id, suggestion.title)}
+                                    onClick={() => handleClickSuggestion("workSite", suggestion.id, suggestion.title)}
                                 >
                                     {suggestion.title} - {suggestion.addressNumber} {suggestion.road} {suggestion.additionnalAddress} {suggestion.postalCode} {suggestion.city}
                                 </li>
                             ))}
                         </ul>
-                    )}               
+                    )}
                 </div>
                 {/* Nature of work */}
                 <div>
                     <label htmlFor="natureOfWork">Nature des travaux</label>
                     <Field className="w-full">
-                        <Input type="text" name="natureOfWork" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="text" name="natureOfWork" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
                             onChange={handleInputChange}
-                            value={quote.natureOfWork} 
+                            value={quote.natureOfWork}
                         >
                         </Input>
                     </Field>
@@ -514,9 +514,9 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                 <div>
                     <label htmlFor="description">Description</label>
                     <Field className="w-full">
-                        <Textarea name="description" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Textarea name="description" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
                             onChange={handleInputChange}
-                            value={quote.description} 
+                            value={quote.description}
                         >
                         </Textarea>
                     </Field>
@@ -527,7 +527,7 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                 <div>
                     <label htmlFor="workStartDate">Date prévue de début des travaux</label>
                     <Field className="w-full">
-                        <Input type="date" name="workStartDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="date" name="workStartDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
                             onChange={handleInputChange}
                             value={quote.workStartDate}
                         >
@@ -540,7 +540,7 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                 <div>
                     <label htmlFor="estimatedWorkEndDate">Date prévue de fin des travaux</label>
                     <Field className="w-full">
-                        <Input type="date" name="estimatedWorkEndDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="date" name="estimatedWorkEndDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
                             onChange={handleInputChange}
                             value={quote.estimatedWorkEndDate}
                         >
@@ -553,9 +553,9 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                 <div>
                     <label htmlFor="estimatedWorkDuration">Durée estimée des travaux (en jours)</label>
                     <Field className="w-full">
-                        <Input type="number" name="estimatedWorkDuration" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="number" name="estimatedWorkDuration" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
                             onChange={handleInputChange}
-                            value={quote.estimatedWorkDuration} 
+                            value={quote.estimatedWorkDuration}
                         >
                         </Input>
                     </Field>
@@ -566,116 +566,116 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                 <div>
                     <label htmlFor="depositAmount">Accompte demandé (en €)</label>
                     <Field className="w-full">
-                        <Input type="number" name="depositAmount" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="number" name="depositAmount" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
                             onChange={handleInputChange}
-                            value={quote.depositAmount} 
+                            value={quote.depositAmount}
                         >
                         </Input>
                     </Field>
                     {errors.depositAmount && <p style={{ color: "red" }}>{errors.depositAmount}</p>}
 
                 </div>
-            <h2>Services</h2>
-            {quote.services.map((service, index) => (
-            <div key={index}>
-                <Input
-                    type="text"
-                    name="label"
-                    placeholder="Label du service"
-                    value={service.label}
-                    onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
-                    className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
-                />
-                {/* Services suggestions */}
-                {servicesSuggestions ? (
-                    <ul>
-                        {servicesSuggestions.map((suggestion) => (
-                            <li 
-                                key={suggestion.id}
-                                onClick={() => handleClickServiceSuggestion(index, suggestion)} 
-                                className="cursor-pointer text-blue-500 hover:text-blue-700"
-                            >
-                                {suggestion.label}
-                            </li>
-                        ))}
-                    </ul>
-                    ) : (
-                        <p>Aucune suggestion disponible</p>
-                )}
-                <Input
-                    type="text"
-                    name="detailsService"
-                    placeholder="Détails du service"
-                    value={service.detailsService}
-                    onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
-                    className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
-                />
-                 <Input
-                    type="number"
-                    name="unitPriceHT"
-                    placeholder="Prix unitaire"
-                    value={service.unitPriceHT || ""}
-                    onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
-                    className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
-                    disabled={!!service.selectedFromSuggestions}
-                />
+                <h2>Services</h2>
+                {quote.services.map((service, index) => (
+                    <div key={index}>
+                        <Input
+                            type="text"
+                            name="label"
+                            placeholder="Label du service"
+                            value={service.label}
+                            onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
+                            className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
+                        />
+                        {/* Services suggestions */}
+                        {servicesSuggestions ? (
+                            <ul>
+                                {servicesSuggestions.map((suggestion) => (
+                                    <li
+                                        key={suggestion.id}
+                                        onClick={() => handleClickServiceSuggestion(index, suggestion)}
+                                        className="cursor-pointer text-blue-500 hover:text-blue-700"
+                                    >
+                                        {suggestion.label}
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p>Aucune suggestion disponible</p>
+                        )}
+                        <Input
+                            type="text"
+                            name="detailsService"
+                            placeholder="Détails du service"
+                            value={service.detailsService}
+                            onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
+                            className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
+                        />
+                        <Input
+                            type="number"
+                            name="unitPriceHT"
+                            placeholder="Prix unitaire"
+                            value={service.unitPriceHT || ""}
+                            onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
+                            className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
+                            disabled={!!service.selectedFromSuggestions}
+                        />
 
-                <Select
-                    name="type"
-                    onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
-                    value={service.type || ""}
-                    className="w-full rounded-md bg-gray-700 text-white pl-3"
-                    disabled={!!service.selectedFromSuggestions}
-                >
-                <option value="">Type de service</option>
-                    {serviceTypeChoices.map((type) => (
-                        <option key={type} value={type}>{type}</option>
-                    ))}
-                </Select>
-                <Input
-                    type="number"
-                    name="quantity"
-                    placeholder="Quantité"
-                    value={service.quantity || ""}
-                    onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
-                    className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
+                        <Select
+                            name="type"
+                            onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
+                            value={service.type || ""}
+                            className="w-full rounded-md bg-gray-700 text-white pl-3"
+                            disabled={!!service.selectedFromSuggestions}
+                        >
+                            <option value="">Type de service</option>
+                            {serviceTypeChoices.map((type) => (
+                                <option key={type} value={type}>{type}</option>
+                            ))}
+                        </Select>
+                        <Input
+                            type="number"
+                            name="quantity"
+                            placeholder="Quantité"
+                            value={service.quantity || ""}
+                            onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
+                            className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
 
-                />
-                <Select
-                        name="unit"
-                        onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
-                        value={service.unit || ""}
-                        className="w-full rounded-md bg-gray-700 text-white pl-3"
-                    >
-                    <option value="">Unité</option>
-                        {unitChoices.map((unit) => (
-                            <option key={unit.id} value={unit.label}>{unit.label}</option>
-                        ))}
-                </Select> 
-                <Select
-                        name="vatRate"
-                        onChange={(event) => handleServiceFieldChange(index,event.target.name, event.target.value)}
-                        value={service.vatRate || ""}
-                        className="w-full rounded-md bg-gray-700 text-white pl-3"
-                    >
-                    <option value="">Taux de tva</option>
-                        {vatRateChoices.map((vatRate) => (
-                            <option key={vatRate.id} value={vatRate.rate}>{vatRate.rate}</option>
-                        ))}
-                </Select> 
-                <Button label="Enlever le service" icon={faXmark} type="button" action={() => removeService(index)} specifyBackground="text-red-500" />
-            </div>
-            ))}
-            <Button label="Ajouter un service" icon={faXmark} type="button" action={() => addService()} specifyBackground="text-red-500" />
+                        />
+                        <Select
+                            name="unit"
+                            onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
+                            value={service.unit || ""}
+                            className="w-full rounded-md bg-gray-700 text-white pl-3"
+                        >
+                            <option value="">Unité</option>
+                            {unitChoices.map((unit) => (
+                                <option key={unit.id} value={unit.label}>{unit.label}</option>
+                            ))}
+                        </Select>
+                        <Select
+                            name="vatRate"
+                            onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
+                            value={service.vatRate || ""}
+                            className="w-full rounded-md bg-gray-700 text-white pl-3"
+                        >
+                            <option value="">Taux de tva</option>
+                            {vatRateChoices.map((vatRate) => (
+                                <option key={vatRate.id} value={vatRate.rate}>{vatRate.rate}</option>
+                            ))}
+                        </Select>
+                        <Button label="Enlever le service" icon={faXmark} type="button" action={() => removeService(index)} specifyBackground="text-red-500" />
+                    </div>
+                ))}
+                <Button label="Ajouter un service" icon={faXmark} type="button" action={() => addService()} specifyBackground="text-red-500" />
 
 
                 {/* Quote : validity end date */}
                 <div>
                     <label htmlFor="validityEndDate">Date de fin de validité du devis</label>
                     <Field className="w-full">
-                        <Input type="date" name="validityEndDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="date" name="validityEndDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
                             onChange={handleInputChange}
-                            value={quote.validityEndDate} 
+                            value={quote.validityEndDate}
 
                         >
                         </Input>
@@ -686,9 +686,9 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                 <div>
                     <label htmlFor="discountAmount">Montant de la remise, en €</label>
                     <Field className="w-full">
-                        <Input type="number" name="discountAmount" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="number" name="discountAmount" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
                             onChange={handleInputChange}
-                            value={quote.discountAmount} 
+                            value={quote.discountAmount}
 
                         >
                         </Input>
@@ -702,12 +702,12 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                     value={quote.discountReason || ""}
                     className="w-full rounded-md bg-gray-700 text-white pl-3"
                 >
-                <option value="" >Motif de la remise</option>
-                {Object.entries(discountReasonChoices).map(([value, label]) => (
-                    <option key={value} value={value}>
-                    {label}
-                    </option>
-                ))}
+                    <option value="" >Motif de la remise</option>
+                    {Object.entries(discountReasonChoices).map(([value, label]) => (
+                        <option key={value} value={value}>
+                            {label}
+                        </option>
+                    ))}
                 </Select>
                 {errors.discountReason && <p style={{ color: "red" }}>{errors.discountReason}</p>}
 
@@ -715,8 +715,8 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                 <div>
                     <label htmlFor="paymentTerms">Conditions de paiement</label>
                     <Field className="w-full">
-                        <Textarea name="paymentTerms" 
-                            defaultValue={"Le paiement doit être effectué dans les 30 jours suivant la réception de la facture."} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Textarea name="paymentTerms"
+                            defaultValue={"Le paiement doit être effectué dans les 30 jours suivant la réception de la facture."} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
                             onChange={handleInputChange}
                         >
                         </Textarea>
@@ -728,7 +728,7 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                 <div>
                     <label htmlFor="paymentDelay">Délais de paiement (en jours)</label>
                     <Field className="w-full">
-                        <Input type="number" name="paymentDelay" value={quote.paymentDelay} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="number" name="paymentDelay" value={quote.paymentDelay} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -737,10 +737,10 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
 
                 </div>
                 {/* late payment penalities */}
-                 <div>
+                <div>
                     <label htmlFor="latePaymentPenalities">Frais de retard de paiement (HT), en €</label>
                     <Field className="w-full">
-                        <Input type="number" name="latePaymentPenalities" value={quote.latePaymentPenalities} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="number" name="latePaymentPenalities" value={quote.latePaymentPenalities} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -752,7 +752,7 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                 <div>
                     <label htmlFor="travelCosts">Frais de déplacement (HT), en €</label>
                     <Field className="w-full">
-                        <Input type="number" name="travelCosts" value={quote.travelCosts} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="number" name="travelCosts" value={quote.travelCosts} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -766,7 +766,7 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                     value={quote.travelCostsType || ""}
                     className="w-full rounded-md bg-gray-700 text-white pl-3"
                 >
-                <option value="">Type de frais de déplacement</option>
+                    <option value="">Type de frais de déplacement</option>
                     {travelCostsTypeChoices.map((travelCostsTypeChoices) => (
                         <option key={travelCostsTypeChoices} value={travelCostsTypeChoices}>{travelCostsTypeChoices}</option>
                     ))}
@@ -777,7 +777,7 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                 <div>
                     <label htmlFor="recoveryFees">Frais forfaitaires de recouvrement (HT), en €</label>
                     <Field className="w-full">
-                        <Input type="number" name="recoveryFees" value={quote.recoveryFees} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="number" name="recoveryFees" value={quote.recoveryFees} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -788,10 +788,10 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                 {/* has right of Withdrawal ? */}
                 <Field>
                     <Legend>Y a t'il un droit de rétractation ?</Legend>
-                    <RadioGroup 
+                    <RadioGroup
                         name="hasRightOfWithdrawal"
                         value={quote.hasRightOfWithdrawal}
-                        onChange={(value)=> handleRadioChange("hasRightOfWithdrawal",value)}
+                        onChange={(value) => handleRadioChange("hasRightOfWithdrawal", value)}
 
                     >
                         {hasRightOfWithdrawalChoices.map((choice) => (
@@ -808,7 +808,7 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                 <div>
                     <label htmlFor="withdrawalPeriod">Délai de rétractation (en jours)</label>
                     <Field className="w-full">
-                        <Input type="number" value={quote.withdrawalPeriod} name="withdrawalPeriod" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="number" value={quote.withdrawalPeriod} name="withdrawalPeriod" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -818,13 +818,13 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                 </div>
                 <Input type="hidden" name="csrf_token" value={csrfToken} />
 
-                <button 
+                <button
                     className="bg-red-400"
                     type="submit"
                     onClick={() => {
-                        handleQuoteCreation(); 
+                        handleQuoteCreation();
                     }}
-                    >Enregistrer à l'état de brouillon
+                >Enregistrer à l'état de brouillon
                 </button>
                 <button
                     // type="button" avoid the form to be automatically submitted
@@ -832,33 +832,33 @@ export default function QuoteCreation({csrfToken}: QuoteCreationProps){
                     onClick={openChoiceDialog}
                     className="bg-green-600 text-white px-4 py-2 rounded-md"
                 >
-                    Finaliser la facture 
+                    Finaliser la facture
                 </button>
             </form>
             {/* Dialog to save as final version of bill*/}
             {/* className=" top-[50%] left-[25%]" */}
             {/* {isOpen ?? ( */}
-                <Dialog open={isOpen} onClose={closeChoiceDialog}  className="fixed top-[50%] left-[25%]" >
-                    <DialogPanel className="bg-gray-300 p-5 rounded-md shadow-lg text-black">
+            <Dialog open={isOpen} onClose={closeChoiceDialog} className="fixed top-[50%] left-[25%]" >
+                <DialogPanel className="bg-gray-300 p-5 rounded-md shadow-lg text-black">
                     <DialogTitle>Etes-vous sûr de vouloir enregistrer le devis en version finale ?</DialogTitle>
                     <Description>Cette action est irréversible</Description>
                     <p>Le devis ne pourra plus être modifié ultérieurement. </p>
-                        <div className="flex justify-between mt-4">
+                    <div className="flex justify-between mt-4">
                         <button
-                        // choice to to finalize quote
+                            // choice to to finalize quote
                             onClick={() => {
-                                handleQuoteCreation("READY"); 
-                                closeChoiceDialog(); 
+                                handleQuoteCreation("READY");
+                                closeChoiceDialog();
                             }}
                             className="bg-green-600 text-white px-4 py-2 rounded-md"
                         >
                             Finaliser le devis
                         </button>
-                            <button onClick={closeChoiceDialog} className="bg-gray-300 text-black px-4 py-2 rounded-md">Annuler</button>
-                        </div>
-                    </DialogPanel>
-                </Dialog>
-                {/* <button type="submit">Créer</button> */}
+                        <button onClick={closeChoiceDialog} className="bg-gray-300 text-black px-4 py-2 rounded-md">Annuler</button>
+                    </div>
+                </DialogPanel>
+            </Dialog>
+            {/* <button type="submit">Créer</button> */}
         </>
     );
 };
