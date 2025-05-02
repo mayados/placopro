@@ -19,7 +19,7 @@ type BillProps = {
     billSlug: string;
   };
 
-export default function Bill({csrfToken, billSlug}: BillProps){
+export default function Bill({billSlug,csrfToken}: BillProps){
 
 
     const [bill, setBill] = useState<BillType | null>(null);
