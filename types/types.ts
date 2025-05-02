@@ -920,7 +920,6 @@ interface ServiceSuggestionsListType{
 }
 
 interface FormValuesUpdateNotDraftQuote{
-    id: string | null,
     status: string | null,
     isSignedByClient: string | null,
     signatureDate: Date | null,
