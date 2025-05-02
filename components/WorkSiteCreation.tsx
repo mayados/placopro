@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useState } from "react";
 import { Field,Input, Select, Textarea } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import { fetchSuggestions } from "@/services/api/suggestionService";
@@ -215,7 +215,7 @@ export default function WorkSiteCreation({csrfToken}: WorkSiteCreationProps){
                 </div>
                 {/* WorkSite addressNumber */}
                 <div>
-                    <label htmlFor="addressNumber">Numéro d'adresse du chantier</label>
+                    <label htmlFor="addressNumber">Numéro d&apos;adresse du chantier</label>
                     <Field className="w-full">
                         <Input type="text" name="addressNumber" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
@@ -239,7 +239,7 @@ export default function WorkSiteCreation({csrfToken}: WorkSiteCreationProps){
                 </div>
                 {/* WorkSite additionnalAddress */}
                 <div>
-                    <label htmlFor="additionnalAddress">Complément d'adresse</label>
+                    <label htmlFor="additionnalAddress">Complément d&apos;adresse</label>
                     <Field className="w-full">
                         <Input type="text" name="additionnalAddress" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}

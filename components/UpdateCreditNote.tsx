@@ -168,7 +168,7 @@ export default function UpdateCreditNote({csrfToken, creditNoteNumber}: UpdateCr
             <p>Téléphone : {creditNote?.clientBackup?.phone}</p>
             <p>Mail : {creditNote?.clientBackup?.mail}</p>
             <p>Adresse : {creditNote?.clientBackup?.addressNumber} {creditNote?.clientBackup?.road} {creditNote?.clientBackup?.postalCode} {creditNote?.clientBackup?.city}</p>
-            <p>Complément d'adresse : {creditNote?.clientBackup?.additionalAddress}</p>
+            <p>Complément d&apos;adresse : {creditNote?.clientBackup?.additionalAddress}</p>
             {/* <div><Toaster /></div> */}
             <form 
                 autoComplete="off"
@@ -179,7 +179,7 @@ export default function UpdateCreditNote({csrfToken, creditNoteNumber}: UpdateCr
             >
 
                 <div className="mb-4">
-                        <p className="block mb-2">L'avoir a-t-il été réglé ?</p>
+                        <p className="block mb-2">L&apos;avoir a-t-il été réglé ?</p>
                         <RadioGroup
                         value={updateCreditNoteFormValues.isSettled}
                         onChange={(value) => {
@@ -257,16 +257,16 @@ export default function UpdateCreditNote({csrfToken, creditNoteNumber}: UpdateCr
                 onClick={handleCreditNoteUpdate}
                 className="bg-green-600 text-white px-4 py-2 rounded-md"
             >
-                Supprimer l'avoir
+                Supprimer l&apos;avoir
             </button>
             {/* Dialog to save as final version of CreditNote*/}
             {/* className=" top-[50%] left-[25%]" */}
             {/* {isOpen ?? ( */}
                 <Dialog open={isOpen} onClose={closeChoiceDialog}  className="fixed top-[50%] left-[25%]" >
                     <DialogPanel className="bg-gray-300 p-5 rounded-md shadow-lg text-black">
-                    <DialogTitle>Etes-vous sûr de vouloir supprimer l'avoir ?</DialogTitle>
+                    <DialogTitle>Etes-vous sûr de vouloir supprimer l&apos;avoir ?</DialogTitle>
                     <Description>Cette action est irréversible</Description>
-                    <p>L'avoir n'existera plus. </p>
+                    <p>L&apos;avoir n&apos;existera plus. </p>
                         <div className="flex justify-between mt-4">
                         <button
                         // choice to to finalize quote
@@ -276,7 +276,7 @@ export default function UpdateCreditNote({csrfToken, creditNoteNumber}: UpdateCr
                             }}
                             className="bg-green-600 text-white px-4 py-2 rounded-md"
                         >
-                            Finaliser l'avoir
+                            Finaliser l&apos;avoir
                         </button>
                             <button onClick={closeChoiceDialog} className="bg-gray-300 text-black px-4 py-2 rounded-md">Annuler</button>
                         </div>

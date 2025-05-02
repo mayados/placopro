@@ -30,7 +30,7 @@ type ToDosProps = {
     })
 
     // To do update
-    const [editingToDoId, setEditingToDoId] = useState<string | null>(null);
+    // const [editingToDoId, setEditingToDoId] = useState<string | null>(null);
     // Use of Record here because there are many to do
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isAssignedEditModalOpen, setIsAssignedEditModalOpen] = useState(false);
@@ -305,7 +305,8 @@ type ToDosProps = {
                 setAssignedToDoFormValues({
                   task: null,
                   description: null,
-                  assignedToClerkId: null
+                  assignedToClerkId: null,
+                  assignedToName: null
                 });
                 setAssignedToDos(prev => [createdToDo,...prev]);
                 setTotalAssignedToDos(prev => prev + 1);

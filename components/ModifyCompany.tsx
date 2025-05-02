@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState } from "react";
 import { Field,Input, Select } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import { fetchCompany, updateCompany } from "@/services/api/companyService";
@@ -29,7 +29,7 @@ export default function ModifyCompany({csrfToken, companySlug}: ModifyCompanyPro
                     
             try{
             const data = await fetchCompany(companySlug)
-            setCompany(data.company);
+            setCompany(data);
             }catch (error) {
                 console.error("Impossible to load the company :", error);
             }
@@ -38,7 +38,7 @@ export default function ModifyCompany({csrfToken, companySlug}: ModifyCompanyPro
           loadCompany();
   }, [companySlug, csrfToken]);
     
-  if (!company) return <div>Chargement des détails de l'entreprise...</div>;
+  if (!company) return <div>Chargement des détails de l&apos;entreprise...</div>;
 
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -105,7 +105,7 @@ export default function ModifyCompany({csrfToken, companySlug}: ModifyCompanyPro
     return (
         <>
             {/* <div><Toaster/></div> */}
-            <h1 className="text-3xl text-white ml-3 text-center">Modification de l'entreprise : {company?.name}</h1>
+            <h1 className="text-3xl text-white ml-3 text-center">Modification de l&apos;entreprise : {company?.name}</h1>
             {/* <div><Toaster /></div> */}
             <form 
                 onSubmit={(e) => {
@@ -129,7 +129,7 @@ export default function ModifyCompany({csrfToken, companySlug}: ModifyCompanyPro
                 </div>
                 {/* type of company */}
                 <div>
-                    <label htmlFor="type">Type d'entreprise</label>
+                    <label htmlFor="type">Type d&apos;entreprise</label>
                     <Select
                         name="type"
                         value={company.type}
@@ -172,7 +172,7 @@ export default function ModifyCompany({csrfToken, companySlug}: ModifyCompanyPro
                 </div>
                 {/* Company's capital */}
                 <div>
-                    <label htmlFor="capital">Capital de l'entreprise en € </label>
+                    <label htmlFor="capital">Capital de l&apos;entreprise en € </label>
                     <Field className="w-full">
                         <Input type="number" name="capital" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             value={company.capital}
@@ -185,7 +185,7 @@ export default function ModifyCompany({csrfToken, companySlug}: ModifyCompanyPro
                 </div>
                 {/* Company's RCS */}
                 <div>
-                    <label htmlFor="rcs">RCS de l'entreprise : ville d'immatriculation + numéro SIREN.</label>
+                    <label htmlFor="rcs">RCS de l&apos;entreprise : ville d&papos;immatriculation + numéro SIREN.</label>
                     <Field className="w-full">
                         <Input type="text" name="rcs" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             value={company.rcs}
@@ -315,7 +315,7 @@ export default function ModifyCompany({csrfToken, companySlug}: ModifyCompanyPro
                 </div>
                 {/* Insurance contract number */}
                 <div>
-                    <label htmlFor="insuranceContractNumber">Numéro de contrat de l'assurance décennale</label>
+                    <label htmlFor="insuranceContractNumber">Numéro de contrat de l&apos;assurance décennale</label>
                     <Field className="w-full">
                         <Input type="text" name="insuranceContractNumber" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             value={company.insuranceContractNumber}
@@ -328,7 +328,7 @@ export default function ModifyCompany({csrfToken, companySlug}: ModifyCompanyPro
                 </div>
                 {/* Aera covered by insurance */}
                 <div>
-                    <label htmlFor="insuranceCoveredZone">Zone couverte par l'assurance décennale</label>
+                    <label htmlFor="insuranceCoveredZone">Zone couverte par l&apos;assurance décennale</label>
                     <Field className="w-full">
                         <Input type="text" name="insuranceCoveredZone" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             value={company.aeraCoveredByInsurance}

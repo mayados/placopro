@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Field,Input, Select, Textarea } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
-import { CirclePlus, CircleX } from "lucide-react";
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
 import { fetchQuote } from "@/services/api/quoteService";
 import { fetchVatRates } from "@/services/api/vatRateService";
@@ -12,7 +11,7 @@ import { fetchUnits } from "@/services/api/unitService";
 import { fetchSuggestions } from "@/services/api/suggestionService";
 import { createBillFromQuote } from "@/services/api/billService";
 import { createBillDraftSchema, createBillFinalSchema } from "@/validation/billValidation";
-import { z } from 'zod';
+// import { z } from 'zod';
 import { faPlane, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 // import toast, { Toaster } from 'react-hot-toast';
@@ -72,10 +71,10 @@ export default function CreationBillFromQuote({csrfToken, quoteNumber}: Creation
     // const [clientSuggestions, setClientSuggestions] = useState<ClientSuggestionType[] | null>(null)
     const [servicesSuggestions, setServiceSuggestions] = useState<ServiceSuggestionType[] | null>(null)
     // text visible in the client field
-    const [clientInput, setClientInput] = useState(""); 
-    const [unitInput, setUnitInput] = useState(""); 
-    const [vatRateInput, setVatRateInput] = useState(""); 
-    const [serviceInput, setServiceInput] = useState(""); 
+    // const [clientInput, setClientInput] = useState(""); 
+    const [, setUnitInput] = useState(""); 
+    const [, setVatRateInput] = useState(""); 
+    // const [serviceInput, setServiceInput] = useState(""); 
 
 
     useEffect(() => {
@@ -87,27 +86,27 @@ export default function CreationBillFromQuote({csrfToken, quoteNumber}: Creation
                 try{
                     const data = await fetchQuote(quoteNumber)
                     let isDiscountFromQuote = false
-                    if(data.quote?.discountAmount !== 0 || data.quote?.discountAmount !== null){
+                    if(data?.discountAmount !== 0 || data?.discountAmount !== null){
                         isDiscountFromQuote = true;
                     }
                     setCreateBillFormValues({
                         ...createBillFormValues,
-                        number: data.quote.number,
-                        totalTtc: data.quote.priceTTC,
-                        totalHt: data.quote.priceHT,
-                        clientId: data.quote.client.id,
-                        workSiteId: data.quote.workSite.id,
-                        quoteId: data.quote.id,
+                        number: data.number,
+                        totalTtc: data.priceTTC,
+                        totalHt: data.priceHT,
+                        clientId: data.client.id,
+                        workSiteId: data.workSite.id,
+                        quoteId: data.id,
                         isDiscountFromQuote: isDiscountFromQuote,
-                        discountReason: data.quote.discountReason,
-                        discountAmount: data.quote.discountAmount,
-                        travelCosts: data.quote.travelCosts,
-                        travelCostsType: data.quote.travelCostsType,
-                        vatAmount: data.quote.vatAmount,
-                        natureOfWork: data.quote.natureOfWork,
-                        description: data.quote.description,
-                        // services: data.quote.services
-                        services: data.quote.services.map(service => ({
+                        discountReason: data.discountReason,
+                        discountAmount: data.discountAmount,
+                        travelCosts: data.travelCosts,
+                        travelCostsType: data.travelCostsType,
+                        vatAmount: data.vatAmount,
+                        natureOfWork: data.natureOfWork,
+                        description: data.description,
+                        // services: data.services
+                        services: data.services.map(service => ({
                             id: service.id,
                             label: service.service.label, // Accès à `label` à l'intérieur de `service`
                             unitPriceHT: service.service.unitPriceHT?.toString() || "", // Assurer que c'est une string
@@ -119,7 +118,7 @@ export default function CreationBillFromQuote({csrfToken, quoteNumber}: Creation
                             detailsService: service.detailsService || "",
                         }))
                     });
-                      setQuote(data.quote);
+                      setQuote(data);
 
                 }catch (error) {
                     console.error("Impossible to load the quote :", error);
@@ -129,7 +128,7 @@ export default function CreationBillFromQuote({csrfToken, quoteNumber}: Creation
         const loadVatRates = async () => {
                 try{
                     const data = await fetchVatRates();
-                    setVatRateChoices(data.vatRates)
+                    setVatRateChoices(data)
 
                 }catch (error) {
                     console.error("Impossible to load VAT rates :", error);
@@ -139,7 +138,7 @@ export default function CreationBillFromQuote({csrfToken, quoteNumber}: Creation
         const loadUnits = async () => {
                 try{
                     const data = await fetchUnits();
-                    setUnitChoices(data.units)
+                    setUnitChoices(data)
             
                 }catch (error) {
                     console.error("Impossible to load units :", error);
@@ -178,12 +177,12 @@ export default function CreationBillFromQuote({csrfToken, quoteNumber}: Creation
     }
 
     //   Retrieve datas from the radio buttons. Because they are in a RadioGroup, we can't retrieve the value just thanks to an event, we have to get the name (of the group) + the value selected
-    const handleRadioChange = (name: string, value: string) => {
-        setCreateBillFormValues({
-            ...createBillFormValues,
-            [name]: value,
-        });
-    }
+    // const handleRadioChange = (name: string, value: string) => {
+    //     setCreateBillFormValues({
+    //         ...createBillFormValues,
+    //         [name]: value,
+    //     });
+    // }
 
 
     const handleBillCreation = async (statusReady?: string) => {
@@ -394,7 +393,7 @@ const handleServiceFieldChange = (
     // 2. OR it's a service from suggestions that's being modified
     if (currentService.selectedFromSuggestions || 
         (!currentService.id && isServiceComplete(newServices[index]))) {
-        let updatedServicesAdded = [...createBillFormValues.servicesAdded];
+        const updatedServicesAdded = [...createBillFormValues.servicesAdded];
         
         // Find if this service is already in servicesAdded
         const existingIndex = updatedServicesAdded.findIndex(
@@ -433,7 +432,7 @@ const handleServiceFieldChange = (
 };
 
 // Fonction utilitaire pour vérifier si un service est complet
-const isServiceComplete = (service: any) => {
+const isServiceComplete = (service: ServiceFormQuoteType) => {
     return service.label &&
            service.unitPriceHT &&
            service.type &&
@@ -497,7 +496,7 @@ const addService = () => {
                     <label htmlFor="workSite">Chantier</label>
                     <Field className="w-full">
                         <Input type="text" name="workSite" 
-                            value={`${quote?.workSite.addressNumber} ${quote?.workSite.road} ${quote?.workSite.additionnalAddress ? quote?.workSite.additionnalAddress + " " : ""}${quote?.workSite.postalCode} ${quote?.workSite.city}`}
+                            value={`${quote?.workSite.addressNumber} ${quote?.workSite.road} ${quote?.workSite.additionalAddress ? quote?.workSite.additionalAddress + " " : ""}${quote?.workSite.postalCode} ${quote?.workSite.city}`}
                             className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             readOnly
                         >
@@ -783,7 +782,7 @@ const addService = () => {
                     onClick={() => {
                         handleBillCreation(); 
                     }}
-                    >Enregistrer à l'état de brouillon
+                    >Enregistrer à l&apos;état de brouillon
                 </button>
                 <button
                     // type="button" avoid the form to be automatically submitted

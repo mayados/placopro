@@ -4,10 +4,7 @@ import "./globals.css";
 import { Toaster } from 'react-hot-toast';  
 import {
   ClerkProvider,
-  SignInButton,
-  SignedIn,
-  SignedOut,
-  UserButton
+
 } from '@clerk/nextjs'
 import Nav from "@/components/Nav";
 

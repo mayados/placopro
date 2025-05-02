@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import { formatDate } from '@/lib/utils'
 import DownloadPDF from "@/components/DownloadPDF";
 import { Field, Input, Label, Legend, Radio, RadioGroup, Select } from "@headlessui/react";
-import { fetchQuote, sendQuote, updateClassicQuote } from "@/services/api/quoteService";
-import { fetchCompany } from "@/services/api/companyService";
+import {  sendQuote, updateClassicQuote } from "@/services/api/quoteService";
 import { updateClassicQuoteSchema } from "@/validation/quoteValidation";
 import { toast } from 'react-hot-toast';
 import Breadcrumb from "@/components/BreadCrumb";
@@ -26,9 +25,9 @@ type QuoteProps = {
 export default function Quote({ csrfToken, quote: initialQuote, company: initialCompany }: QuoteProps) {
     console.log("token dans le colmposant : " + csrfToken)
     const [quote, setQuote] = useState<QuoteType | null>(initialQuote);
-    const [company, setCompany] = useState<CompanyType | null>(initialCompany);
-    const [vatAmountTravelCost, setVatAmountTravelCost] = useState<number>(0)
-    const [priceTTCTravelCost, setPriceTTCTravelCost] = useState<number>(0)
+    const [company] = useState<CompanyType | null>(initialCompany);
+    const [vatAmountTravelCost] = useState<number>(0)
+    const [priceTTCTravelCost] = useState<number>(0)
     const quoteStatusChoices = {
         READY: "Prêt à l'envoi",
         ACCEPTED: "Accepté",
@@ -41,7 +40,7 @@ export default function Quote({ csrfToken, quote: initialQuote, company: initial
         isSignedByClient: null,
         signatureDate: null,
     })
-    const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
+    const [, setErrors] = useState<{ [key: string]: string[] }>({});
 
 
     // useEffect(() => {
@@ -93,11 +92,11 @@ export default function Quote({ csrfToken, quote: initialQuote, company: initial
 
         try {
 
-            const data = await sendQuote(quoteSlug, emailClient, csrfToken);
+             await sendQuote(quoteSlug, emailClient, csrfToken);
 
             toast.success("Devis envoyé avec succès");
 
-        } catch (error) {
+        } catch {
             toast.error("Erreur lors de l'envoi du devis")
         }
     };
@@ -240,7 +239,7 @@ export default function Quote({ csrfToken, quote: initialQuote, company: initial
                 Créer une facture finale
             </Link>
             <Link href={`/director/bills/create-deposit/${quote?.number}`}>
-                Créer une facture d'acompte
+                Créer une facture d&apos;acompte
             </Link>
             <DownloadPDF quote={quote} company={company as CompanyType} vatAmountTravelCost={vatAmountTravelCost} priceTTCTravelCost={priceTTCTravelCost} />
             <Button label="Envoyer le devis au client" icon={faPaperPlane} type="button" action={() => sendQuoteToClient(quote.slug, quote.client.mail)} specifyBackground="text-red-500" />
@@ -401,7 +400,7 @@ export default function Quote({ csrfToken, quote: initialQuote, company: initial
                 <p>{quote?.paymentTerms}</p>
 
                 {/* validityEndDate */}
-                <p>Devis valable jusqu'au {formatDate(quote.validityEndDate)}</p>
+                <p>Devis valable jusqu&apos;au {formatDate(quote.validityEndDate)}</p>
 
                 {/* Recovery fees => fixed by French law at 40€.  */}
                 <p>Frais forfaitaires de recouvrement : {quote.recoveryFee} €</p>

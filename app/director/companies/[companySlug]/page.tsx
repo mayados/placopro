@@ -19,7 +19,7 @@ const Company = ({ params }: { params: Promise<{ companySlug: string }>}) => {
                     
                 try{
                 const data = await fetchCompany(companySlug)
-                setCompany(data.company);
+                setCompany(data);
                 }catch (error) {
                     console.error("Impossible to load the company :", error);
                 }

@@ -6,8 +6,8 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { createPlanning, deletePlanning, fetchPlannings, updatePlanning } from "@/services/api/planningService";
 import { fetchEmployees } from "@/services/api/userService";
 import frLocale from '@fullcalendar/core/locales/fr';
-import { fetchWorkSites } from "@/services/api/workSiteService";
-import { EventClickArg } from '@fullcalendar/core';
+import { fetchWorkSitesWithoutPagination } from "@/services/api/workSiteService";
+import { DateSelectArg, EventClickArg, EventDropArg } from '@fullcalendar/core';
 import { updatePlanningSchema, createPlanningSchema } from "@/validation/planningValidation";
 import { toast } from 'react-hot-toast';
 
@@ -38,7 +38,7 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId, 
   // Modal to display to make sure the users wants to delete 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   // Retrieve employee name for the title of the created event
-  const [employeeName, setEmployeeName] = useState<string | null>(null); 
+  const [, setEmployeeName] = useState<string | null>(null); 
   const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
 
 
@@ -58,7 +58,7 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId, 
 
         const loadWorkSites = async () => {
           try {
-            const data = await fetchWorkSites();
+            const data = await fetchWorkSitesWithoutPagination();
             setWorkSites(data['inProgressWorkSites']);
           } catch (error) {
             console.error("Impossible de charger les employés :", error);
@@ -101,7 +101,7 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId, 
     const handleDeleteEvent = async() => {
       if (selectedEvent?.id) {
         try {
-          const data = await deletePlanning(selectedEvent.id, csrfToken)
+          await deletePlanning(selectedEvent.id, csrfToken)
           setEvents((prevEvents) => prevEvents.filter(event => event.id !== selectedEvent.id));
           setShowDeleteModal(false);
           setShowForm(false);
@@ -116,9 +116,10 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId, 
     };
 
     // Modify a planning (only available for director)
-    const handleEventDrop = async (eventInfo: any) => {
-      if (role !== "director") return; // Empêcher modification si pas directeur
-  
+    const handleEventDrop = async (eventInfo: EventDropArg) => {
+      if (role !== "director") return; 
+      if (!eventInfo.event.start) return; 
+
       const updatedEvent = {
         id: eventInfo.event.id,
         startTime: eventInfo.event.start.toISOString(),
@@ -167,7 +168,7 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId, 
     
 
   // DisplayForm
-  const displayCreationForm = (selectInfo: any) => {
+  const displayCreationForm = (selectInfo: DateSelectArg) => {
     const { start, end } = selectInfo;
 
     const localStart = new Date(start);
@@ -260,7 +261,7 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId, 
                             
           // Delete former validation errors
           setErrors({})
-          const response = await updatePlanning(selectedEvent.id, updatedEvent, csrfToken); 
+          await updatePlanning(selectedEvent.id, updatedEvent, csrfToken); 
           setEvents((prev) =>
             prev.map((event) =>
               event.id === selectedEvent.id
@@ -325,7 +326,7 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId, 
               <h2 className="text-xl mb-4 text-black">{formTitle}</h2>
               <div className="mb-4">
                 <label htmlFor="title" className="block text-sm font-medium text-black">
-                  Titre de l'événement
+                  Titre de l&apos;événement
                 </label>
                 <input
                   id="title"
@@ -429,7 +430,7 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId, 
                     setTimeout(() => setShowDeleteModal(true), 100); // Afficher la modale après un court délai
                   }} 
                   style={{ backgroundColor: "red", color: "white", marginTop: "10px" }}>
-                  Supprimer l'événement
+                  Supprimer l&apos;événement
                 </button>
               )}
               <div className="flex justify-end">

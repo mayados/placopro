@@ -1,5 +1,5 @@
 // This file allows to handle different actions based on the http method retrieved
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { POST as createCreditNote } from "@/app/api/creditNotes/create"; 
 import { GET as getCreditNotes} from "@/app/api/creditNotes/list"; 
 

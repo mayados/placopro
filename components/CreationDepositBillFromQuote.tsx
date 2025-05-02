@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
-import { Field,Input, Label, Legend, Radio, RadioGroup, Select, Textarea } from '@headlessui/react';
+import { useEffect, useState } from "react";
+import { Field,Input, Select, Textarea } from '@headlessui/react';
 import { useRouter } from "next/navigation";
-import Button from "@/components/Button";import { capitalizeFirstLetter } from "@/lib/utils";
-import { formatDateForInput } from '@/lib/utils'
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
-import { fetchQuote, updateDraftQuote } from "@/services/api/quoteService";
+import { fetchQuote } from "@/services/api/quoteService";
 import { fetchVatRates } from "@/services/api/vatRateService";
 import { fetchUnits } from "@/services/api/unitService";
 // import { fetchSuggestions } from "@/services/api/suggestionService";
@@ -56,7 +54,7 @@ export default function CreationDepositBillFromQuote({csrfToken, quoteNumber}: C
     const [vatRateChoices, setVatRateChoices] = useState<VatRateChoiceType[]>([])
     const [unitChoices, setUnitChoices] = useState<UnitChoiceType[]>([])
     // Allows to know if a bill is registered as a draft or ready (to be send)
-    const [status, setStatus] = useState<"Draft" | "Ready">("Draft");
+    // const [status, setStatus] = useState<"Draft" | "Ready">("Draft");
     const [isOpen, setIsOpen] = useState(false);
     // For zod validation errors
     const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
@@ -66,12 +64,12 @@ export default function CreationDepositBillFromQuote({csrfToken, quoteNumber}: C
     const router = useRouter();
     // Display suggestions for : service, unit, vatRate, client, worksite 
     // const [clientSuggestions, setClientSuggestions] = useState<ClientSuggestionType[] | null>(null)
-    const [servicesSuggestions, setServiceSuggestions] = useState<ServiceSuggestionType[] | null>(null)
+    // const [servicesSuggestions, setServiceSuggestions] = useState<ServiceSuggestionType[] | null>(null)
     // text visible in the client field
-    const [clientInput, setClientInput] = useState(""); 
-    const [unitInput, setUnitInput] = useState(""); 
-    const [vatRateInput, setVatRateInput] = useState(""); 
-    const [serviceInput, setServiceInput] = useState(""); 
+    // const [clientInput, setClientInput] = useState(""); 
+    const [, setUnitInput] = useState(""); 
+    const [, setVatRateInput] = useState(""); 
+    // const [serviceInput, setServiceInput] = useState(""); 
 
 
     useEffect(() => {
@@ -83,27 +81,27 @@ export default function CreationDepositBillFromQuote({csrfToken, quoteNumber}: C
                 try{
                     const data = await fetchQuote(quoteNumber)
                     let isDiscountFromQuote = false
-                    if(data.quote?.discountAmount !== 0 || data.quote?.discountAmount !== null){
+                    if(data?.discountAmount !== 0 || data?.discountAmount !== null){
                         isDiscountFromQuote = true;
                     }
                     setCreateBillFormValues({
                         ...createBillFormValues,
-                        number: data.quote.number,
-                        totalTtc: data.quote.priceTTC,
-                        totalHt: data.quote.priceHT,
-                        clientId: data.quote.client.id,
-                        workSiteId: data.quote.workSite.id,
-                        quoteId: data.quote.id,
+                        number: data.number,
+                        totalTtc: data.priceTTC,
+                        totalHt: data.priceHT,
+                        clientId: data.client.id,
+                        workSiteId: data.workSite.id,
+                        quoteId: data.id,
                         isDiscountFromQuote: isDiscountFromQuote,
-                        discountReason: data.quote.discountReason,
-                        discountAmount: data.quote.discountAmount,
-                        travelCosts: data.quote.travelCosts,
-                        travelCostsType: data.quote.travelCostsType,
-                        vatAmount: data.quote.vatAmount,
-                        natureOfWork: data.quote.natureOfWork,
-                        description: data.quote.description,
-                        // services: data.quote.services
-                        services: data.quote.services.map(service => ({
+                        discountReason: data.discountReason,
+                        discountAmount: data.discountAmount,
+                        travelCosts: data.travelCosts,
+                        travelCostsType: data.travelCostsType,
+                        vatAmount: data.vatAmount,
+                        natureOfWork: data.natureOfWork,
+                        description: data.description,
+                        // services: data.services
+                        services: data.services.map(service => ({
                             id: service.id,
                             label: service.service.label, // Accès à `label` à l'intérieur de `service`
                             unitPriceHT: service.service.unitPriceHT?.toString() || "", // Assurer que c'est une string
@@ -115,7 +113,7 @@ export default function CreationDepositBillFromQuote({csrfToken, quoteNumber}: C
                             detailsService: service.detailsService || "",
                         }))
                     });
-                      setQuote(data.quote);
+                      setQuote(data);
 
                 }catch (error) {
                     console.error("Impossible to load the quote :", error);
@@ -125,7 +123,7 @@ export default function CreationDepositBillFromQuote({csrfToken, quoteNumber}: C
         const loadVatRates = async () => {
                 try{
                     const data = await fetchVatRates();
-                    setVatRateChoices(data.vatRates)
+                    setVatRateChoices(data)
 
                 }catch (error) {
                     console.error("Impossible to load VAT rates :", error);
@@ -135,7 +133,7 @@ export default function CreationDepositBillFromQuote({csrfToken, quoteNumber}: C
         const loadUnits = async () => {
                 try{
                     const data = await fetchUnits();
-                    setUnitChoices(data.units)
+                    setUnitChoices(data)
             
                 }catch (error) {
                     console.error("Impossible to load units :", error);
@@ -166,12 +164,12 @@ export default function CreationDepositBillFromQuote({csrfToken, quoteNumber}: C
     }
 
     //   Retrieve datas from the radio buttons. Because they are in a RadioGroup, we can't retrieve the value just thanks to an event, we have to get the name (of the group) + the value selected
-    const handleRadioChange = (name: string, value: string) => {
-        setCreateBillFormValues({
-            ...createBillFormValues,
-            [name]: value,
-        });
-    }
+    // const handleRadioChange = (name: string, value: string) => {
+    //     setCreateBillFormValues({
+    //         ...createBillFormValues,
+    //         [name]: value,
+    //     });
+    // }
 
 
     const handleBillCreation = async (statusReady?: string) => {
@@ -263,7 +261,7 @@ export default function CreationDepositBillFromQuote({csrfToken, quoteNumber}: C
     return (
         <div className="relative">
             {/* <div><Toaster/></div> */}
-            <h1 className="text-3xl text-white ml-3 text-center">Création de facture d'acompte liée au devis n°{quote.number}</h1>
+            <h1 className="text-3xl text-white ml-3 text-center">Création de facture d&apos;acompte liée au devis n°{quote.number}</h1>
             {/* <div><Toaster /></div> */}
             <form 
                 autoComplete="off"
@@ -290,7 +288,7 @@ export default function CreationDepositBillFromQuote({csrfToken, quoteNumber}: C
                     <label htmlFor="workSite">Chantier</label>
                     <Field className="w-full">
                         <Input type="text" name="workSite" 
-                            value={`${quote?.workSite.addressNumber} ${quote?.workSite.road} ${quote?.workSite.additionnalAddress ? quote?.workSite.additionnalAddress + " " : ""}${quote?.workSite.postalCode} ${quote?.workSite.city}`}
+                            value={`${quote?.workSite.addressNumber} ${quote?.workSite.road} ${quote?.workSite.additionalAddress ? quote?.workSite.additionalAddress + " " : ""}${quote?.workSite.postalCode} ${quote?.workSite.city}`}
                             className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             readOnly
                         >
@@ -561,7 +559,7 @@ export default function CreationDepositBillFromQuote({csrfToken, quoteNumber}: C
             {/* {isOpen ?? ( */}
                 <Dialog open={isOpen} onClose={closeChoiceDialog}  className="fixed top-[50%] left-[25%]" >
                     <DialogPanel className="bg-gray-300 p-5 rounded-md shadow-lg text-black">
-                    <DialogTitle>Etes-vous sûr de vouloir enregistrer la facture d'acompte en version finale ?</DialogTitle>
+                    <DialogTitle>Etes-vous sûr de vouloir enregistrer la facture d&apos;acompte en version finale ?</DialogTitle>
                     <Description>Cette action est irréversible</Description>
                     <p>La facture ne pourra plus être modifiée ultérieurement. </p>
                         <div className="flex justify-between mt-4">

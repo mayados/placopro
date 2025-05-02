@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import Button from "@/components/Button";
 import { toast } from 'react-hot-toast';
-import { Dialog, DialogTitle, DialogPanel, Description, Tab, TabGroup, TabList, TabPanel, TabPanels, Textarea } from '@headlessui/react';
+import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
 import Link from "next/link";
-import { faArchive, faXmark, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
+import { faXmark, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import { Field, Input } from '@headlessui/react';
 import { createVatRate, deleteVatRate, fetchVatRates, updateVatRate } from "@/services/api/vatRateService";
 import { createVatRateSchema } from "@/validation/vatRateValidation";
@@ -240,7 +240,7 @@ export default function ToDos({ csrfToken }: VatRateProps) {
                                         />
                                         <Dialog open={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} className="absolute top-[50%] left-[25%]">
                                             <DialogPanel>
-                                                <DialogTitle>Modifier l'Taux de TVA</DialogTitle>
+                                                <DialogTitle>Modifier le Taux de TVA</DialogTitle>
 
                                                 <label>Taux de TVA</label>
                                                 <Input
@@ -266,7 +266,7 @@ export default function ToDos({ csrfToken }: VatRateProps) {
                 {isOpen && vatRateToDelete && (
                     <Dialog open={isOpen} onClose={closeDeleteDialog} className="absolute top-[50%] left-[25%]" >
                         <DialogPanel className="bg-gray-300 p-5 rounded-md shadow-lg text-black">
-                            <DialogTitle>Supprimer l'Taux de TVA</DialogTitle>
+                            <DialogTitle>Supprimer le Taux de TVA</DialogTitle>
                             <Description>Cette action est irréversible</Description>
                             <p>Etes-vous sûr de vouloir supprimer cette Taux de TVA ? Toutes ses données seront supprimées de façon permanente. Cette action est irréversible.</p>
                             <div className="flex justify-between mt-4">

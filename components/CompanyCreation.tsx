@@ -90,7 +90,7 @@ export default function CompanyCreation({csrfToken}: CompanyCreationProps){
     return (
         <>
             {/* <div><Toaster/></div> */}
-            <h1 className="text-3xl text-white ml-3 text-center">Création d'entreprise : {company?.name}</h1>
+            <h1 className="text-3xl text-white ml-3 text-center">Création d&apos;entreprise : {company?.name}</h1>
             {/* <div><Toaster /></div> */}
             <form 
                 onSubmit={(e) => {
@@ -112,7 +112,7 @@ export default function CompanyCreation({csrfToken}: CompanyCreationProps){
                 </div>
                 {/* type of company */}
                 <div>
-                    <label htmlFor="type">Type d'entreprise</label>
+                    <label htmlFor="type">Type d&apos;entreprise</label>
                     <Select
                         name="type"
                         // value={employee.role}
@@ -153,7 +153,7 @@ export default function CompanyCreation({csrfToken}: CompanyCreationProps){
                 </div>
                 {/* Company's capital */}
                 <div>
-                    <label htmlFor="capital">Capital de l'entreprise en € </label>
+                    <label htmlFor="capital">Capital de l&pos;entreprise en € </label>
                     <Field className="w-full">
                         <Input type="number" name="capital" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
@@ -165,7 +165,7 @@ export default function CompanyCreation({csrfToken}: CompanyCreationProps){
                 </div>
                 {/* Company's RCS */}
                 <div>
-                    <label htmlFor="rcs">RCS de l'entreprise : ville d'immatriculation + numéro SIREN.</label>
+                    <label htmlFor="rcs">RCS de l&apos;entreprise : ville d&apos;immatriculation + numéro SIREN.</label>
                     <Field className="w-full">
                         <Input type="text" name="rcs" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
@@ -285,7 +285,7 @@ export default function CompanyCreation({csrfToken}: CompanyCreationProps){
                 </div>
                 {/* Insurance contract number */}
                 <div>
-                    <label htmlFor="insuranceContractNumber">Numéro de contrat de l'assurance décennale</label>
+                    <label htmlFor="insuranceContractNumber">Numéro de contrat de l&apos;assurance décennale</label>
                     <Field className="w-full">
                         <Input type="text" name="insuranceContractNumber" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}
@@ -297,7 +297,7 @@ export default function CompanyCreation({csrfToken}: CompanyCreationProps){
                 </div>
                 {/* Aera covered by insurance */}
                 <div>
-                    <label htmlFor="insuranceCoveredZone">Zone couverte par l'assurance décennale</label>
+                    <label htmlFor="insuranceCoveredZone">Zone couverte par l&apos;assurance décennale</label>
                     <Field className="w-full">
                         <Input type="text" name="insuranceCoveredZone" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             onChange={handleInputChange}

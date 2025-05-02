@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Field, Input, Label, Legend, Radio, RadioGroup, Select, Textarea } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
-import { capitalizeFirstLetter, formatDateForInput } from "@/lib/utils";
+import { capitalizeFirstLetter } from "@/lib/utils";
 import { fetchVatRates } from "@/services/api/vatRateService";
 import { fetchUnits } from "@/services/api/unitService";
 import { createQuote } from "@/services/api/quoteService";
@@ -73,9 +73,8 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
 
 
     const [workSiteInput, setWorkSiteInput] = useState("");
-    const [unitInput, setUnitInput] = useState("");
-    const [vatRateInput, setVatRateInput] = useState("");
-    const [serviceInput, setServiceInput] = useState("");
+    const [, setUnitInput] = useState("");
+    const [, setVatRateInput] = useState("");
     // Choices for boolean properties
     const hasRightOfWithdrawalChoices = ["Oui", "Non"];
     const [isOpen, setIsOpen] = useState(false);
@@ -787,7 +786,7 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                 </div>
                 {/* has right of Withdrawal ? */}
                 <Field>
-                    <Legend>Y a t'il un droit de rétractation ?</Legend>
+                    <Legend>Y a t&apos;il un droit de rétractation ?</Legend>
                     <RadioGroup
                         name="hasRightOfWithdrawal"
                         value={quote.hasRightOfWithdrawal}
@@ -824,7 +823,7 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                     onClick={() => {
                         handleQuoteCreation();
                     }}
-                >Enregistrer à l'état de brouillon
+                >Enregistrer à l&apos;état de brouillon
                 </button>
                 <button
                     // type="button" avoid the form to be automatically submitted

@@ -100,7 +100,7 @@ export async function PUT(req: NextRequest) {
             // Retrieve deposits linked to the quote
             let totalPaidDepositTTC = 0;
             let totalPaidDepositHT = 0;
-            let totalPaidDepositVAT = 0;
+            // let totalPaidDepositVAT = 0;
 
             if (sanitizedData.quoteId) {
                 const depositBills = await prisma.bill.findMany({
@@ -115,7 +115,7 @@ export async function PUT(req: NextRequest) {
                 // Count of deposits
                 totalPaidDepositTTC = parseFloat(depositBills.reduce((acc, bill) => acc + bill.totalTtc, 0).toFixed(2));
                 totalPaidDepositHT = parseFloat(depositBills.reduce((acc, bill) => acc + bill.totalHt, 0).toFixed(2));
-                totalPaidDepositVAT = parseFloat(depositBills.reduce((acc, bill) => acc + bill.vatAmount, 0).toFixed(2));
+                // totalPaidDepositVAT = parseFloat(depositBills.reduce((acc, bill) => acc + bill.vatAmount, 0).toFixed(2));
             }
 
             // Generate a unique number when status changes from draft to ready
@@ -173,7 +173,7 @@ export async function PUT(req: NextRequest) {
             // Count new totals in function of services
             let newTotalHt = 0;
             let newVatAmount = 0;
-            let newTotalTtc = 0;
+            // let newTotalTtc = 0;
 
             // Update existing services and add new services
             if (sanitizedData.services && sanitizedData.services.length > 0) {
@@ -185,7 +185,7 @@ export async function PUT(req: NextRequest) {
 
                     newTotalHt += totalHTService;
                     newVatAmount += vatAmountService;
-                    newTotalTtc += totalTTCService;
+                    // newTotalTtc += totalTTCService;
 
                     // If the service has an ID, it's an update
                     if (service.id) {

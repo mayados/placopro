@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Field,Input,Select, Textarea } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
-import { CirclePlus, CircleX } from "lucide-react";
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
 // import { fetchbill, updateInvoiceDraftBill } from "@/services/api/bill/Service";
 import { fetchVatRates } from "@/services/api/vatRateService";
@@ -13,6 +12,7 @@ import { fetchSuggestions } from "@/services/api/suggestionService";
 import { fetchBill, updateDraftBill } from "@/services/api/billService";
 import { updateDraftBillSchema, updateDraftFinalBillSchema } from "@/validation/billValidation";
 import { toast } from 'react-hot-toast';
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
 type UpdateBillProps = {
     csrfToken: string;
@@ -57,7 +57,7 @@ export default function UpdateBill({csrfToken, billSlug}: UpdateBillProps){
     const [vatRateChoices, setVatRateChoices] = useState<VatRateChoiceType[]>([])
     const [unitChoices, setUnitChoices] = useState<UnitChoiceType[]>([])
     // Allows to know if a bill is registered as a draft or ready (to be send)
-    const [status, setStatus] = useState<"Draft" | "Ready">("Draft");
+    // const [status, setStatus] = useState<"Draft" | "Ready">("Draft");
     const [isOpen, setIsOpen] = useState(false);
     // for zod validation errors
     const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
@@ -69,10 +69,10 @@ export default function UpdateBill({csrfToken, billSlug}: UpdateBillProps){
     // const [clientSuggestions, setClientSuggestions] = useState<ClientSuggestionType[] | null>(null)
     const [servicesSuggestions, setServiceSuggestions] = useState<ServiceSuggestionType[] | null>(null)
     // text visible in the client field
-    const [clientInput, setClientInput] = useState(""); 
-    const [unitInput, setUnitInput] = useState(""); 
-    const [vatRateInput, setVatRateInput] = useState(""); 
-    const [serviceInput, setServiceInput] = useState(""); 
+    // const [clientInput, setClientInput] = useState(""); 
+    const [, setUnitInput] = useState(""); 
+    const [, setVatRateInput] = useState(""); 
+    // const [serviceInput, setServiceInput] = useState(""); 
 
 
     useEffect(() => {
@@ -167,12 +167,12 @@ export default function UpdateBill({csrfToken, billSlug}: UpdateBillProps){
     }
 
     //   Retrieve datas from the radio buttons. Because they are in a RadioGroup, we can't retrieve the value just thanks to an event, we have to get the name (of the group) + the value selected
-    const handleRadioChange = (name: string, value: string) => {
-        setUpdateBillFormValues({
-            ...updateBillFormValues,
-            [name]: value,
-        });
-    }
+    // const handleRadioChange = (name: string, value: string) => {
+    //     setUpdateBillFormValues({
+    //         ...updateBillFormValues,
+    //         [name]: value,
+    //     });
+    // }
 
 
     const handleBillUpdate = async (statusReady?: string) => {
@@ -418,7 +418,7 @@ const handleServiceFieldChange = (
 };
 
 // Fonction utilitaire pour vérifier si un service est complet
-const isServiceComplete = (service: any) => {
+const isServiceComplete = (service: ServiceFormBillType) => {
     return service.label &&
            service.unitPriceHT &&
            service.type &&
@@ -697,7 +697,7 @@ const addService = () => {
     {/* Bouton de suppression du service */}
     <Button
       label="Supprimer le service"
-      icon={CircleX}
+      icon={faXmark}
       type="button"
       action={() => addServiceToUnlink(service, index)}
       specifyBackground="text-red-500"
@@ -708,7 +708,7 @@ const addService = () => {
 {/* Bouton d'ajout d'un service */}
 <Button
   label="Ajouter un service"
-  icon={CirclePlus}
+  icon={faXmark}
   type="button"
   action={() => addService()}
   specifyBackground="text-green-500"

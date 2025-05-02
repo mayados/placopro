@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
         const currentYear = new Date().getFullYear();
         
           // Get the counter for current year for quote
-          let counter = await db.documentCounter.findFirst({
+          const counter = await db.documentCounter.findFirst({
             where: {
               year: currentYear,
               type: type, 

@@ -1,3 +1,4 @@
+/* eslint-disable */
 
 // Each User of clerkClient.users.getUserList() has originally this type
 interface GetUserType{
@@ -620,6 +621,15 @@ interface ServiceAndBillServiceType{
     quantity: number,
     detailsService: string,
     serviceId : string,
+}
+
+interface ServiceCompleteVerificationType{
+    label: string,
+    unitPriceHT: string,
+    type: string;
+    vatRate: string;
+    unit: string,  
+    quantity: number
 }
 
 interface ServiceType{

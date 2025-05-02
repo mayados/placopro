@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Trash2 } from 'lucide-react';
-import Button from "@/components/Button";
 import { formatDate } from '@/lib/utils'
 // import toast, { Toaster } from 'react-hot-toast';
 import { Dialog, DialogTitle, DialogPanel, Description, Tab, TabGroup ,TabList, TabPanel, TabPanels } from '@headlessui/react';
@@ -10,6 +8,8 @@ import Link from "next/link";
 import { deleteBill, fetchBills } from "@/services/api/billService";
 import { useSearchParams } from "next/navigation";
 import { Pagination } from "@/components/Pagination";
+import Button from "@/components/Button";
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
 const LIMIT = 15;
 
@@ -116,7 +116,7 @@ const Bills = () =>{
                 <TabList className="my-3 flex gap-3">
                     <Tab className="text-lg lg:text-base flex data-[selected]:bg-pink-600  data-[hover]:bg-pink-500 p-2 rounded-md">Tous ({totalBills})</Tab>
                     <Tab className="text-lg lg:text-base flex data-[selected]:bg-pink-600  data-[hover]:bg-pink-500 p-2 rounded-md">Brouillons ({totalDraftBills})</Tab>
-                    <Tab className="text-lg lg:text-base flex data-[selected]:bg-pink-600  data-[hover]:bg-pink-500 p-2 rounded-md">Prêtes à l'envoi ({totalReadyToBeSentBills})</Tab>
+                    <Tab className="text-lg lg:text-base flex data-[selected]:bg-pink-600  data-[hover]:bg-pink-500 p-2 rounded-md">Prêtes à l&apos;envoi ({totalReadyToBeSentBills})</Tab>
                     <Tab className="text-lg lg:text-base flex data-[selected]:bg-pink-600  data-[hover]:bg-pink-500 p-2 rounded-md">Envoyées ({totalSentBills})</Tab>
                     <Tab className="text-lg lg:text-base flex data-[selected]:bg-pink-600  data-[hover]:bg-pink-500 p-2 rounded-md">Annulées ({totalCanceledBills})</Tab>
                 </TabList>
@@ -128,8 +128,8 @@ const Bills = () =>{
                                 <tr>
                                     <th>N° de facture</th>
                                     <th>Client</th>
-                                    <th>Date d'émission</th>
-                                    <th>Date d'échéance</th>
+                                    <th>Date d&apos;émission</th>
+                                    <th>Date d&apos;échéance</th>
                                     <th>Statut</th>
                                     <th>Afficher</th>
                                 </tr>  
@@ -137,7 +137,6 @@ const Bills = () =>{
                             <tbody>
                             {
                                 bills.map((bill) => {
-                                    const billId = bill.id;
                                     console.log("date :"+bill.issueDate)
                                 
                                 return (
@@ -169,8 +168,8 @@ const Bills = () =>{
                                 <tr>
                                     <th>N° de facture</th>
                                     <th>Client</th>
-                                    <th>Date d'émission</th>
-                                    <th>Date d'échéance</th>
+                                    <th>Date d&apos;émission</th>
+                                    <th>Date d&apos;échéance</th>
                                     <th>Statut</th>
                                     <th>Afficher</th>
                                 </tr>  
@@ -178,7 +177,6 @@ const Bills = () =>{
                             <tbody>
                             {
                                 draftBills.map((bill) => {
-                                    const billId = bill.id;
                                 
                                 return (
                                     <tr key={bill.id}>
@@ -196,6 +194,9 @@ const Bills = () =>{
                                                 Modifier
                                             </Link>
                                         </td>
+                                        <td>
+                                        <Button label="Remove" icon={faXmark} type="button" action={() => openDeleteDialog(bill.id)} specifyBackground="text-red-500" />
+                                        </td>
                                     </tr>
                                 );
                                 })
@@ -212,8 +213,8 @@ const Bills = () =>{
                                 <tr>
                                     <th>N° de facture</th>
                                     <th>Client</th>
-                                    <th>Date d'émission</th>
-                                    <th>Date d'échéance</th>
+                                    <th>Date d&apos;émission</th>
+                                    <th>Date d&apos;échéance</th>
                                     <th>Statut</th>
                                     <th>Afficher</th>
                                 </tr>  
@@ -221,7 +222,6 @@ const Bills = () =>{
                             <tbody>
                             {
                                 readyToBeSentBills.map((bill) => {
-                                    const billId = bill.id;
                                 
                                 return (
                                     <tr key={bill.id}>
@@ -251,8 +251,8 @@ const Bills = () =>{
                                 <tr>
                                     <th>N° de facture</th>
                                     <th>Client</th>
-                                    <th>Date d'émission</th>
-                                    <th>Date d'échéance</th>
+                                    <th>Date d&apos;émission</th>
+                                    <th>Date d&apos;échéance</th>
                                     <th>Statut</th>
                                     <th>Afficher</th>
                                 </tr>  
@@ -260,7 +260,6 @@ const Bills = () =>{
                             <tbody>
                             {
                                 sentBills.map((bill) => {
-                                    const billId = bill.id;
                                 
                                 return (
                                     <tr key={bill.id}>
@@ -290,8 +289,8 @@ const Bills = () =>{
                                 <tr>
                                     <th>N° de facture</th>
                                     <th>Client</th>
-                                    <th>Date d'émission</th>
-                                    <th>Date d'échéance</th>
+                                    <th>Date d&apos;émission</th>
+                                    <th>Date d&apos;échéance</th>
                                     <th>Statut</th>
                                     <th>Afficher</th>
                                 </tr>  
@@ -299,7 +298,6 @@ const Bills = () =>{
                             <tbody>
                             {
                                 canceledBills.map((bill) => {
-                                    const billId = bill.id;
                                 
                                 return (
                                     <tr key={bill.id}>

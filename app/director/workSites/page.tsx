@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Trash2 } from 'lucide-react';
 import Button from "@/components/Button";
 import { formatDate } from '@/lib/utils'
 import { toast } from 'react-hot-toast';
@@ -10,6 +9,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { deleteWorkSite, fetchWorkSites } from "@/services/api/workSiteService";
 import { Pagination } from "@/components/Pagination";
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
 const LIMIT = 15;
 
@@ -147,7 +147,7 @@ const WorkSites = () =>{
                                         </Link>
                                     </td>
                                         <td>
-                                            <Button label="Remove" icon={Trash2} type="button" action={() => openDeleteDialog(workSiteSlug)} specifyBackground="text-red-500" />
+                                            <Button label="Remove" icon={faXmark} type="button" action={() => openDeleteDialog(workSiteSlug)} specifyBackground="text-red-500" />
                                         </td>
                                     </tr>
                                 );
@@ -191,7 +191,7 @@ const WorkSites = () =>{
                                         </Link>
                                     </td>
                                         <td>
-                                            <Button label="Remove" icon={Trash2} type="button" action={() => openDeleteDialog(workSiteSlug)} specifyBackground="text-red-500" />
+                                            <Button label="Remove" icon={faXmark} type="button" action={() => openDeleteDialog(workSiteSlug)} specifyBackground="text-red-500" />
                                         </td>
                                     </tr>
                                 );
@@ -235,7 +235,7 @@ const WorkSites = () =>{
                                         </Link>
                                     </td>
                                         <td>
-                                            <Button label="Remove" icon={Trash2} type="button" action={() => openDeleteDialog(workSiteSlug)} specifyBackground="text-red-500" />
+                                            <Button label="Remove" icon={faXmark} type="button" action={() => openDeleteDialog(workSiteSlug)} specifyBackground="text-red-500" />
                                         </td>
                                     </tr>
                                 );
@@ -279,7 +279,7 @@ const WorkSites = () =>{
                                         </Link>
                                     </td>
                                         <td>
-                                            <Button label="Remove" icon={Trash2} type="button" action={() => openDeleteDialog(workSiteSlug)} specifyBackground="text-red-500" />
+                                            <Button label="Remove" icon={faXmark} type="button" action={() => openDeleteDialog(workSiteSlug)} specifyBackground="text-red-500" />
                                         </td>
                                     </tr>
                                 );

@@ -1,16 +1,13 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
-import { Field,Input, Label, Legend, Radio, RadioGroup, Select, Textarea } from '@headlessui/react';
+import { useEffect, useState } from "react";
+import { Field,Input, Select, Textarea } from '@headlessui/react';
 import { useRouter } from "next/navigation";
-import Button from "@/components/Button";
-import { capitalizeFirstLetter, formatDateToInput } from "@/lib/utils";
-import { formatDateForInput } from '@/lib/utils'
+import {  formatDateToInput } from "@/lib/utils";
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
 // import { fetchbill, updateInvoiceDraftBill } from "@/services/api/bill/Service";
 import { fetchVatRates } from "@/services/api/vatRateService";
 import { fetchUnits } from "@/services/api/unitService";
-import { fetchSuggestions } from "@/services/api/suggestionService";
 import { fetchBill, updateDepositDraftBill } from "@/services/api/billService";
 import { updateDraftBillDepositSchema, updateDraftFinalDepositBillSchema } from "@/validation/billValidation";
 import { toast } from 'react-hot-toast';
@@ -32,7 +29,7 @@ export default function UpdateDepositBill({csrfToken, billSlug}: UpdateDepositBi
     })
 
     // Allows to know if a bill is registered as a draft or ready (to be send)
-    const [status, setStatus] = useState<"Draft" | "Ready">("Draft");
+    // const [status, setStatus] = useState<"Draft" | "Ready">("Draft");
     const [isOpen, setIsOpen] = useState(false);
     // for zod validation errors
     const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
@@ -49,7 +46,7 @@ export default function UpdateDepositBill({csrfToken, billSlug}: UpdateDepositBi
 
                 try{
                     const data = await fetchBill(billSlug)
-                    let isDiscountFrombill = false
+                    // const isDiscountFrombill = false
                   
                     setUpdateBillFormValues({
                         ...updateBillFormValues,
@@ -64,7 +61,7 @@ export default function UpdateDepositBill({csrfToken, billSlug}: UpdateDepositBi
 
         const loadVatRates = async () => {
                 try{
-                    const data = await fetchVatRates();
+                    await fetchVatRates();
 
                 }catch (error) {
                     console.error("Impossible to load VAT rates :", error);
@@ -73,7 +70,7 @@ export default function UpdateDepositBill({csrfToken, billSlug}: UpdateDepositBi
 
         const loadUnits = async () => {
                 try{
-                    const data = await fetchUnits();
+                    await fetchUnits();
             
                 }catch (error) {
                     console.error("Impossible to load units :", error);
@@ -102,7 +99,6 @@ export default function UpdateDepositBill({csrfToken, billSlug}: UpdateDepositBi
         // console.log("lors du submit, le status est : "+statusReady)
 
         const status = statusReady ? "READY": "DRAFT"
-        const billId = bill?.id
 
         try{
             const updateBillWithStatus = {
@@ -186,7 +182,7 @@ export default function UpdateDepositBill({csrfToken, billSlug}: UpdateDepositBi
     return (
         <div className="relative">
             {/* <div><Toaster/></div> */}
-            <h1 className="text-3xl text-white ml-3 text-center">Modification de facture d'accompte n°{bill?.number}</h1>
+            <h1 className="text-3xl text-white ml-3 text-center">Modification de facture d&apos;accompte n°{bill?.number}</h1>
             {/* <div><Toaster /></div> */}
             <form 
                 autoComplete="off"
@@ -212,7 +208,7 @@ export default function UpdateDepositBill({csrfToken, billSlug}: UpdateDepositBi
                     <label htmlFor="workSite">Chantier</label>
                     <Field className="w-full">
                         <Input type="text" name="workSite" 
-                            value={`${bill?.workSite.addressNumber} ${bill?.workSite.road} ${bill?.workSite.additionnalAddress ? bill?.workSite.additionnalAddress + " " : ""}${bill?.workSite.postalCode} ${bill?.workSite.city}`}
+                            value={`${bill?.workSite.addressNumber} ${bill?.workSite.road} ${bill?.workSite.additionalAddress ? bill?.workSite.additionalAddress + " " : ""}${bill?.workSite.postalCode} ${bill?.workSite.city}`}
                             className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
                             readOnly
                         >
@@ -397,7 +393,7 @@ export default function UpdateDepositBill({csrfToken, billSlug}: UpdateDepositBi
                     onClick={() => {
                         handleBillUpdate(); 
                     }}
-                    >Enregistrer à l'état de brouillon
+                    >Enregistrer à l&apos;état de brouillon
                 </button>
                 <button
                     // type="button" avoid the form to be automatically submitted

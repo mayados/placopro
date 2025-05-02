@@ -1,8 +1,8 @@
 import { db } from "@/lib/db";
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { clerkClient} from "@clerk/express";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
 
     try{
         const plannings = await db.planning.findMany({

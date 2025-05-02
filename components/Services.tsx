@@ -3,12 +3,10 @@
 import { useEffect, useState } from "react";
 import Button from "@/components/Button";
 import { toast } from 'react-hot-toast';
-import { Dialog, DialogTitle, DialogPanel, Description, Tab, TabGroup, TabList, TabPanel, TabPanels, Textarea } from '@headlessui/react';
-import Link from "next/link";
-import { faArchive, faXmark, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
-import { Field, Input } from '@headlessui/react';
+import { Dialog, DialogTitle, DialogPanel, Description} from '@headlessui/react';
+import { faXmark, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
+import { Input } from '@headlessui/react';
 import { deleteService, fetchServices, updateService } from "@/services/api/serviceService";
-import { createServiceSchema } from "@/validation/serviceValidation";
 
 
 type ServicesProps = {
@@ -17,11 +15,11 @@ type ServicesProps = {
 
 export default function Services({ csrfToken }: ServicesProps) {
 
-    const [serviceFormValues, setServiceFormValues] = useState<ServiceCreationType>({
-        label: null,
-        type: null,
-        unitPriceHT: null,
-    })
+    // const [serviceFormValues, setServiceFormValues] = useState<ServiceCreationType>({
+    //     label: null,
+    //     type: null,
+    //     unitPriceHT: null,
+    // })
 
 
     // Use of Record here because there are many to do
@@ -43,7 +41,7 @@ export default function Services({ csrfToken }: ServicesProps) {
     // const for the modal
     const [isOpen, setIsOpen] = useState(false);
     // For zod validation errors
-    const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
+    // const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
 
     useEffect(() => {
         const loadServices = async () => {
@@ -79,16 +77,16 @@ export default function Services({ csrfToken }: ServicesProps) {
         }
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        // console.log("évènement reçu : "+e)
-        const { name, value } = e.target;
-        // console.log("select :"+name+" valeur : "+value)
-        setServiceFormValues({
-            ...serviceFormValues,
-            [name]: value,
-        });
+    // const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    //     // console.log("évènement reçu : "+e)
+    //     const { name, value } = e.target;
+    //     // console.log("select :"+name+" valeur : "+value)
+    //     setServiceFormValues({
+    //         ...serviceFormValues,
+    //         [name]: value,
+    //     });
 
-    };
+    // };
 
 
     const openDeleteDialog = (service: ServiceEntityType) => {
@@ -238,7 +236,7 @@ export default function Services({ csrfToken }: ServicesProps) {
                 {isOpen && serviceToDelete && (
                     <Dialog open={isOpen} onClose={closeDeleteDialog} className="absolute top-[50%] left-[25%]" >
                         <DialogPanel className="bg-gray-300 p-5 rounded-md shadow-lg text-black">
-                            <DialogTitle>Supprimer l'unité</DialogTitle>
+                            <DialogTitle>Supprimer l&apos;unité</DialogTitle>
                             <Description>Cette action est irréversible</Description>
                             <p>Etes-vous sûr de vouloir supprimer cette unité ? Toutes ses données seront supprimées de façon permanente. Cette action est irréversible.</p>
                             <div className="flex justify-between mt-4">
