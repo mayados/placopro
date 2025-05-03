@@ -5,7 +5,6 @@ import Button from "@/components/Button";
 import { formatDate } from '@/lib/utils'
 import { toast } from 'react-hot-toast';
 import { Dialog, DialogTitle, DialogPanel, Description, Tab, TabGroup ,TabList, TabPanel, TabPanels, Textarea } from '@headlessui/react';
-import Link from "next/link";
 import {archiveOrUnarchiveToDo, checkOrUncheckToDo, createAssignedToDo, createClassicToDo, deleteToDo, fetchToDos, updateAssignedToDo, updateClassicToDo } from "@/services/api/toDoService";
 import { faArchive, faXmark, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import { Field,Input } from '@headlessui/react';
@@ -446,7 +445,7 @@ type ToDosProps = {
                 <TabPanels>
                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
                         <section>
-                            <Link href={`/director/toDos/create`}>Créer un to do</Link>
+                            <p>Créer un to do</p>
                             <form 
                                 onSubmit={(e) => {
                                     e.preventDefault();
@@ -649,7 +648,7 @@ type ToDosProps = {
                                                 <button onClick={() => setIsAssignedEditModalOpen(false)}>Annuler</button>
                                             </DialogPanel>
                                         </Dialog>
-                            <Link href={`/director/toDos/create`}>Créer un to do à assigner</Link>
+                            <p>Créer un to do à assigner</p>
                                 <form 
                                     onSubmit={(e) => {
                                         e.preventDefault();
