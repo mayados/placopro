@@ -229,7 +229,7 @@ describe('API Client Creation Route', () => {
     prismaMock.client.create.mockRejectedValue(new Error('Erreur DB'));
 
     // Créer la requête
-    const request = new Request('http://localhost:3000/api/clients/create', {
+    const request = new Request(`${process.env.NEXT_PUBLIC_URL}/api/clients/create`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
