@@ -214,7 +214,8 @@ const isForConnectedUsersApiRoute = createRouteMatcher([
   '/api/creditNotes(.*)',
   '/api/clients(.*)',
   '/api/service(.*)',
-  '/api/units(.*)',
+  // '/api/units(.*)',
+  '/api/units/create',
   '/api/vatRates(.*)',
   '/api/workSites(.*)',
   '/api/plannings(.*)',
@@ -232,7 +233,7 @@ const isSecretaryOrDirectorApiRoute = createRouteMatcher([
   '/api/creditNotes(.*)',
   '/api/clients(.*)',
   '/api/service(.*)',
-  '/api/units(.*)',
+  // '/api/units(.*)',
   '/api/vatRates(.*)',
   '/api/workSites(.*)',
 ]);
