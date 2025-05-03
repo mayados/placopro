@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
     const secureToken = await createSecureToken(user.id);
     
     // Generate link with the secure token
-    const link = `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/set-password?token=${secureToken}`;
+    const link = `${process.env.NEXT_PUBLIC_URL}/set-password?token=${secureToken}`;
     
     // Send invitation email with link
     await sendInvitationEmail(email, link, firstName);

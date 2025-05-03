@@ -1,6 +1,6 @@
 
-const baseUrl = process.env.NEXT_PUBLIC_API_URL || 
-(typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
+const baseUrl = process.env.NEXT_PUBLIC_API_URL 
+// (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
 // Retrieve all the quotes
 // Return a promise with object of type QuoteWithTotalsAndStatus
 export const fetchQuotes = async ({
