@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Button from "@/components/Button";
 import { toast } from 'react-hot-toast';
 import { Dialog, DialogTitle, DialogPanel, Description} from '@headlessui/react';
-import Link from "next/link";
 import { faXmark, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import { Field, Input } from '@headlessui/react';
 import { createUnit, deleteUnit, fetchUnits, updateUnit } from "@/services/api/unitService";
@@ -193,7 +192,7 @@ export default function ToDos({ csrfToken }: UnitsProps) {
                     <h1 className="text-3xl text-white text-center">Unités</h1>
 
                     <section>
-                        <Link href={`/director/toDos/create`}>Créer une unité</Link>
+                        <p>Créer une unité</p>
                         <form
                             onSubmit={(e) => {
                                 e.preventDefault();

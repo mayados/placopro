@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Button from "@/components/Button";
 import { toast } from 'react-hot-toast';
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
-import Link from "next/link";
 import { faXmark, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import { Field, Input } from '@headlessui/react';
 import { createVatRate, deleteVatRate, fetchVatRates, updateVatRate } from "@/services/api/vatRateService";
@@ -194,7 +193,7 @@ export default function ToDos({ csrfToken }: VatRateProps) {
                     <h1 className="text-3xl text-white text-center">Taux de TVAs</h1>
 
                     <section>
-                        <Link href={`/director/toDos/create`}>Créer un Taux de TVA</Link>
+                        <p>Créer un Taux de TVA</p>
                         <form
                             onSubmit={(e) => {
                                 e.preventDefault();
