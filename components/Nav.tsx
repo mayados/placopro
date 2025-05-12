@@ -4,7 +4,6 @@ import React, { useState } from 'react'
 import { Menu, X, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import {
-  SignInButton,
   SignedIn,
   SignedOut,
   UserButton,
@@ -76,9 +75,9 @@ const Nav: React.FC<NavProps> = ({ logo }) => {
               text-white
             `}
           >
-            <li><Link href="/platrerie" className="block px-4 py-2 hover:bg-slate-600">Plâtrerie</Link></li>
-            <li><Link href="/carrelage" className="block px-4 py-2 hover:bg-slate-600">Carrelage</Link></li>
-            <li><Link href="/peinture" className="block px-4 py-2 hover:bg-slate-600">Peinture</Link></li>
+            <li><Link href="/public/prestations/platrerie" className="block px-4 py-2 hover:bg-slate-600">Plâtrerie</Link></li>
+            <li><Link href="/public/prestations/carrelage" className="block px-4 py-2 hover:bg-slate-600">Carrelage</Link></li>
+            <li><Link href="/public/prestations/peinture" className="block px-4 py-2 hover:bg-slate-600">Peinture</Link></li>
           </ul>
         </li>
         <li><Link href="/realisations" className="hover:text-gray-400 transition">Réalisations</Link></li>
@@ -88,11 +87,13 @@ const Nav: React.FC<NavProps> = ({ logo }) => {
         {/* Auth */}
         <li>
           <SignedOut>
-            <SignInButton>
+            <Link href="/public/intranet" className="block px-4 py-2 hover:bg-slate-600">Accéder à l&apos;intranet</Link>
+
+            {/* <SignInButton>
               <button className="text-sm px-4 py-2 rounded hover:text-gray-400 transition">
                 Accéder à l&apos;intranet
               </button>
-            </SignInButton>
+            </SignInButton> */}
           </SignedOut>
           <SignedIn>
             <UserButton />
