@@ -187,7 +187,6 @@ export default function ToDos({ csrfToken }: VatRateProps) {
     return (
 
         <>
-            <div className="flex w-screen">
 
                 <section className="border-2 border-green-800 flex-[8]">
                     <h1 className="text-3xl text-white text-center">Taux de TVAs</h1>
@@ -275,7 +274,6 @@ export default function ToDos({ csrfToken }: VatRateProps) {
                         </DialogPanel>
                     </Dialog>
                 )}
-            </div>
         </>
 
     )

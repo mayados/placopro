@@ -91,140 +91,75 @@ export default function ClientCreation({csrfToken}: ClientCreationProps){
 
 
     return (
-        <>
-            {/* <div><Toaster/></div> */}
-            <h1 className="text-3xl text-white ml-3 text-center">Création client : {client.name} {client.firstName}</h1>
-            {/* <div><Toaster /></div> */}
-            <form 
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    handleClientCreation();
-                }}
+<>
+  <h1 className="text-3xl text-primary font-semibold mb-8 text-center">
+    Création client : {client.name} {client.firstName}
+  </h1>
+
+  <form
+    onSubmit={(e) => {
+      e.preventDefault();
+      handleClientCreation();
+    }}
+    className="max-w-2xl mx-auto space-y-6 bg-primary p-4 sm:p-6 rounded-2xl shadow-xl"
+  >
+    <fieldset className="space-y-4">
+      <legend className="sr-only">Informations client</legend>
+
+      {[
+        { label: 'Nom', name: 'name' },
+        { label: 'Prénom', name: 'firstName' },
+        { label: 'Mail', name: 'mail', type: 'email' },
+        { label: 'Téléphone', name: 'phone' },
+        { label: "Numéro d'adresse", name: 'addressNumber' },
+        { label: 'Rue', name: 'road' },
+        { label: "Complément d'adresse", name: 'additionalAddress' },
+        { label: 'Code postal', name: 'postalCode' },
+        { label: 'Ville', name: 'city' },
+        { label: 'Numéro de prospect', name: 'prospectNumber' },
+      ].map(({ label, name, type = 'text' }) => {
+        const errorId = `error-${name}`;
+        return (
+          <div key={name}>
+            <label
+              htmlFor={name}
+              className="block text-sm font-medium text-custom-white mb-1"
             >
-                {/* lastName */}
-                <div>
-                    <label htmlFor="name">Nom</label>
-                    <Field className="w-full">
-                        <Input type="text" name="name" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            onChange={handleInputChange}
-                            >
-                        </Input>
-                    </Field>
-                    {errors.name && <p style={{ color: "red" }}>{errors.name}</p>}
+              {label}
+            </label>
+            <Field className="w-full">
+              <Input
+                id={name}
+                type={type}
+                name={name}
+                className="w-full h-10 rounded-md bg-custom-white text-custom-gray px-3 focus:outline-none focus:ring-2 focus:ring-secondary"
+                aria-describedby={errors[name] ? errorId : undefined}
+                onChange={handleInputChange}
+              />
+            </Field>
+            {errors[name] && (
+              <p id={errorId} className="text-sm text-red-500 mt-1">
+                {errors[name]}
+              </p>
+            )}
+          </div>
+        );
+      })}
+    </fieldset>
 
-                </div>
-                {/* firstName */}
-                <div>
-                    <label htmlFor="firstName">Prénom</label>
-                    <Field className="w-full">
-                        <Input type="text" name="firstName" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            onChange={handleInputChange}
-                        >
-                        </Input>
-                    </Field>
-                    {errors.firstName && <p style={{ color: "red" }}>{errors.firstName}</p>}
+    <Input type="hidden" name="csrf_token" value={csrfToken} />
 
-                </div>
-                {/* mail */}
-                <div>
-                    <label htmlFor="mail">Mail</label>
-                    <Field className="w-full">
-                        <Input type="email" name="mail" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            onChange={handleInputChange}
-                            >
-                        </Input>
-                    </Field>
-                    {errors.mail && <p style={{ color: "red" }}>{errors.mail}</p>}
+    <div className="pt-4 flex justify-end">
+      <button
+        type="submit"
+        className="bg-custom-white text-primary font-semibold px-6 py-2 rounded-md hover:bg-secondary hover:text-white transition"
+      >
+        Créer
+      </button>
+    </div>
+  </form>
+</>
 
-                </div>
-                {/* phone */}
-                <div>
-                    <label htmlFor="phone">Téléphone</label>
-                    <Field className="w-full">
-                        <Input type="text" name="phone" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            onChange={handleInputChange}
-                            >
-                        </Input>
-                    </Field>
-                    {errors.phone && <p style={{ color: "red" }}>{errors.phone}</p>}
 
-                </div>
-                {/* addressNumber */}
-                <div>
-                    <label htmlFor="addressNumber">Numéro d&aposadresse</label>
-                    <Field className="w-full">
-                        <Input type="text" name="addressNumber" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            onChange={handleInputChange}
-                            >
-                        </Input>
-                    </Field>
-                    {errors.addressNumber && <p style={{ color: "red" }}>{errors.addressNumber}</p>}
-
-                </div>
-                {/* road */}
-                <div>
-                    <label htmlFor="road">Rue</label>
-                    <Field className="w-full">
-                        <Input type="text" name="road" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            onChange={handleInputChange}
-                            >
-                        </Input>
-                    </Field>
-                    {errors.road && <p style={{ color: "red" }}>{errors.road}</p>}
-
-                </div>
-                {/* additionnalAddress */}
-                <div>
-                    <label htmlFor="additionalAddress">Complément d&aposdresse</label>
-                    <Field className="w-full">
-                        <Input type="text" name="additionalAddress" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            onChange={handleInputChange}
-                            >
-                        </Input>
-                    </Field>
-                    {errors.additionalAddress && <p style={{ color: "red" }}>{errors.additionalAddress}</p>}
-
-                </div>
-                {/* postalCode */}
-                <div>
-                    <label htmlFor="postalCode">Code postal</label>
-                    <Field className="w-full">
-                        <Input type="text" name="postalCode" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            onChange={handleInputChange}
-                            >
-                        </Input>
-                    </Field>
-                    {errors.postalCode && <p style={{ color: "red" }}>{errors.postalCode}</p>}
-
-                </div>
-                {/* city */}
-                <div>
-                    <label htmlFor="city">Ville</label>
-                    <Field className="w-full">
-                        <Input type="text" name="city" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            onChange={handleInputChange}
-                            >
-                        </Input>
-                    </Field>
-                    {errors.city && <p style={{ color: "red" }}>{errors.city}</p>}
-
-                </div>
-                {/* If the client was a prospect */}
-                <div>
-                    <label htmlFor="prospectNumber">Numéro de prospect</label>
-                    <Field className="w-full">
-                        <Input type="text" name="prospectNumber" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            onChange={handleInputChange}
-                            >
-                        </Input>
-                    </Field>
-                    {errors.prospectNumber && <p style={{ color: "red" }}>{errors.prospectNumber}</p>}
-
-                </div>
-                <Input type="hidden" name="csrf_token" value={csrfToken} />
-                
-                <button type="submit">Créer</button>
-            </form>
-        </>
     );
 };

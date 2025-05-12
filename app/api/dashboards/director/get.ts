@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
-import { BillStatusEnum, ClientOrProspectEnum, QuoteStatusEnum, WorkSiteStatusEnum } from "@prisma/client";
+import { BillStatusEnum, ClientOrProspectEnum, QuoteStatusEnum, UserRoleEnum, WorkSiteStatusEnum } from "@prisma/client";
 
 
 
@@ -54,16 +54,22 @@ export async function GET() {
             },
         });
 
+        const employees: number = await db.user.count({ 
+            where: {
+                role: UserRoleEnum.EMPLOYEE,
+            },
+        });
+
 
           
 
         return NextResponse.json({
-            success: true,
             toDos: toDos,
             bills: bills,
             quotes: quotes,
             workSites: workSites,
-            clients: clients
+            clients: clients,
+            employees: employees
         })
 
     } catch (error) {

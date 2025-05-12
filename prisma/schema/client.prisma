@@ -1,22 +1,23 @@
 model Client{
     id String @id @default(auto()) @map("_id") @db.ObjectId 
     clientNumber String @unique
-    name String
-    firstName String
+    name String?
+    firstName String?
     slug String @unique
-    mail String
-    phone String
+    mail String?
+    phone String?
     // Comme cela faisait des relation OneToOne, on met directement dans l’entité concernée les différents champs pour l’adresse
-    road String
+    road String?
     // L’adresse number n’est pas forcément un numéro : 4b…
     addressNumber String?
     postalCode String?
     city String?
     additionalAddress String?
-    isAnonymized Boolean
+    isPseudonymized Boolean @default(false)
     convertedAt DateTime?
     status ClientOrProspectEnum
-
+    review Review ?
+    reviewToken ReviewToken ?
     workSites WorkSite[]
     bills Bill[]
     quotes Quote[]

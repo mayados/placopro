@@ -98,3 +98,29 @@ export const updateClient = async (client: ClientType, csrfToken: string): Promi
         throw error; 
     }
   };
+
+
+// Pseudonymize client
+export const pseudonymizeClient = async (clientSlug: string, csrfToken: string): Promise<ClientType> => {
+    try {
+        const response = await fetch(`/api/clients/${clientSlug}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
+            },
+        });
+  
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+  
+        const data: ClientType = await response.json();
+        console.log("Pseudonymized client :", data);
+  
+        return data; 
+    } catch (error) {
+        console.error("Erreur with client pseudonymization :", error);
+        throw error; 
+    }
+  };

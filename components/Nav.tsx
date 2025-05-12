@@ -1,66 +1,105 @@
-"use client"
+'use client'
 
 import React, { useState } from 'react'
-import {Menu, X } from 'lucide-react';
+import { Menu, X, ChevronDown } from 'lucide-react'
+import Link from 'next/link'
 import {
   SignInButton,
   SignedIn,
   SignedOut,
   UserButton,
-  // useSession
 } from '@clerk/nextjs'
-// import { checkUserRole } from '../lib/utils';
-// import Link from 'next/link';
 
-
-
-interface NavProps{
-  logo: string;
+interface NavProps {
+  logo: string
 }
 
+const Nav: React.FC<NavProps> = ({ logo }) => {
+  const [isOpen, setIsOpen] = useState(false)
+  const [isSubMenuOpen, setIsSubMenuOpen] = useState(false)
 
-const Nav:React.FC<NavProps> = ({ logo}) => {
-
-  // a hook from clerk which enables to retrieve user's session data
-  // const { session } = useSession();
-//   const userRole = checkUserRole(session);
-  const [isOpen, setIsOpen] = useState(false);
-
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
+  const toggleMenu = () => setIsOpen(!isOpen)
+  const toggleSubMenu = () => setIsSubMenuOpen(!isSubMenuOpen)
 
   return (
-    <nav className="bg-slate-800 relative flex px-3 text-white h-[8vh] items-center justify-between">
-    {/* Logo */}
-    <p>{logo}</p>
-    {/* <a className='text-pink-600' href="/">{logo}</a> */}
+    <nav className="fixed top-0 left-0 w-full bg-custom-white/90 backdrop-blur-md px-4 h-[8vh] flex items-center justify-between z-50 text-primary shadow-md">
+      {/* Logo */}
+      <Link href="/" className="font-bold text-xl">{logo}</Link>
 
-    {/* Menu burger button for mobile */}
-    <button
-      onClick={toggleMenu}
-      className="text-white md:hidden focus:outline-none"
-      aria-label="Toggle menu"
-      aria-expanded={isOpen}
-    >
-      {/* display burger menu or closing cross */}
-      {isOpen ? (
-        <X className="w-6 h-6" /> 
-      ) : (
-        <Menu className="w-6 h-6" /> 
-      )}
-    </button>
+      {/* Mobile burger */}
+      <button
+        onClick={toggleMenu}
+        className="md:hidden"
+        aria-label="Toggle menu"
+        aria-expanded={isOpen}
+      >
+        {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+      </button>
 
-    {/* Navigation links */}
-    <ul className={`text-white gap-3 ${isOpen ? 'flex flex-col justify-evenly items-center absolute top-[8vh] h-[92vh] bg-slate-800 z-10 w-screen' : 'hidden'}  lg:flex`}>
-        <SignedOut>
-        <SignInButton />
-        </SignedOut>
-        <SignedIn>
-        <UserButton />
-        </SignedIn>
-    </ul>
-  </nav>
+      {/* Navigation links */}
+      <ul
+        className={`
+          ${isOpen ? 'flex' : 'hidden'}
+          md:flex
+          flex-col md:flex-row
+          md:static absolute
+          top-[8vh] left-0
+          w-full md:w-auto
+          ${isOpen ? 'h-[92vh]' : 'h-0'}
+          bg-custom-white md:bg-transparent
+          md:space-x-6
+          text-center md:text-left
+          items-center
+          py-6 md:py-0
+          text-primary
+          z-40
+          space-y-6 md:space-y-0
+          text-lg
+        `}
+      >
+        <li><Link href="/" className="hover:text-gray-400 transition">Accueil</Link></li>
+
+        {/* Dropdown Prestations */}
+        <li className="relative">
+          <button
+            onClick={toggleSubMenu}
+            className="flex items-center hover:text-gray-400 transition"
+          >
+            Prestations <ChevronDown className="ml-1 w-4 h-4" />
+          </button>
+          <ul
+            className={`
+              ${isSubMenuOpen ? 'block' : 'hidden'}
+              md:absolute md:top-full md:left-0
+              bg-slate-700 rounded-md mt-2 md:mt-0
+              text-sm md:w-40 space-y-2 md:space-y-0 md:py-2
+              text-white
+            `}
+          >
+            <li><Link href="/platrerie" className="block px-4 py-2 hover:bg-slate-600">Plâtrerie</Link></li>
+            <li><Link href="/carrelage" className="block px-4 py-2 hover:bg-slate-600">Carrelage</Link></li>
+            <li><Link href="/peinture" className="block px-4 py-2 hover:bg-slate-600">Peinture</Link></li>
+          </ul>
+        </li>
+        <li><Link href="/realisations" className="hover:text-gray-400 transition">Réalisations</Link></li>
+
+        <li><Link href="/contact" className="hover:text-gray-400 transition">Contact</Link></li>
+
+        {/* Auth */}
+        <li>
+          <SignedOut>
+            <SignInButton>
+              <button className="text-sm px-4 py-2 rounded hover:text-gray-400 transition">
+                Accéder à l&apos;intranet
+              </button>
+            </SignInButton>
+          </SignedOut>
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
+        </li>
+      </ul>
+    </nav>
   )
 }
 

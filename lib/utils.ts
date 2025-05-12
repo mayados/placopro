@@ -33,8 +33,13 @@ export function formatDateToInput(date: Date): string {
   return format(new Date(date), "yyyy-MM-dd");
 }
 
-export function generateUniqueClientNumber() {
-  return `CL-${uuidv4()}`;  // Génère un UUID unique et l'utilise comme numéro client
+export function generateUniqueClientNumber(prospect?: string) {
+
+  if(prospect){
+    return `PROS-${uuidv4()}`;  
+
+  }
+  return `CL-${uuidv4()}`;  
 }
 
 // Capitalize first letter of a string

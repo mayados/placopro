@@ -1,0 +1,18 @@
+// Système de relance pour le paiement des factures
+model Reminder{
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+    sentAt DateTime @default(now())
+    type ReminderType
+    billId String @db.ObjectId @unique
+    bill Bill? @relation(fields: [billId], references: [id], onDelete: Cascade)
+
+    @@index([id])
+
+}
+
+enum ReminderType{
+    FIRST 
+    SECOND 
+    THIRD
+}
+
