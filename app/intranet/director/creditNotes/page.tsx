@@ -16,8 +16,9 @@ import CreditNotes from "@/components/CreditNotes";
 
 export default function Page() {
   return (
-    <Suspense fallback={<div>Chargement...</div>}>
+    <Suspense fallback={<div>Chargement des données...</div>}>
+
       <CreditNotes />
     </Suspense>
-  );
+  )
 }
