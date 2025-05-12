@@ -18,7 +18,7 @@ export async function GET() {
             postalCode: client.postalCode,
             city: client.city,
             additionalAddress: client.additionalAddress,
-            isAnonymized: client.isAnonymized,
+            isPseudonymized: client.isPseudonymized,
             prospect: client.prospect,
             workSites: client.workSites,
             bills: client.bills,

@@ -7,11 +7,7 @@ import { sanitizeData } from "@/lib/sanitize";
 export async function PUT(req: NextRequest) {
   // Retrieve datas from request's body
   const data = await req.json();
-  // Explicit validation of CSRF token (in addition of the middleware)
-  const csrfToken = req.headers.get("x-csrf-token");
-  if (!csrfToken || csrfToken !== process.env.CSRF_SECRET) {
-     return new Response("Invalid CSRF token", { status: 403 });
-  }
+
   // const { 
   //   id,
   //   name,
@@ -65,7 +61,7 @@ export async function PUT(req: NextRequest) {
             postalCode: true,
             city: true,
             additionalAddress: true,
-            isAnonymized: true,
+            isPseudonymized: true,
             // prospect: true,
             workSites: true,
             bills: true,
@@ -86,7 +82,7 @@ export async function PUT(req: NextRequest) {
             firstName: originalClient.firstName,
             slug: originalClient.slug,
             clientNumber: originalClient.clientNumber,
-            isAnonymized: originalClient.isAnonymized,
+            isPseudonymized: originalClient.isPseudonymized,
             mail: originalClient.mail,
             phone: originalClient.phone,
             road: originalClient.road,
@@ -121,7 +117,7 @@ export async function PUT(req: NextRequest) {
             data: {
                 name: client.name,
                 firstName: client.firstName,
-                isAnonymized: originalClient.isAnonymized,
+                isPseudonymized: originalClient.isPseudonymized,
                 slug: client.slug,
                 mail: client.mail,
                 phone: client.phone,
@@ -138,7 +134,7 @@ export async function PUT(req: NextRequest) {
 
         console.log("updated Client nom : "+updatedClient.name)
         console.log("updated Client prénom : "+updatedClient.firstName)
-        console.log("updated Client anonymisé : "+updatedClient.isAnonymized)
+        console.log("updated Client anonymisé : "+updatedClient.isPseudonymized)
         console.log("updated Client mail : "+updatedClient.mail)
         console.log("updated Client phone : "+updatedClient.phone)
         console.log("updated Client road : "+updatedClient.road)
@@ -146,7 +142,6 @@ export async function PUT(req: NextRequest) {
         console.log("updated Client postalCode : "+updatedClient.postalCode)
         console.log("updated Client city : "+updatedClient.city)
         console.log("updated Client additionnalAddress : "+updatedClient.additionalAddress)
-        console.log("updated Client slug : "+updatedClient.slug)
 
         return NextResponse.json({
                 success: true, 

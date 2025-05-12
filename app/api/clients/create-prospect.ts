@@ -13,18 +13,7 @@ export async function POST(req: NextRequest) {
 
     console.log("Données reçues dans l'API :", JSON.stringify(data));
 
-    // const { 
-    //         name,
-    //         firstName,
-    //         mail,
-    //         phone,
-    //         road,
-    //         addressNumber,
-    //         postalCode,
-    //         city,
-    //         additionalAddress,
-    //     } = data;
-            // currentUser() is a founction from Clerk which allows to retrieve the current User
+
             const user = await currentUser()
 
 
@@ -57,10 +46,10 @@ export async function POST(req: NextRequest) {
         console.log("type de téléphone : "+typeof(validatedData.phone))
 
         console.log("Tentative de création du client...");
-        const slug = generateSlug("client");
+        const slug = generateSlug("prospect");
 
           // Création du client
-          const client = await db.client.create({
+          const prospect = await db.client.create({
               data: {
                 name: validatedData.name,
                 firstName: validatedData.firstName,
@@ -75,14 +64,14 @@ export async function POST(req: NextRequest) {
                 clientNumber,
                 isPseudonymized: false,
                 convertedAt: null,
-                status: ClientOrProspectEnum.CLIENT
+                status: ClientOrProspectEnum.PROSPECT
               },
           });
 
 
-        console.log("Client créé avec succès.");
+        console.log("Prospect créé avec succès.");
         // Toujours retourner la réponse après la création
-        return NextResponse.json({ success: true, data: client });
+        return NextResponse.json({ success: true, data: prospect });
 
 
     } catch (error) {
