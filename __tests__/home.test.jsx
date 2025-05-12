@@ -7,7 +7,7 @@ describe("Home Page", () => {
     // const { getByText } = render(<Home />);
     render(<Home />);
 
-    expect(screen.getByText(/Get started by editing/i)).toBeInTheDocument();
+    expect(screen.getByText("Placopro")).toBeInTheDocument();
 
     // console.log(screen.queryByText(/Get started by editing/i));
 
