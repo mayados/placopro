@@ -435,10 +435,11 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
 
     return (
         <>
-            {/* <div><Toaster/></div> */}
-            <h1 className="text-3xl text-white ml-3 text-center">Création de devis</h1>
-            {/* <div><Toaster /></div> */}
+  <header className="text-center my-4">
+    <h1 className="text-3xl text-custom-gray">Création de devis</h1>
+  </header>
             <form
+            className="text-custom-white bg-primary mx-auto max-w-3xl  rounded p-5"
                 autoComplete="off"
                 onSubmit={(e) => {
                     e.preventDefault();
@@ -446,10 +447,11 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                 }}
             >
                 {/* Client of the quote */}
-                <div>
-                    <label htmlFor="client">Client</label>
+                <section aria-labelledby="client-section">
+                <h2 id="client-section" className="text-xl text-custom-gray">Client</h2>
+                    <label className=""htmlFor="client">Client</label>
                     <Field className="w-full">
-                        <Input type="text" name="client" value={clientInput} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
+                        <Input type="text" name="client" value={clientInput}  className=" outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -457,7 +459,7 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                     {errors.clientId && <p style={{ color: "red" }}>{errors.clientId}</p>}
 
                     {clientSuggestions && (
-                        <ul className="bg-gray-700 rounded-md text-white">
+                        <ul className=" rounded-md text-custom-gray">
                             {clientSuggestions.map((suggestion) => (
                                 <li
                                     key={suggestion.id}
@@ -469,13 +471,13 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                             ))}
                         </ul>
                     )}
-                </div>
+                </section>
                 <h2>Chantier</h2>
                 {/* WorkSite of the quote */}
                 <div>
-                    <label htmlFor="workSite">Chantier</label>
+                    <label className=""htmlFor="workSite">Chantier</label>
                     <Field className="w-full">
-                        <Input type="text" name="workSite" value={workSiteInput} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
+                        <Input type="text" name="workSite" value={workSiteInput} className=" w-full h-[2rem] rounded-md  text-custom-gray pl-3"
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -483,7 +485,7 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                     {errors.workSiteId && <p style={{ color: "red" }}>{errors.workSiteId}</p>}
 
                     {workSiteSuggestions && (
-                        <ul className="bg-gray-700 rounded-md text-white">
+                        <ul className=" rounded-md text-custom-gray">
                             {workSiteSuggestions.map((suggestion) => (
                                 <li
                                     key={suggestion.id}
@@ -498,9 +500,9 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                 </div>
                 {/* Nature of work */}
                 <div>
-                    <label htmlFor="natureOfWork">Nature des travaux</label>
+                    <label className=""htmlFor="natureOfWork">Nature des travaux</label>
                     <Field className="w-full">
-                        <Input type="text" name="natureOfWork" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
+                        <Input type="text" name="natureOfWork" className=" w-full h-[2rem] rounded-md  text-custom-gray pl-3"
                             onChange={handleInputChange}
                             value={quote.natureOfWork}
                         >
@@ -511,9 +513,9 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                 </div>
                 {/* Work description */}
                 <div>
-                    <label htmlFor="description">Description</label>
+                    <label className=""htmlFor="description">Description</label>
                     <Field className="w-full">
-                        <Textarea name="description" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
+                        <Textarea name="description" className=" w-full h-[2rem] rounded-md  text-custom-gray pl-3"
                             onChange={handleInputChange}
                             value={quote.description}
                         >
@@ -524,9 +526,9 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                 </div>
                 {/* Work start date */}
                 <div>
-                    <label htmlFor="workStartDate">Date prévue de début des travaux</label>
+                    <label className=""htmlFor="workStartDate">Date prévue de début des travaux</label>
                     <Field className="w-full">
-                        <Input type="date" name="workStartDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
+                        <Input type="date" name="workStartDate" className=" w-full h-[2rem] rounded-md  text-custom-gray pl-3"
                             onChange={handleInputChange}
                             value={quote.workStartDate}
                         >
@@ -537,9 +539,9 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                 </div>
                 {/* Estimated work end date */}
                 <div>
-                    <label htmlFor="estimatedWorkEndDate">Date prévue de fin des travaux</label>
+                    <label className=""htmlFor="estimatedWorkEndDate">Date prévue de fin des travaux</label>
                     <Field className="w-full">
-                        <Input type="date" name="estimatedWorkEndDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
+                        <Input type="date" name="estimatedWorkEndDate" className=" w-full h-[2rem] rounded-md  text-custom-gray pl-3"
                             onChange={handleInputChange}
                             value={quote.estimatedWorkEndDate}
                         >
@@ -550,9 +552,9 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                 </div>
                 {/* Estimated work duration */}
                 <div>
-                    <label htmlFor="estimatedWorkDuration">Durée estimée des travaux (en jours)</label>
+                    <label className=""htmlFor="estimatedWorkDuration">Durée estimée des travaux (en jours)</label>
                     <Field className="w-full">
-                        <Input type="number" name="estimatedWorkDuration" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
+                        <Input type="number" name="estimatedWorkDuration" className=" w-full h-[2rem] rounded-md  text-custom-gray pl-3"
                             onChange={handleInputChange}
                             value={quote.estimatedWorkDuration}
                         >
@@ -563,9 +565,9 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                 </div>
                 {/* Deposit amount */}
                 <div>
-                    <label htmlFor="depositAmount">Accompte demandé (en €)</label>
+                    <label className=""htmlFor="depositAmount">Accompte demandé (en €)</label>
                     <Field className="w-full">
-                        <Input type="number" name="depositAmount" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
+                        <Input type="number" name="depositAmount" className=" w-full h-[2rem] rounded-md  text-custom-gray pl-3"
                             onChange={handleInputChange}
                             value={quote.depositAmount}
                         >
@@ -583,7 +585,7 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                             placeholder="Label du service"
                             value={service.label}
                             onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
-                            className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
+                            className=" w-full h-[2rem] rounded-md  text-custom-gray pl-3 mb-2"
                         />
                         {/* Services suggestions */}
                         {servicesSuggestions ? (
@@ -607,7 +609,7 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                             placeholder="Détails du service"
                             value={service.detailsService}
                             onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
-                            className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
+                            className=" w-full h-[2rem] rounded-md  text-custom-gray pl-3 mb-2"
                         />
                         <Input
                             type="number"
@@ -615,7 +617,7 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                             placeholder="Prix unitaire"
                             value={service.unitPriceHT || ""}
                             onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
-                            className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
+                            className=" w-full h-[2rem] rounded-md  text-custom-gray pl-3 mb-2"
                             disabled={!!service.selectedFromSuggestions}
                         />
 
@@ -623,7 +625,7 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                             name="type"
                             onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
                             value={service.type || ""}
-                            className="w-full rounded-md bg-gray-700 text-white pl-3"
+                            className="w-full rounded-md  text-custom-gray pl-3"
                             disabled={!!service.selectedFromSuggestions}
                         >
                             <option value="">Type de service</option>
@@ -637,14 +639,14 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                             placeholder="Quantité"
                             value={service.quantity || ""}
                             onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
-                            className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
+                            className=" w-full h-[2rem] rounded-md  text-custom-gray pl-3 mb-2"
 
                         />
                         <Select
                             name="unit"
                             onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
                             value={service.unit || ""}
-                            className="w-full rounded-md bg-gray-700 text-white pl-3"
+                            className="w-full rounded-md  text-custom-gray pl-3"
                         >
                             <option value="">Unité</option>
                             {unitChoices.map((unit) => (
@@ -655,7 +657,7 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                             name="vatRate"
                             onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
                             value={service.vatRate || ""}
-                            className="w-full rounded-md bg-gray-700 text-white pl-3"
+                            className="w-full rounded-md  text-custom-gray pl-3"
                         >
                             <option value="">Taux de tva</option>
                             {vatRateChoices.map((vatRate) => (
@@ -670,9 +672,9 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
 
                 {/* Quote : validity end date */}
                 <div>
-                    <label htmlFor="validityEndDate">Date de fin de validité du devis</label>
+                    <label className=""htmlFor="validityEndDate">Date de fin de validité du devis</label>
                     <Field className="w-full">
-                        <Input type="date" name="validityEndDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
+                        <Input type="date" name="validityEndDate" className=" w-full h-[2rem] rounded-md  text-custom-gray pl-3"
                             onChange={handleInputChange}
                             value={quote.validityEndDate}
 
@@ -683,9 +685,9 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
 
                 </div>
                 <div>
-                    <label htmlFor="discountAmount">Montant de la remise, en €</label>
+                    <label className=""htmlFor="discountAmount">Montant de la remise, en €</label>
                     <Field className="w-full">
-                        <Input type="number" name="discountAmount" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
+                        <Input type="number" name="discountAmount" className=" w-full h-[2rem] rounded-md text-custom-gray pl-3"
                             onChange={handleInputChange}
                             value={quote.discountAmount}
 
@@ -699,7 +701,7 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                     name="discountReason"
                     onChange={handleInputChange}
                     value={quote.discountReason || ""}
-                    className="w-full rounded-md bg-gray-700 text-white pl-3"
+                    className=" w-full rounded-md text-custom-gray pl-3"
                 >
                     <option value="" >Motif de la remise</option>
                     {Object.entries(discountReasonChoices).map(([value, label]) => (
@@ -712,10 +714,10 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
 
                 {/* payment Terms */}
                 <div>
-                    <label htmlFor="paymentTerms">Conditions de paiement</label>
+                    <label className=""htmlFor="paymentTerms">Conditions de paiement</label>
                     <Field className="w-full">
                         <Textarea name="paymentTerms"
-                            defaultValue={"Le paiement doit être effectué dans les 30 jours suivant la réception de la facture."} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
+                            defaultValue={"Le paiement doit être effectué dans les 30 jours suivant la réception de la facture."} className="w-full h-[2rem] rounded-md  text-custom-gray pl-3"
                             onChange={handleInputChange}
                         >
                         </Textarea>
@@ -725,9 +727,9 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                 </div>
                 {/* Payment delay */}
                 <div>
-                    <label htmlFor="paymentDelay">Délais de paiement (en jours)</label>
+                    <label className=""htmlFor="paymentDelay">Délais de paiement (en jours)</label>
                     <Field className="w-full">
-                        <Input type="number" name="paymentDelay" value={quote.paymentDelay} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
+                        <Input type="number" name="paymentDelay" value={quote.paymentDelay} className=" w-full h-[2rem] rounded-md  text-custom-gray pl-3"
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -737,9 +739,9 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                 </div>
                 {/* late payment penalities */}
                 <div>
-                    <label htmlFor="latePaymentPenalities">Frais de retard de paiement (HT), en €</label>
+                    <label className=""htmlFor="latePaymentPenalities">Frais de retard de paiement (HT), en €</label>
                     <Field className="w-full">
-                        <Input type="number" name="latePaymentPenalities" value={quote.latePaymentPenalities} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
+                        <Input type="number" name="latePaymentPenalities" value={quote.latePaymentPenalities} className=" w-full h-[2rem] rounded-md  text-custom-gray pl-3"
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -749,9 +751,9 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                 </div>
                 {/* travel costs */}
                 <div>
-                    <label htmlFor="travelCosts">Frais de déplacement (HT), en €</label>
+                    <label className=""htmlFor="travelCosts">Frais de déplacement (HT), en €</label>
                     <Field className="w-full">
-                        <Input type="number" name="travelCosts" value={quote.travelCosts} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
+                        <Input type="number" name="travelCosts" value={quote.travelCosts} className=" w-full h-[2rem] rounded-md  text-custom-gray pl-3"
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -763,7 +765,7 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                     name="travelCostsType"
                     onChange={handleInputChange}
                     value={quote.travelCostsType || ""}
-                    className="w-full rounded-md bg-gray-700 text-white pl-3"
+                    className=" w-full rounded-md text-custom-gray pl-3"
                 >
                     <option value="">Type de frais de déplacement</option>
                     {travelCostsTypeChoices.map((travelCostsTypeChoices) => (
@@ -774,9 +776,9 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
 
                 {/* recovery fees */}
                 <div>
-                    <label htmlFor="recoveryFees">Frais forfaitaires de recouvrement (HT), en €</label>
+                    <label className=""htmlFor="recoveryFees">Frais forfaitaires de recouvrement (HT), en €</label>
                     <Field className="w-full">
-                        <Input type="number" name="recoveryFees" value={quote.recoveryFees} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
+                        <Input type="number" name="recoveryFees" value={quote.recoveryFees} className=" w-full h-[2rem] rounded-md  text-custom-gray pl-3"
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -785,7 +787,7 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
 
                 </div>
                 {/* has right of Withdrawal ? */}
-                <Field>
+                <Field className="">
                     <Legend>Y a t&apos;il un droit de rétractation ?</Legend>
                     <RadioGroup
                         name="hasRightOfWithdrawal"
@@ -805,9 +807,9 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
 
                 {/* In the case of hasRightOfWithdrawal is true, display form field : Withdrawal period */}
                 <div>
-                    <label htmlFor="withdrawalPeriod">Délai de rétractation (en jours)</label>
+                    <label className=""htmlFor="withdrawalPeriod">Délai de rétractation (en jours)</label>
                     <Field className="w-full">
-                        <Input type="number" value={quote.withdrawalPeriod} name="withdrawalPeriod" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
+                        <Input type="number" value={quote.withdrawalPeriod} name="withdrawalPeriod" className=" w-full h-[2rem] rounded-md  text-custom-gray pl-3"
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -829,34 +831,51 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                     // type="button" avoid the form to be automatically submitted
                     type="button"
                     onClick={openChoiceDialog}
-                    className="bg-green-600 text-white px-4 py-2 rounded-md"
+                    className="bg-green-600 text-custom-gray px-4 py-2 rounded-md"
                 >
-                    Finaliser la facture
+                    Finaliser le devis
                 </button>
             </form>
-            {/* Dialog to save as final version of bill*/}
-            {/* className=" top-[50%] left-[25%]" */}
-            {/* {isOpen ?? ( */}
-            <Dialog open={isOpen} onClose={closeChoiceDialog} className="fixed top-[50%] left-[25%]" >
-                <DialogPanel className="bg-gray-300 p-5 rounded-md shadow-lg text-black">
-                    <DialogTitle>Etes-vous sûr de vouloir enregistrer le devis en version finale ?</DialogTitle>
-                    <Description>Cette action est irréversible</Description>
-                    <p>Le devis ne pourra plus être modifié ultérieurement. </p>
-                    <div className="flex justify-between mt-4">
-                        <button
-                            // choice to to finalize quote
-                            onClick={() => {
-                                handleQuoteCreation("READY");
-                                closeChoiceDialog();
-                            }}
-                            className="bg-green-600 text-white px-4 py-2 rounded-md"
+
+
+              {isOpen && (
+                  <Dialog
+                    open={isOpen}
+                    onClose={closeChoiceDialog}
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+                    aria-labelledby="quote-final-title"
+                    aria-describedby="quote-final-desc"
+                  >
+                    <DialogPanel className="bg-white text-[#637074] p-6 rounded-lg shadow-lg w-full max-w-md">
+                      <DialogTitle id="quote-final-title" className="text-xl font-semibold text-[#1873BF] mb-2">
+                      Etes-vous sûr de vouloir enregistrer le devis en version finale ?
+                      </DialogTitle>
+                      <Description id="quote-final-desc" className="mb-2">
+                        Cette action est irréversible
+                      </Description>
+                      <p className="text-sm mb-4">
+                      Le devis ne pourra plus être modifié ultérieurement.
+                      </p>
+                      <div className="flex justify-end gap-3">
+                      <button
+                          onClick={closeChoiceDialog}
+                          className="bg-gray-200 hover:bg-gray-300 text-[#637074] px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FDA821]"
                         >
-                            Finaliser le devis
+                          Annuler
                         </button>
-                        <button onClick={closeChoiceDialog} className="bg-gray-300 text-black px-4 py-2 rounded-md">Annuler</button>
-                    </div>
-                </DialogPanel>
-            </Dialog>
+                        <button
+                                 onClick={() => {
+                                    handleQuoteCreation("READY");
+                                    closeChoiceDialog();
+                                }}
+                          className="bg-green-600 hover:bg-red-700 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FDA821]"
+                        >
+                          Enregistrer en version finale
+                        </button>
+                      </div>
+                    </DialogPanel>
+                  </Dialog>
+                )}
             {/* <button type="submit">Créer</button> */}
         </>
     );

@@ -26,9 +26,11 @@ global.TextEncoder = TextEncoder;
     test("generateUniqueClientNumber should return a unique client number", () => {
       const clientNumber1 = generateUniqueClientNumber();
       const clientNumber2 = generateUniqueClientNumber();
+      const clientNumber3 = generateUniqueClientNumber("prospect");
       expect(clientNumber1).not.toBe(clientNumber2);
       // UUID format
       expect(clientNumber1).toMatch(/^CL-[a-f0-9\-]{36}$/); 
+      expect(clientNumber3).toMatch(/^PROS-[a-f0-9\-]{36}$/); 
 
     });
   

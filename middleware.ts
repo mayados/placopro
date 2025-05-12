@@ -194,7 +194,7 @@ const isAuthRoute = createRouteMatcher([
   '/.clerk/(.*)',
   '/favicon.ico',
   '/_next/(.*)',
-  'director/quotes',
+  // 'director/quotes',
   '/.clerk/(.*)'
 ]);
 
@@ -202,11 +202,12 @@ const isForConnectedUsersPage = createRouteMatcher([
   '/manager(.*)',
   '/director(.*)',
   '/employee(.*)',
+  '/intranet(.*)',
 ]);
 
-const isEmployeePage = createRouteMatcher(['/employee(.*)']);
-const isDirectorPage = createRouteMatcher(['/director(.*)']);
-const isSecretaryOrDirectorPage = createRouteMatcher(['/manager(.*)']);
+const isEmployeePage = createRouteMatcher(['/intranet/employee(.*)']);
+const isDirectorPage = createRouteMatcher(['/intranet/director(.*)']);
+const isSecretaryOrDirectorPage = createRouteMatcher(['/intranet/secretary(.*)']);
 
 const isForConnectedUsersApiRoute = createRouteMatcher([
   '/api/bills(.*)',

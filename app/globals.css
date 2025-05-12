@@ -19,3 +19,31 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Swiper - home */
+
+.trapezoid {
+  clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
+}
+
+/* taille des bullets et couleur inactive */
+.swiper-pagination-bullet {
+  width: 0.75rem;       /* 12px */
+  height: 0.75rem;      /* 12px */
+  background-color: #1873BF; /* ta couleur primary */
+  opacity: 0.4;         /* un peu transparent pour les inactives */
+}
+
+/* couleur et opacité pour la bullet active */
+.swiper-pagination-bullet-active {
+  background-color: #1873BF; /* même primary */
+  opacity: 1;
+}
+
+ .swiper-button-prev::after,
+ .swiper-button-next::after {
+
+  z-index: 18;
+  color: #1873BF;          
+}
+

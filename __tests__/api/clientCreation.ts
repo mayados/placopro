@@ -51,7 +51,7 @@ describe('API Client Creation Route', () => {
       city: 'Paris',
       additionalAddress: 'Appartement 5, 3ème étage',
       slug: 'jean-dupont',
-      isAnonymized: false,
+      isPseudonymized: false,
       convertedAt: null,
       status: ClientOrProspectEnum.CLIENT,
       // createdAt: new Date(),
@@ -99,7 +99,7 @@ describe('API Client Creation Route', () => {
 
         // Slug and clientNumber have to match an UUID
         clientNumber: expect.stringMatching(/^CL-[a-f0-9\-]+$/),
-        slug: expect.stringMatching(/^[a-zA-Z]+-[a-zA-Z]+-[a-f0-9\-]+$/),
+        slug: expect.stringMatching(/^client-[a-f0-9\-]{36}$/),
         name: 'Dupont',
         firstName: 'Jean',
         mail: 'jean.dupont@example.com',
@@ -109,7 +109,7 @@ describe('API Client Creation Route', () => {
         postalCode: '75001',
         city: 'Paris',
         additionalAddress: 'Appartement 5, 3ème étage',
-        isAnonymized: false,
+        isPseudonymized: false,
         convertedAt: null,
         status: ClientOrProspectEnum.CLIENT,
         // createdAt: new Date(),
@@ -217,7 +217,7 @@ describe('API Client Creation Route', () => {
       city: 'Paris',
       additionalAddress: 'Appartement 5, 3ème étage',
       slug: 'jean-dupont',
-      isAnonymized: false,
+      isPseudonymized: false,
       convertedAt: null,
       status: ClientOrProspectEnum.CLIENT
     };

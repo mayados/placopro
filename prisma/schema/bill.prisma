@@ -46,6 +46,8 @@ model Bill{
 
     // Deposits linked to a FINAL bill
     advancePayments Bill[] @relation("AdvancePayments")
+  
+    reminders Reminder[]
 
     // Payments management
     // Total of deposits already deducted

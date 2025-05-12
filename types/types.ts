@@ -395,6 +395,7 @@ interface QuoteType{
     elementsBackup?: QuoteElementsBackup,
     servicesBackup?: ServiceBackup[],
     workSiteBackup?: WorkSiteBackup,
+    bills: BillType[],
 
 }
 
@@ -859,17 +860,17 @@ interface ProspectType{
 interface ClientType{
     id: string;
     clientNumber: string;
-    name: string;
-    firstName: string;
+    name: string | null;
+    firstName: string | null;
     slug: string;
-    mail: string;
-    phone: string;
-    road: string
+    mail: string | null;
+    phone: string | null;
+    road: string | null;
     addressNumber: string | null;
     postalCode: string | null;
     city: string | null;
     additionalAddress: string | null;
-    isAnonymized: boolean;
+    isPseudonymized: boolean;
     prospect?: ProspectType | null;
     workSites?: WorkSiteType[];
     bills?: BillType[];
@@ -1134,3 +1135,11 @@ interface ApiResponse {
     message?: string; 
   };
   
+interface DirectorDashboardDatas{
+    toDos: number,
+    bills: number,
+    quotes: number,
+    workSites: number,
+    clients: number,
+    employees: number
+}

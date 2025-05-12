@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
         console.log("type de téléphone : "+typeof(validatedData.phone))
 
         console.log("Tentative de création du client...");
-        const slug = generateSlug(`${validatedData.name}-${validatedData.firstName}`);
+        const slug = generateSlug("client");
 
           // Création du client
           const client = await db.client.create({
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
                 additionalAddress: validatedData.additionalAddress,
                 slug: slug,
                 clientNumber,
-                isAnonymized: false,
+                isPseudonymized: false,
                 convertedAt: null,
                 status: ClientOrProspectEnum.CLIENT
               },
