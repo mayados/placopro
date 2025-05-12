@@ -1,0 +1,13 @@
+model ReviewToken{
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+    createdAt DateTime @default(now())
+    token String @unique
+    clientId String? @db.ObjectId @unique
+    client Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
+    usedAt DateTime? 
+    expiresAt DateTime
+
+    @@index([id])
+
+}
+
