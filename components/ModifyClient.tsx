@@ -120,7 +120,7 @@ const handleClientUpdate = async () => {
                     <label htmlFor="name">Nom</label>
                     <Field className="w-full">
                         <Input type="text" name="name" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={client.name}
+                            value={client.name || ""}
                             onChange={handleInputChange}
                             >
                         </Input>
@@ -133,7 +133,7 @@ const handleClientUpdate = async () => {
                     <label htmlFor="firstName">Prénom</label>
                     <Field className="w-full">
                         <Input type="text" name="firstName" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={client.firstName}
+                            value={client.firstName || ""}
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -146,7 +146,7 @@ const handleClientUpdate = async () => {
                     <label htmlFor="mail">Mail</label>
                     <Field className="w-full">
                         <Input type="email" name="mail" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={client.mail}
+                            value={client.mail || ""}
                             onChange={handleInputChange}
                             >
                         </Input>
@@ -159,7 +159,7 @@ const handleClientUpdate = async () => {
                     <label htmlFor="phone">Téléphone</label>
                     <Field className="w-full">
                         <Input type="text" name="phone" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={client.phone}
+                            value={client.phone || ""}
                             onChange={handleInputChange}
                             >
                         </Input>
@@ -185,7 +185,7 @@ const handleClientUpdate = async () => {
                     <label htmlFor="road">Rue</label>
                     <Field className="w-full">
                         <Input type="text" name="road" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={client.road}
+                            value={client.road || ""}
                             onChange={handleInputChange}
                             >
                         </Input>

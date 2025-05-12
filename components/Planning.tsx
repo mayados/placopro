@@ -20,7 +20,6 @@ export default function Planning({csrfToken}: PlanningProps){
   return (
 
     <>
-    <div className="flex w-screen">
       <Breadcrumb
         items={[
           { label: "Tableau de bord", href: "/director" },
@@ -32,7 +31,6 @@ export default function Planning({csrfToken}: PlanningProps){
         <PlanningCalendar role="director" csrfToken={csrfToken}/>
     </section>
 
-    </div>
     </>
 
   )

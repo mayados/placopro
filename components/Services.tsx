@@ -155,7 +155,6 @@ export default function Services({ csrfToken }: ServicesProps) {
     return (
 
         <>
-            <div className="flex w-screen">
 
                 <section className="border-2 border-green-800 flex-[8]">
                     <h1 className="text-3xl text-white text-center">Services</h1>
@@ -246,7 +245,6 @@ export default function Services({ csrfToken }: ServicesProps) {
                         </DialogPanel>
                     </Dialog>
                 )}
-            </div>
         </>
 
     )

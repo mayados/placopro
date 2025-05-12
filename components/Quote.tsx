@@ -1,10 +1,10 @@
 "use client";
 
-import {  useState } from "react";
+import { useState } from "react";
 import { formatDate } from '@/lib/utils'
 import DownloadPDF from "@/components/DownloadPDF";
 import { Field, Input, Label, Legend, Radio, RadioGroup, Select } from "@headlessui/react";
-import {  sendQuote, updateClassicQuote } from "@/services/api/quoteService";
+import { sendQuote, updateClassicQuote } from "@/services/api/quoteService";
 import { updateClassicQuoteSchema } from "@/validation/quoteValidation";
 import { toast } from 'react-hot-toast';
 import Breadcrumb from "@/components/BreadCrumb";
@@ -92,7 +92,7 @@ export default function Quote({ csrfToken, quote: initialQuote, company: initial
 
         try {
 
-             await sendQuote(quoteSlug, emailClient, csrfToken);
+            await sendQuote(quoteSlug, emailClient, csrfToken);
 
             toast.success("Devis envoyé avec succès");
 
@@ -161,8 +161,6 @@ export default function Quote({ csrfToken, quote: initialQuote, company: initial
 
     return (
         <>
-            {/* <div><Toaster/></div> */}
-            <h1 className="text-3xl text-white ml-3 text-center">Devis {quote?.number}</h1>
             <Breadcrumb
                 items={[
                     { label: "Tableau de bord", href: "/director" },
@@ -170,252 +168,210 @@ export default function Quote({ csrfToken, quote: initialQuote, company: initial
                     { label: `${quote.number}` },
                 ]}
             />
-            <ul>
-                <li>Statut : {quote.status}</li>
-                <li>Signé par le client ? {quote.isSignedByClient ? "Oui" : 'Non'}</li>
-                <li>Date de signature : {quote.signatureDate ? formatDate(quote.signatureDate) : '/'}</li>
+            <article className="max-w-5xl mx-auto p-6 bg-custom-white rounded-2xl shadow-md space-y-8">
+                <header className="text-center mb-6">
 
-            </ul>
-            {/* If the quote's status is different from draft, we can display the form */}
-            {quote.status !== "DRAFT" && (
-                <section>
-                    <h2>Modifier les informations</h2>
-                    <form
-                        autoComplete="off"
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            handleQuoteUpdateClassic();
-                        }}
+                    <h1 className="text-3xl font-bold text-primary">Devis {quote?.number}</h1>
+                </header>
+                {/* Boutons de création, téléchargement et envoi repositionnés */}
+                <div className="flex flex-wrap gap-3 justify-center mb-6">
+                    <Link
+                        href={`/director/bills/create/${quote?.number}`}
+                        className="py-2 px-3 bg-secondary rounded text-custom-gray hover:bg-secondary/90 transition"
                     >
-                        <div>
-                            <Select
-                                name="status"
-                                onChange={handleInputChange}
-                                value={formValues.status || ""}
-                                className="w-full rounded-md bg-gray-700 text-white pl-3"
-                            >
-                                <option value="" >Statut du devis</option>
-                                {Object.entries(quoteStatusChoices).map(([value, label]) => (
-                                    <option key={value} value={value}>
-                                        {label}
-                                    </option>
-                                ))}
-                            </Select>
-                        </div>
-                        <div>
-                            <Field>
-                                <Legend>Le devis a t-il été signé par le client ?</Legend>
-                                <RadioGroup
-                                    name="isSignedByClient"
-                                    onChange={(value) => handleRadioChange("isSignedByClient", value)}
+                        Créer une facture finale
+                    </Link>
+                    <Link
+                        href={`/director/bills/create-deposit/${quote?.number}`}
+                        className="py-2 px-3 bg-secondary rounded text-custom-gray hover:bg-secondary/90 transition"
+                    >
+                        Créer une facture d&apos;acompte
+                    </Link>
+                    <DownloadPDF
+                        quote={quote}
+                        company={company as CompanyType}
+                        vatAmountTravelCost={vatAmountTravelCost}
+                        priceTTCTravelCost={priceTTCTravelCost}
+                    />
+                    <Button
+                        label="Envoyer le devis au client"
+                        icon={faPaperPlane}
+                        type="button"
+                        action={() => sendQuoteToClient(quote.slug, quote.clientBackup!.mail)}
+                        specifyBackground="bg-primary text-black"
+                    />
+                </div>
+                <section className="space-y-2">
+                    <ul className="text-gray-800">
+                        <li>Statut : {quote.status}</li>
+                        <li>Signé par le client ? {quote.isSignedByClient ? "Oui" : 'Non'}</li>
+                        <li>Date de signature : {quote.signatureDate ? formatDate(quote.signatureDate) : '/'}</li>
 
-                                >
-                                    {isSignedByClientChoices.map((choice) => (
-                                        <Field key={choice} className="flex gap-2 items-center">
-                                            <Radio value={choice} className="group flex size-5 items-center justify-center rounded-full border bg-white data-[checked]:bg-pink-600" />
-                                            <Label>{choice}</Label>
-                                        </Field>
-                                    ))}
-                                </RadioGroup>
-                            </Field>
-                        </div>
-                        <div>
-                            <label htmlFor="signatureDate">Date de signature</label>
-                            <Field className="w-full">
-                                <Input type="date" name="signatureDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
-                                    onChange={handleInputChange}
-                                >
-                                </Input>
-                            </Field>
-                        </div>
-                        <Input type="hidden" name="csrf_token" value={csrfToken} />
-
-                        <button type="submit">Modifier</button>
-                    </form>
+                    </ul>
                 </section>
 
-            )}
-            <Link href={`/director/bills/create/${quote?.number}`}>
-                Créer une facture finale
-            </Link>
-            <Link href={`/director/bills/create-deposit/${quote?.number}`}>
-                Créer une facture d&apos;acompte
-            </Link>
-            <DownloadPDF quote={quote} company={company as CompanyType} vatAmountTravelCost={vatAmountTravelCost} priceTTCTravelCost={priceTTCTravelCost} />
-            <Button label="Envoyer le devis au client" icon={faPaperPlane} type="button" action={() => sendQuoteToClient(quote.slug, quote.client.mail)} specifyBackground="text-red-500" />
+                {/* If the quote's status is different from draft, we can display the form */}
+                {quote.status !== "DRAFT" && (
+                    <section>
+                        <h2 className="text-xl font-semibold text-custom-gray mb-3">Modifier les informations</h2>
+                        <form
+                            autoComplete="off"
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                handleQuoteUpdateClassic();
+                            }}
+                        >
+                            <div>
+                                <Select
+                                    name="status"
+                                    onChange={handleInputChange}
+                                    value={formValues.status || ""}
+                                    className="w-full rounded-md bg-gray-700 text-white pl-3"
+                                >
+                                    <option value="" >Statut du devis</option>
+                                    {Object.entries(quoteStatusChoices).map(([value, label]) => (
+                                        <option key={value} value={value}>
+                                            {label}
+                                        </option>
+                                    ))}
+                                </Select>
+                            </div>
+                            <div>
+                                <Field>
+                                    <Legend>Le devis a t-il été signé par le client ?</Legend>
+                                    <RadioGroup
+                                        name="isSignedByClient"
+                                        onChange={(value) => handleRadioChange("isSignedByClient", value)}
 
-            {/* <div><Toaster /></div> */}
-            <section>
-                <div>
-                    <h2>Emetteur</h2>
+                                    >
+                                        {isSignedByClientChoices.map((choice) => (
+                                            <Field key={choice} className="flex gap-2 items-center">
+                                                <Radio value={choice} className="group flex size-5 items-center justify-center rounded-full border bg-white data-[checked]:bg-pink-600" />
+                                                <Label>{choice}</Label>
+                                            </Field>
+                                        ))}
+                                    </RadioGroup>
+                                </Field>
+                            </div>
+                            <div>
+                                <label htmlFor="signatureDate">Date de signature</label>
+                                <Field className="w-full">
+                                    <Input type="date" name="signatureDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
+                                        onChange={handleInputChange}
+                                    >
+                                    </Input>
+                                </Field>
+                            </div>
+                            <Input type="hidden" name="csrf_token" value={csrfToken} />
+
+                            <button type="submit" className="mt-3 px-4 py-2 bg-secondary text-white rounded-md hover:bg-secondary/90 transition">
+                                Modifier
+                            </button>
+                        </form>
+                    </section>
+
+                )}
+                {/* <div><Toaster /></div> */}
+                <section className="grid sm:grid-cols-2 gap-6">
                     <div>
+                        <h2 className="text-lg font-semibold text-custom-gray">Émetteur</h2>
+
                         <p>{company?.name}</p>
                         <p>Téléphone : {company?.phone}</p>
                         <p>Email : {company?.mail}</p>
                         <p>Adresse : {company?.addressNumber} {company?.road} {company?.city} {company?.postalCode} {company?.additionnalAddress}</p>
                     </div>
-                </div>
-                <div>
-                    <h2>Addressé à</h2>
                     <div>
+                        <h2 className="text-lg font-semibold text-custom-gray">Adressé à</h2>
+
                         <p>{quote?.clientBackup?.name} {quote?.clientBackup?.firstName}</p>
                         <p>{quote?.clientBackup?.addressNumber} {quote?.clientBackup?.road} {quote?.clientBackup?.postalCode} {quote?.clientBackup?.city} {quote?.clientBackup?.additionalAddress}</p>
                     </div>
-                </div>
-            </section>
-            <section>
-                <p>Chantier : {quote?.workSiteBackup?.addressNumber} {quote?.workSiteBackup?.road} {quote?.workSiteBackup?.postalCode} {quote?.workSiteBackup?.city} {quote?.workSiteBackup?.additionalAddress}</p>
-                <p>Date de début estimée : {formatDate(quote.workStartDate)}</p>
-                <p>Date de fin estimée : {formatDate(quote.estimatedWorkEndDate)}</p>
-                <p>Durée estimée des travaux : {quote.estimatedWorkDuration} jours</p>
-                {/* Table about quote details */}
-                <table>
-                    <thead>
-                        <tr>
-                            <th>
-                                Service
-                            </th>
-                            <th>
-                                Description
-                            </th>
-                            <th>
-                                Quantité
-                            </th>
-                            <th>
-                                Prix Unitaire
-                            </th>
-                            <th>
-                                TVA
-                            </th>
-                            <th>
-                                Montant TVA
-                            </th>
-                            <th>
-                                Prix HT
-                            </th>
-                            <th>
-                                Prix TTC
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {/* quote.services => quoteService */}
-                        {quote?.servicesBackup?.map((service, index) => {
+                </section>
+
+                <section className="space-y-2">
+                    <h2 className="text-lg font-semibold text-custom-gray">Chantier</h2>
+                    <p>{quote?.workSiteBackup?.addressNumber} {quote?.workSiteBackup?.road} {quote?.workSiteBackup?.postalCode} {quote?.workSiteBackup?.city} {quote?.workSiteBackup?.additionalAddress}</p>
+                    <p>Date de début estimée : {formatDate(quote.workStartDate)}</p>
+                    <p>Date de fin estimée : {formatDate(quote.estimatedWorkEndDate)}</p>
+                    <p>Durée estimée des travaux : {quote.estimatedWorkDuration} jours</p>
+                    {/* Totals */}
+                </section>
+                <section>
+                    <h2 className="text-lg font-semibold text-custom-gray mb-2">Total</h2>
+                    {/* Total du devis  */}
+                    <table className="w-full table-auto border border-gray-300 text-custom-gray">
+                        <thead className="bg-gray-100">
+                            <tr>
+                                <th className="p-2">Total HT</th>
+                                <th>TVA totale</th>
+                                <th>Total TTC</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr className="border-t text-center">
+                                <td className="p-2">{quote.elementsBackup?.priceHT} €</td>
+                                <td>{quote.elementsBackup?.vatAmount} €</td>
+                                <td>{quote.elementsBackup?.priceTTC} €</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+                <section className="space-y-1 text-gray-800">
+
+                    {/* issuedDate */}
+                    <p>Devis créé le {formatDate(quote.issueDate)}</p>
+
+                    {/* Deposit amount (in %) */}
+                    <p>Accompte avant le début du chantier : {quote?.depositAmount} %</p>
+
+                    {/* payment terms*/}
+                    <p>{quote?.paymentTerms}</p>
+
+                    {/* validityEndDate */}
+                    <p>Devis valable jusqu&apos;au {formatDate(quote.validityEndDate)}</p>
+
+                    {/* Recovery fees => fixed by French law at 40€.  */}
+                    <p>Frais forfaitaires de recouvrement : {quote.recoveryFee} €</p>
 
 
-                            return (
-                                <tr key={index}>
-                                    <td>{service.label} - {service.type}</td>
-                                    <td>{service.detailsService}</td>
-                                    <td>{service.quantity} {service.unit}</td>
-                                    <td>{service.unitPriceHT}</td>
-                                    <td>{service.vatRate} %</td>
-                                    <td>{service.vatAmount}</td>
-                                    <td>{service.totalHT}</td>
-                                    <td>{service.totalTTC}</td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
-                {/* Travel costs */}
-                <table>
-                    <thead>
-                        <tr>
-                            <th>
-                                Frais de déplacement HT
-                            </th>
-                            <th>
-                                Type de forfait
-                            </th>
-                            <th>
-                                TVA
-                            </th>
-                            <th>
-                                Montant de la TVA
-                            </th>
-                            <th>
-                                Frais TTC
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                {quote?.travelCosts} €
-                            </td>
-                            <td>
-                                Forfait unique
-                            </td>
-                            <td>
-                                20%
-                            </td>
-                            <td>
-                                {vatAmountTravelCost} €
-                            </td>
-                            <td>
-                                {priceTTCTravelCost} €
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                {/* Total du devis  */}
-                <table>
-                    <thead>
-                        <tr>
-                            <th>
-                                Total HT
-                            </th>
-                            <th>
-                                Montant total de la TVA
-                            </th>
-                            <th>
-                                Montant TTC
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                {quote.elementsBackup?.priceHT} €
-                            </td>
-                            <td>
-                                {quote.elementsBackup?.vatAmount} €
-                            </td>
-                            <td>
-                                {quote.elementsBackup?.priceTTC} €
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
-            <section>
-                {/* issuedDate */}
-                <p>Devis créé le {formatDate(quote.issueDate)}</p>
+                    {/* right of withdrawal */}
+                    {
+                        (quote.hasRightOfWithdrawal) && <p>Droit de rétractation : {quote.withdrawalPeriod} jours. </p>
+                    }
+                </section>
 
-                {/* Deposit amount (in %) */}
-                <p>Accompte avant le début du chantier : {quote?.depositAmount} %</p>
+                <section>
+                    <h2 className="text-lg font-semibold text-custom-gray mb-2">Factures liées</h2>
+                    {quote?.bills?.length > 0 && (
+            <table className="w-full table-auto border border-gray-300 text-custom-gray text-center">
+            <thead className="bg-gray-100">
 
-                {/* payment terms*/}
-                <p>{quote?.paymentTerms}</p>
+                <tr>
+                  <th className="p-2">Numéro</th>
+                  <th className="p-2">Lien</th>
+                </tr>
+              </thead>
+              <tbody>
+                {quote.bills.map((bill, index) => (
+                  <tr key={index} className="border-t">
+                    <td className="p-2">{bill.number}</td>
+                    <td className="p-2">
+                      <Link href={`/director/bills/${bill?.number}`} className="text-primary hover:underline">
+                        Consulter les détails
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+)}
 
-                {/* validityEndDate */}
-                <p>Devis valable jusqu&apos;au {formatDate(quote.validityEndDate)}</p>
-
-                {/* Recovery fees => fixed by French law at 40€.  */}
-                <p>Frais forfaitaires de recouvrement : {quote.recoveryFee} €</p>
+                </section>
 
 
-                {/* right of withdrawal */}
-                {
-                    (quote.hasRightOfWithdrawal) && <p>Droit de rétractation : {quote.withdrawalPeriod} jours. </p>
-                }
-            </section>
-
-
-
-
-
+            </article>
         </>
+
     );
 }
