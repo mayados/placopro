@@ -41,9 +41,11 @@ import Quotes from "@/components/Quotes";
 import { Suspense } from "react";
 
 export default function Page() {
-  <Suspense fallback={<div>Chargement...</div>}>
+  return (
+    <Suspense fallback={<div>Chargement...</div>}>
 
-    return <Quotes />;
-  </Suspense>
+      <Quotes />;
+    </Suspense>
+  )
 
 }

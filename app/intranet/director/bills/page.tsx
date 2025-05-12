@@ -10,14 +10,17 @@
 
 //   return <Bills searchParams={parameters} />;
 // }
-import { Suspense } from "react";
 
 import Bills from "@/components/Bills";
+import { Suspense } from "react";
 
 export default function Page() {
-  <Suspense fallback={<div>Chargement...</div>}>
 
-    return <Bills />;
-  </Suspense>
+    return (
+      <Suspense fallback={<div>Chargement des données...</div>}>
+  
+        <Bills />
+      </Suspense>
+    )
 
 }

@@ -15,9 +15,11 @@ import WorkSites from "@/components/WorkSites";
 import { Suspense } from "react";
 
 export default function Page() {
-  <Suspense fallback={<div>Chargement...</div>}>
+  return (
+    <Suspense fallback={<div>Chargement des données...</div>}>
 
-    return <WorkSites />;
-  </Suspense>
+      <WorkSites />
+    </Suspense>
+  )
 
 }
