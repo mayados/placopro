@@ -8,7 +8,6 @@ model Review{
     clientId String? @db.ObjectId @unique
     client Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
 
-    @@index([id])
 
 }
 

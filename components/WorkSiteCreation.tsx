@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Field,Input, Select, Textarea } from '@headlessui/react';
+import { Field,Input, Textarea } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import { fetchSuggestions } from "@/services/api/suggestionService";
 import { createWorkSite } from "@/services/api/workSiteService";
@@ -18,7 +18,6 @@ export default function WorkSiteCreation({csrfToken}: WorkSiteCreationProps){
         title: "",
         description: "",
         beginsThe: "",
-        status: "",
         road: "",
         addressNumber: "",
         postalCode: "",
@@ -27,7 +26,7 @@ export default function WorkSiteCreation({csrfToken}: WorkSiteCreationProps){
         clientId: null as string | null,
     })
     // Define options for select
-    const statusChoices = ["En cours","A venir","Terminé"];
+    // const statusChoices = ["En cours","A venir","Terminé"];
     const router = useRouter();
     const [suggestions, setSuggestions] = useState<ClientSuggestionType[] | null>(null)
     // text visible in the client field
@@ -102,7 +101,6 @@ export default function WorkSiteCreation({csrfToken}: WorkSiteCreationProps){
                 console.log("Titre du chantier : "+workSite.title)
                 console.log("Description : "+workSite.description)
                 console.log("Commence le : "+workSite.beginsThe)
-                console.log("Statut : "+workSite.status)
                 console.log("Route : "+workSite.road)
                 console.log("Numéro d'adresse : "+workSite.addressNumber)
                 console.log("Code postal : "+workSite.postalCode)
@@ -197,7 +195,7 @@ export default function WorkSiteCreation({csrfToken}: WorkSiteCreationProps){
 
                 </div>
                 {/* type of company */}
-                <div>
+                {/* <div>
                     <label htmlFor="status">Statut du chantier</label>
                     <Select
                         name="status"
@@ -212,7 +210,7 @@ export default function WorkSiteCreation({csrfToken}: WorkSiteCreationProps){
                     </Select>
                     {errors.status && <p style={{ color: "red" }}>{errors.status}</p>}
 
-                </div>
+                </div> */}
                 {/* WorkSite addressNumber */}
                 <div>
                     <label htmlFor="addressNumber">Numéro d&apos;adresse du chantier</label>
