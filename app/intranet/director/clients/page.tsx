@@ -5,7 +5,7 @@ import Button from "@/components/Button";
 // import toast, { Toaster } from 'react-hot-toast';
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
 import Link from "next/link";
-import { deleteClient, fetchClients } from "@/services/api/clientService";
+import { deleteClient, fetchPseudonymizedClients } from "@/services/api/clientService";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import toast from "react-hot-toast";
 
@@ -18,7 +18,7 @@ const Clients = () => {
     useEffect(() => {
         const loadClients = async () => {
             try {
-                const data = await fetchClients();
+                const data = await fetchPseudonymizedClients();
                 console.log("données reçues après le fetch : " + data)
                 setClients(data.clients)
             } catch (error) {
@@ -56,7 +56,7 @@ const Clients = () => {
 
             <section className="flex-[8] px-4 py-6 bg-[#F5F5F5] rounded-md shadow-sm">
                 <header className="mb-6">
-                    <h1 className="text-3xl font-bold text-[#1873BF] text-center mb-2">Clients</h1>
+                    <h1 className="text-3xl font-bold text-[#1873BF] text-center mb-2">Clients pseudonymisés</h1>
                 </header>
                 <table className="w-full text-left border-collapse">
                     <thead>
