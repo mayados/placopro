@@ -14,7 +14,8 @@ model Client{
     city String?
     additionalAddress String?
     isPseudonymized Boolean @default(false)
-    convertedAt DateTime?
+    pseudonymizedAt DateTime? 
+    convertedAt DateTime? 
     status ClientOrProspectEnum
     review Review ?
     reviewToken ReviewToken ?

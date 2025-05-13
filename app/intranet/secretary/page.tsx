@@ -1,58 +1,24 @@
-"use client";
+// 👇 server file
+import { headers } from 'next/headers'
+// client component
+import DashboardSecretary from '@/components/DashboardSecretary' 
+import { fetchSecretaryDatas } from '@/services/api/dashboardService';
 
-// import { useEffect, useState } from "react";
-// import Link from "next/link";
 
-const SecretaryDashboard = () =>{
 
-    // const [companies, setCompanies] = useState<CompanyType[]>([])
-    // const [companyToDelete, setCompanyToDelete] = useState<string | null>(null); 
-    // const [isOpen, setIsOpen] = useState(false);
+export default async function Page() {
 
-    // useEffect(() => {
-    //     const loadCompanies = async () => {
-    //         try{
-    //             const data = await fetchCompanies();
-    //             console.log("données reçues après le fetch : "+data)
-    //             setCompanies(data.companies)                
-    //         }catch(error){
-    //             console.error("Impossible to load companies :", error);
-    //         }
-    //     }
-    
-    //     loadCompanies()
-    // },[]);
+  const h = await headers()
+  const cookie = h.get("cookie") || "";
 
-    //     // Delete a company
-    //     const handleDeleteCompany = async (companySlug: string) => {
-    //         try {
-    //             await deleteCompany(companySlug);
-    //             setIsOpen(false);  
-    //             // toast.success('Entreprise supprimée avec succès');                 
-    //             setCompanies(prevCompanies => prevCompanies.filter(company => company.slug !== companySlug));  
-    //         } catch (error) {
-    //             console.error("Erreur avec la suppression du devis", error);
-    //         }
-    //     };
-    
-    // const openDeleteDialog = (companySlug: string) => {
-    //     setCompanyToDelete(companySlug);
-    //     setIsOpen(true);  
-    // };
+  const csrfToken = h.get('X-CSRF-Token') || 'missing'
 
-    // const closeDeleteDialog = () => {
-    //     setIsOpen(false);  
-    // };
-
+  const  datas  = await fetchSecretaryDatas(cookie)
+  
+  console.log("CSRF Token:", csrfToken);  
   return (
-
-    <>
-        {/* <div><Toaster/></div> */}
-        <h1>Tableau de bord secrétaire</h1>
-    </>
-
+    <DashboardSecretary
+      datas={datas}
+    />
   )
 }
-
-export default SecretaryDashboard
-

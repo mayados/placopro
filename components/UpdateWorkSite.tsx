@@ -21,7 +21,8 @@ export default function UpdateWorkSite({csrfToken, workSiteSlug}: UpdateWorkSite
     const statusChoices = {    
         COMING: "A venir",
         COMPLETED: "Terminé",
-        PROGRESS: "En cours"
+        PROGRESS: "En cours",
+        PENDING: "En attente"
     };
     const [suggestions, setSuggestions] = useState<ClientSuggestionType[] | null>(null)
     // text visible in the client field

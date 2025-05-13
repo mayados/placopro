@@ -27,6 +27,7 @@ model WorkSite{
 } 
 
 enum WorkSiteStatusEnum {
+  PENDING
   COMING
   COMPLETED
   PROGRESS

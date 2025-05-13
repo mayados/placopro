@@ -7,7 +7,6 @@ model ReviewToken{
     usedAt DateTime? 
     expiresAt DateTime
 
-    @@index([id])
 
 }
 
