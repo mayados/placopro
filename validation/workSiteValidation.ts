@@ -1,5 +1,5 @@
 // /validation/billValidation.ts
-import { WorkSiteStatusEnum } from '@prisma/client';
+// import { WorkSiteStatusEnum } from '@prisma/client';
 import { z } from 'zod';
 
 // Transformation of string into Date with personnalized message (Because when retrieving Date in JSON in API route they became string)
@@ -27,9 +27,9 @@ export const createWorkSiteSchema = z.object({
     city: z.string().min(1, "La ville est requise"),
     additionalAddress: z.string().min(1, "Le complément d'adresse est requis"),
     clientId: z.string().min(1, "Le client est requis"),
-    status: z.nativeEnum(WorkSiteStatusEnum, {
-        errorMap: () => ({ message: "Le statut du chantier est requis." })
-      })
+    // status: z.nativeEnum(WorkSiteStatusEnum, {
+    //     errorMap: () => ({ message: "Le statut du chantier est requis." })
+    //   })
 
 })
 
