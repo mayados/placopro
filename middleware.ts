@@ -203,6 +203,7 @@ const isForConnectedUsersPage = createRouteMatcher([
   '/director(.*)',
   '/employee(.*)',
   '/intranet(.*)',
+  'public/intranet/post-login(.*)'
 ]);
 
 const isEmployeePage = createRouteMatcher(['/intranet/employee(.*)']);
