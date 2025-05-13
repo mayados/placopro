@@ -1,7 +1,7 @@
 'use client'
 
 import { useForm } from 'react-hook-form'
-import { z, ZodError } from 'zod'
+import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useSignIn } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
@@ -10,7 +10,7 @@ import { useState } from 'react'
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Adresse e-mail invalide" }),
-  password: z.string().min(6, { message: "Mot de passe trop court" }),
+  password: z.string().min(6, { message: "Mot de passe invalide" }),
 })
 
 type LoginSchema = z.infer<typeof loginSchema>
@@ -19,44 +19,34 @@ export default function LoginPage() {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
   })
-  const { signIn, isLoaded } = useSignIn()
+  const { signIn, isLoaded, setActive } = useSignIn()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
-  const onSubmit = async (data: LoginSchema) => {
-    if (!isLoaded) return
-    setLoading(true)
+   const onSubmit = async (data: LoginSchema) => {
+    if (!isLoaded) return;
+    setLoading(true);
 
     try {
       const result = await signIn.create({
         identifier: data.email,
         password: data.password,
-      })
+      });
 
       if (result.status === 'complete') {
-        toast.success('Connexion réussie')
+        // Active session client side before redirect
+        await setActive({ session: result.createdSessionId });
 
-  
-          router.push('/intranet/post-login');
+        toast.success('Connexion réussie');
+        router.push('./intranet/post-login');
       }
     } catch (err: unknown) {
-       // Si c'est une erreur Zod, on affiche ses messages
-        if (err instanceof ZodError) {
-          const first = err.errors[0]
-          toast.error(first.message)
-        }
-        // Si c'est une erreur réseau ou autre Error native
-        else if (err instanceof Error) {
-          toast.error(err.message)
-        }
-        // Cas fallback
-        else {
-          toast.error('Erreur inattendue lors de la connexion')
-        }
+      console.error("Erreur lors de la connexion :", err);
+      toast.error("Échec de la connexion");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-custome-white px-4">
@@ -99,7 +89,7 @@ export default function LoginPage() {
         </button>
 
         <p className="text-sm text-center">
-          <a href="/forgot-password" className="text-primary hover:underline">
+          <a href="./intranet/forgot-password" className="text-primary hover:underline">
             Mot de passe oublié ?
           </a>
         </p>
