@@ -112,7 +112,6 @@ interface WorkSiteCreationType{
     title: string,
     description: string,
     beginsThe: string,
-    status:string,
     road: string,
     addressNumber: string,
     postalCode: string,
@@ -904,8 +903,19 @@ interface ClientSuggestionType{
     firstName: string;
 }
 
+interface PseudonymizedClientType{
+    id: string,
+    slug: string,
+    clientNumber: string,
+    pseudonymizedAt: Date
+}
+
 interface ClientTypeList{
     clients: ClientType[];
+}
+
+interface PseudonymizedClientTypeList{
+    clients: PseudonymizedClientType[];
 }
 
 interface VatRateChoiceType{
@@ -1142,4 +1152,18 @@ interface DirectorDashboardDatas{
     workSites: number,
     clients: number,
     employees: number
+}
+  
+interface SecretaryDashboardDatas{
+    toDos: number,
+    bills: number,
+    quotes: number,
+    quotesRealized: number,
+    clients: number,
+    billsRealized: number
+}
+  
+interface EmployeeDashboardDatas{
+    workSites: [],
+    plannings: []
 }

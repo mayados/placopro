@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
-import { BillStatusEnum, ClientOrProspectEnum, QuoteStatusEnum } from "@prisma/client";
+import { BillStatusEnum, ClientOrProspectEnum, QuoteStatusEnum} from "@prisma/client";
 
 
 
@@ -21,13 +21,12 @@ export async function GET() {
         }
 
 
-        // We have to get the to do the secretary created, but also assigned to dos
         const toDos: number = await db.toDo.count({ 
             where: {
                 authorClerkId: user.id,
                 isArchived: false,
                 isChecked: false,
-                assignedToClerkId: user.id,
+                assignedToClerkId: null,
             },
         });
 
@@ -43,6 +42,11 @@ export async function GET() {
             },
         });
 
+        const quotesRealized: number = await db.quote.count({ 
+            where: {
+                author: user.id
+            },
+        });
 
         const clients: number = await db.client.count({ 
             where: {
@@ -50,29 +54,23 @@ export async function GET() {
             },
         });
 
-
-        const billsCreated: number = await db.bill.count({ 
+        const billsRealized: number = await db.bill.count({ 
             where: {
-                author: user.id,
-                status: BillStatusEnum.DRAFT,
+                                author: user.id
+
             },
         });
 
-        const quotesCreated: number = await db.quote.count({ 
-            where: {
-                author: user.id,
-                status: QuoteStatusEnum.DRAFT,
-            },
-        });
+
+          
 
         return NextResponse.json({
-            success: true,
             toDos: toDos,
             bills: bills,
             quotes: quotes,
+            quotesRealized: quotesRealized,
             clients: clients,
-            billsCreated: billsCreated,
-            quotesCreated: quotesCreated,
+            billsRealized: billsRealized
         })
 
     } catch (error) {

@@ -13,6 +13,19 @@ export const fetchClients = async (): Promise<ClientTypeList> => {
       throw error;
     }
   };
+export const fetchPseudonymizedClients = async (): Promise<ClientTypeList> => {
+    try {
+      const response = await fetch(`/api/clients`);
+      if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
+  
+      const data: ClientTypeList = await response.json();
+      console.log("Données reçues après le fetch :", data);
+      return data;
+    } catch (error) {
+      console.error("Erreur lors de la récupération des clients :", error);
+      throw error;
+    }
+  };
 
 
 // Retrieve a specific Client

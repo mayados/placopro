@@ -6,7 +6,6 @@ model Reminder{
     billId String @db.ObjectId @unique
     bill Bill? @relation(fields: [billId], references: [id], onDelete: Cascade)
 
-    @@index([id])
 
 }
 
