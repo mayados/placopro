@@ -1,4 +1,10 @@
 // 👇 server file
+export const metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 import { headers } from 'next/headers'
 // client component
 import DashboardDirector from '@/components/DashboardDirector' 

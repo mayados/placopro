@@ -1,6 +1,11 @@
+import { Metadata } from 'next';
 import Image from 'next/image'
 import Link from 'next/link'
 
+export const metadata: Metadata = {
+  title: 'Placopro • Peinture',
+  description: 'Bienvenue sur Placopro, services de peinture sur strasbourg et vallée de la Bruche.',
+};
 
 export default function PeinturePage() {
   return (
