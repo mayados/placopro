@@ -87,7 +87,6 @@ const Nav: React.FC<NavProps> = ({ logo }) => {
         {/* Auth */}
         <li>
           <SignedOut>
-            <Link href="/public/intranet" className="block px-4 py-2 hover:bg-slate-600">Accéder à l&apos;intranet</Link>
 
             {/* <SignInButton>
               <button className="text-sm px-4 py-2 rounded hover:text-gray-400 transition">

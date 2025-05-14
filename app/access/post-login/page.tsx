@@ -12,10 +12,8 @@ export default function PostLoginRedirect() {
     if (!isLoaded || !user) return;
 
     const role = user.publicMetadata?.role;
-    console.log("Rôle de l'utilisateur dans post-login : " + role);
-    console.log("Utilisateur dans post-login : " + JSON.stringify(user));
 
-    // Effectuer la redirection après avoir récupéré les données utilisateur
+    // Redirect after user datas were retrieved
 
     if (role === 'directeur') {
       router.push('/intranet/director');
@@ -28,7 +26,7 @@ export default function PostLoginRedirect() {
     }
   }, [isLoaded, user, router]);
 
-  // Afficher le spinner pendant que l'utilisateur ou les données ne sont pas prêts
+  // Display spinner while user or datas are not ready
   if (loading) {
     return (
       <div className="h-[100vh] w-[100vw] bg-primary flex flex-col justify-center items-center">
@@ -40,5 +38,6 @@ export default function PostLoginRedirect() {
     );
   }
 
-  return null; // Aucun contenu une fois la redirection effectuée
+  // No content after redirection was made
+  return null; 
 }
