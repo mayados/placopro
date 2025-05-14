@@ -2,6 +2,12 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { faHammer } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Placopro • Réalisations',
+  description: 'Bienvenue sur Placopro, réalisations de plâtrerie, carrelages et peintures sur strasbourg et vallée de la Bruche.',
+};
 
 export default function RealisationsPage() {
   return (
@@ -10,7 +16,7 @@ export default function RealisationsPage() {
       {/* HERO */}
       <section
         className="relative min-h-[60vh] bg-cover bg-center flex items-center justify-center text-white px-6"
-        style={{ backgroundImage: 'url(/images/trowel.webp)' }} // image d’intro
+        style={{ backgroundImage: 'url(/images/trowel.webp)' }} 
       >
         <div className="absolute inset-0 bg-black/50 z-0" aria-hidden="true"></div>
         <div className="relative z-10 max-w-3xl text-center">
@@ -28,7 +34,7 @@ export default function RealisationsPage() {
           {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
             <figure key={n} className="w-full aspect-[4/3] overflow-hidden rounded-lg shadow-md">
               <Image
-                src={`/images/trowel.webp`} // dossier avec vos photos
+                src={`/images/trowel.webp`} 
                 alt={`Projet réalisé ${n}`}
                 width={400}
                 height={300}
