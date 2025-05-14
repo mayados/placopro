@@ -16,7 +16,10 @@ export const fetchSuggestions = async (
       endpoint = `/api/service?search=${search}`;
     }
 
-    const response = await fetch(endpoint);
+    const response = await fetch(endpoint, {
+            method: "GET",
+            credentials: "include", 
+        });
 
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);

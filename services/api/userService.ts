@@ -1,7 +1,10 @@
 // Retrieve all the employees
 export const fetchEmployees = async (): Promise<ClerkUserListType> => {
     try {
-      const response = await fetch(`/api/users`);
+      const response = await fetch(`/api/users`, {
+            method: "GET",
+            credentials: "include", 
+        });
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
       const data: ClerkUserListType = await response.json();
@@ -16,7 +19,10 @@ export const fetchEmployees = async (): Promise<ClerkUserListType> => {
 // Retrieve a specific Employee
 export const fetchEmployee = async (employeeSlug: string): Promise<UserType> => {
     try {
-        const response = await fetch(`/api/users/${employeeSlug}`);
+        const response = await fetch(`/api/users/${employeeSlug}`, {
+            method: "GET",
+            credentials: "include", 
+        });
         if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
     
         const data: UserType = await response.json();
@@ -33,6 +39,7 @@ export const deleteEmployee = async (employeeSlug: string): Promise<void> => {
     try {
         const response = await fetch(`/api/users/${employeeSlug}`, {
             method: "DELETE",
+            credentials: "include",
         });
         if (!response.ok) {
             throw new Error("Error with client deletion");
@@ -48,6 +55,7 @@ export const createEmployee = async (employee: UserFormValueType, csrfToken: str
     try {
         const response = await fetch(`/api/users`, {
             method: "POST",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,
@@ -75,6 +83,7 @@ export const setUserPassword = async (password: string, csrfToken: string, token
     try {
         const response = await fetch(`/api/users`, {
             method: "POST",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,
@@ -105,6 +114,7 @@ export const updateUser = async (employee: UserType, csrfToken: string): Promise
     try {
         const response = await fetch(`/api/users/${employee.slug}`, {
             method: "PUT",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,

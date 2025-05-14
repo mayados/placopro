@@ -330,7 +330,7 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
 
             try {
                 // Redirection vers le devis créé
-                router.push(`/director/quotes/${newQuote.number}`);
+                router.push(`/intranet/common-intranet/quotes/${newQuote.slug}`);
             } catch (err) {
                 console.error("Échec de la redirection :", err);
             }

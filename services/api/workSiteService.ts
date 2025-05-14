@@ -39,7 +39,10 @@ export const fetchWorkSites = async ({
     limit: number;
   }): Promise<WorkSiteWithTotalsAndStatus> => {
     try {
-      const response = await fetch(`/api/workSites?page=${page}&pageComming=${pageComming}&pageCompleted=${pageCompleted}&pageInProgress=${pageInProgress}&limit=${limit}`);
+      const response = await fetch(`/api/workSites?page=${page}&pageComming=${pageComming}&pageCompleted=${pageCompleted}&pageInProgress=${pageInProgress}&limit=${limit}`, {
+            method: "GET",
+            credentials: "include", 
+        });
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
       const data: WorkSiteWithTotalsAndStatus = await response.json();
@@ -55,7 +58,10 @@ export const fetchWorkSites = async ({
 // Retrieve a specific WorkSite
 export const fetchWorkSite = async (workSiteSlug: string): Promise<WorkSiteTypeSingle> => {
     try {
-        const response = await fetch(`/api/workSites/${workSiteSlug}`);
+        const response = await fetch(`/api/workSites/${workSiteSlug}`, {
+            method: "GET",
+            credentials: "include", 
+        });
         if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
     
         const data: WorkSiteTypeSingle = await response.json();
@@ -72,6 +78,7 @@ export const deleteWorkSite = async (workSiteSlug: string): Promise<void> => {
     try {
         const response = await fetch(`/api/workSites/${workSiteSlug}`, {
             method: "DELETE",
+            credentials: "include",
         });
         if (!response.ok) {
             throw new Error("Error with workSite deletion");
@@ -87,6 +94,7 @@ export const createWorkSite = async (workSite: WorkSiteCreationType, csrfToken: 
     try {
         const response = await fetch(`/api/workSites`, {
             method: "POST",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,
@@ -114,6 +122,7 @@ export const updateWorkSite = async (workSite: WorkSiteType, csrfToken: string):
     try {
         const response = await fetch(`/api/workSites/${workSite.slug}`, {
             method: "PUT",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,
