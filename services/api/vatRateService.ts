@@ -1,6 +1,9 @@
 export const fetchVatRates = async (): Promise<VatRateType[]> => {
   try {
-    const response = await fetch(`/api/vatRates`);
+    const response = await fetch(`/api/vatRates`, {
+            method: "GET",
+            credentials: "include", 
+        });
     if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
 
     const data: VatRateType[] = await response.json();
@@ -16,6 +19,7 @@ export const updateVatRate = async (vatRateId: string, updatedValues: VatRateUpd
   try {
     const response = await fetch(`/api/vatRates/${vatRateId}`, {
       method: "PATCH",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "X-CSRF-Token": csrfToken,
@@ -41,6 +45,7 @@ export const deleteVatRate = async (vatRateId: string,csrfToken: string): Promis
   try {
       const response = await fetch(`/api/vatRates/${vatRateId}`, {
           method: "DELETE",
+          credentials: "include",
           headers: {
               "Content-Type": "application/json",
               "X-CSRF-Token": csrfToken,
@@ -61,6 +66,7 @@ export const createVatRate = async (unit: VatRateCreationType, csrfToken: string
   try {
       const response = await fetch(`/api/vatRates`, {
           method: "POST",
+          credentials: "include",
           headers: {
               "Content-Type": "application/json",
               "X-CSRF-Token": csrfToken,

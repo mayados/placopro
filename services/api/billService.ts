@@ -16,7 +16,10 @@ export const fetchBills = async ({
     limit: number,
 }): Promise<BillsWithTotalsAndStatus> => {
     try {
-      const response = await fetch(`/api/bills?page=${page}&pageReadyToBeSent=${pageReadyToBeSent}&pageSent=${pageSent}&pageDraft=${pageDraft}&pageCanceled=${pageCanceled}&limit=${limit}`);
+      const response = await fetch(`/api/bills?page=${page}&pageReadyToBeSent=${pageReadyToBeSent}&pageSent=${pageSent}&pageDraft=${pageDraft}&pageCanceled=${pageCanceled}&limit=${limit}`, {
+            method: "GET",
+            credentials: "include", 
+        });
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
       const data: BillsWithTotalsAndStatus = await response.json();
@@ -31,7 +34,11 @@ export const fetchBills = async ({
 // Retrieve a specific Bill
 export const fetchBill = async (billSlug: string): Promise<BillTypeSingle> => {
     try {
-        const response = await fetch(`/api/bills/${billSlug}`);
+        const response = await fetch(`/api/bills/${billSlug}`, {
+            method: "GET",
+            credentials: "include", 
+            
+        });
         if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
       
         const data: BillTypeSingle = await response.json();
@@ -48,6 +55,8 @@ export const deleteBill = async (billId: string): Promise<void> => {
     try {
         const response = await fetch(`/api/bill/${billId}`, {
             method: "DELETE",
+            credentials: "include", 
+
         });
         if (!response.ok) {
             throw new Error("Error with bill deletion");
@@ -63,6 +72,7 @@ export const createBillFromQuote = async (bill: CreateBillFormValueType, csrfTok
     try {
         const response = await fetch(`/api/bills`, {
             method: "POST",
+            credentials: "include", 
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,
@@ -89,6 +99,7 @@ export const createDepositBillFromQuote = async (bill: CreateDepositBillFormValu
     try {
         const response = await fetch(`/api/bills`, {
             method: "POST",
+            credentials: "include", 
             headers: {
                 "Content-Type": "application/json",
                 "X-Create-Type": "deposit",
@@ -116,6 +127,8 @@ export const updateDraftBill = async (billSlug: string, updatedBillWithStatus: U
     try {
         const response = await fetch(`/api/bills/${billSlug}`, {
             method: "PUT",
+            credentials: "include", 
+
             headers: {
                 "Content-Type": "application/json",
                 "X-Update-Type": "draft",
@@ -144,6 +157,8 @@ export const updateDepositDraftBill = async (billSlug: string, updatedBillWithSt
     try {
         const response = await fetch(`/api/bills/${billSlug}`, {
             method: "PUT",
+            credentials: "include", 
+
             headers: {
                 "Content-Type": "application/json",
                 "X-Update-Type": "draft-deposit",
@@ -171,6 +186,8 @@ export const updateDepositDraftBill = async (billSlug: string, updatedBillWithSt
     try {
         const response = await fetch(`/api/bills/${billSlug}`, {
             method: "PUT",
+            credentials: "include", 
+
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,

@@ -3,6 +3,7 @@ export const createCreditNote = async (creditNote : CreateCreditNoteFormValueTyp
     try {
         const response = await fetch(`/api/creditNotes`, {
             method: "POST",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,
@@ -29,6 +30,7 @@ export const updateCreditNote = async (creditNoteNumber: string, formValues: Upd
     try {
         const response = await fetch(`/api/creditNotes/${creditNoteNumber}`, {
             method: "PUT",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,
@@ -54,7 +56,10 @@ export const updateCreditNote = async (creditNoteNumber: string, formValues: Upd
 // Retrieve a specific credit note
 export const fetchCreditNote = async (creditNoteNumber: string): Promise<CreditNoteType> => {
     try {
-        const response = await fetch(`/api/creditNotes/${creditNoteNumber}`);
+        const response = await fetch(`/api/creditNotes/${creditNoteNumber}`, {
+            method: "GET",
+            credentials: "include", 
+        });
         if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
       
         const data: CreditNoteType = await response.json();
@@ -80,7 +85,10 @@ export const fetchCreditNotes = async ({
     limit: number;
   }): Promise<CreditNotesWithTotalsAndStatus> => {
     try {
-      const response = await fetch(`/api/creditNotes?page=${page}&pageSettled=${pageSettled}&pageNotSettled=${pageNotSettled}&limit=${limit}`);
+      const response = await fetch(`/api/creditNotes?page=${page}&pageSettled=${pageSettled}&pageNotSettled=${pageNotSettled}&limit=${limit}`, {
+            method: "GET",
+            credentials: "include", 
+        });
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
       
@@ -98,6 +106,7 @@ export const deleteCreditNote = async (creditNoteNumber: string): Promise<void> 
     try {
         const response = await fetch(`/api/creditNotes/${creditNoteNumber}`, {
             method: "DELETE",
+            credentials: "include"
         });
         if (!response.ok) {
             throw new Error("Error with credit note deletion");

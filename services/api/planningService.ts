@@ -2,7 +2,10 @@
 // Return a promise with object of type ?
 export const fetchPlannings = async (): Promise<PlanningsListType> => {
     try {
-      const response = await fetch(`/api/plannings`);
+      const response = await fetch(`/api/plannings`, {
+            method: "GET",
+            credentials: "include", 
+        });
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
       const data: PlanningsListType = await response.json();
@@ -19,6 +22,7 @@ export const createPlanning = async (planning : CalendarEvent, csrfToken: string
     try {
         const response = await fetch(`/api/plannings`, {
             method: "POST",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,
@@ -45,6 +49,7 @@ export const updatePlanning = async (PlanningId: string, formValues: UpdateCalen
     try {
         const response = await fetch(`/api/plannings/${PlanningId}`, {
             method: "PUT",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,
@@ -72,6 +77,7 @@ export const deletePlanning = async (PlanningId: string, csrfToken: string): Pro
     try {
         const response = await fetch(`/api/plannings/${PlanningId}`, {
             method: "DELETE",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,
