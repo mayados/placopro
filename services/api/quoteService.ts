@@ -21,7 +21,10 @@ export const fetchQuotes = async ({
     limit: number;
 }): Promise<QuotesWithTotalsAndStatus> => {
     try {
-      const response = await fetch(`/api/quote?page=${page}&pageDraft=${pageDraft}&pageReadyToBeSent=${pageReadyToBeSent}&pageSent=${pageSent}&pageAccepted=${pageAccepted}&pageRefused=${pageRefused}&limit=${limit}`);
+      const response = await fetch(`/api/quote?page=${page}&pageDraft=${pageDraft}&pageReadyToBeSent=${pageReadyToBeSent}&pageSent=${pageSent}&pageAccepted=${pageAccepted}&pageRefused=${pageRefused}&limit=${limit}`, {
+            method: "GET",
+            credentials: "include", 
+        });
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
       const data: QuotesWithTotalsAndStatus = await response.json();
@@ -39,7 +42,10 @@ export const fetchQuotes = async ({
     const url = `${baseUrl}/api/quote/${quoteSlug}`
       console.log("Fetching quote from:", url);
 
-      const response = await fetch(`${baseUrl}/api/quote/${quoteSlug}`);
+      const response = await fetch(`${baseUrl}/api/quote/${quoteSlug}`, {
+            method: "GET",
+            credentials: "include", 
+        });
 
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
@@ -57,6 +63,7 @@ export const deleteQuote = async (quoteId: string): Promise<void> => {
     try {
         const response = await fetch(`/api/quote/${quoteId}`, {
             method: "DELETE",
+            credentials: "include",
         });
         if (!response.ok) {
             throw new Error("Error with quote deletion");
@@ -72,6 +79,7 @@ export const createQuote = async (quote: QuoteFormValueType, csrfToken: string):
   try {
       const response = await fetch(`/api/quote`, {
           method: "POST",
+          credentials: "include",
           headers: {
               "Content-Type": "application/json",
               "X-CSRF-Token": csrfToken,
@@ -99,6 +107,7 @@ export const sendQuote = async (quoteSlug: string, emailClient: string, csrfToke
     try {
         const response = await fetch(`/api/quote`, {
             method: "POST",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,
@@ -127,6 +136,7 @@ export const updateDraftQuote = async (quoteSlug: string, updatedQuoteWithStatus
   try {
       const response = await fetch(`/api/quote/${quoteSlug}`, {
           method: "PUT",
+          credentials: "include",
           headers: {
               "Content-Type": "application/json",
               "X-Update-Type": "draft",
@@ -155,6 +165,7 @@ export const updateClassicQuote = async (quoteSlug: string, formValues: FormValu
   try {
       const response = await fetch(`/api/quote/${quoteSlug}`, {
           method: "PUT",
+          credentials: "include",
           headers: {
               "Content-Type": "application/json",
               "X-CSRF-Token": csrfToken,

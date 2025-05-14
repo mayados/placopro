@@ -2,7 +2,10 @@
 // Return a promise with object of type QuoteWithTotalsAndStatus
 export const fetchClients = async (): Promise<ClientTypeList> => {
     try {
-      const response = await fetch(`/api/clients`);
+      const response = await fetch(`/api/clients`, {
+            method: "GET",
+            credentials: "include", 
+        });
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
       const data: ClientTypeList = await response.json();
@@ -15,7 +18,10 @@ export const fetchClients = async (): Promise<ClientTypeList> => {
   };
 export const fetchPseudonymizedClients = async (): Promise<ClientTypeList> => {
     try {
-      const response = await fetch(`/api/clients`);
+      const response = await fetch(`/api/clients`, {
+            method: "GET",
+            credentials: "include", 
+        });
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
       const data: ClientTypeList = await response.json();
@@ -31,7 +37,10 @@ export const fetchPseudonymizedClients = async (): Promise<ClientTypeList> => {
 // Retrieve a specific Client
 export const fetchClient = async (clientSlug: string): Promise<ClientTypeSingle> => {
     try {
-        const response = await fetch(`/api/clients/${clientSlug}`);
+        const response = await fetch(`/api/clients/${clientSlug}`, {
+            method: "GET",
+            credentials: "include", 
+        });
         if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
     
         const data: ClientTypeSingle = await response.json();
@@ -49,6 +58,7 @@ export const deleteClient = async (clientSlug: string): Promise<void> => {
     try {
         const response = await fetch(`/api/clients/${clientSlug}`, {
             method: "DELETE",
+            credentials: "include"
         });
         if (!response.ok) {
             throw new Error("Error with client deletion");
@@ -64,6 +74,7 @@ export const createClient = async (client: ClientFormValueType, csrfToken: strin
     try {
         const response = await fetch(`/api/clients`, {
             method: "POST",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,
@@ -91,6 +102,7 @@ export const updateClient = async (client: ClientType, csrfToken: string): Promi
     try {
         const response = await fetch(`/api/clients/${client.slug}`, {
             method: "PUT",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,
@@ -118,6 +130,7 @@ export const pseudonymizeClient = async (clientSlug: string, csrfToken: string):
     try {
         const response = await fetch(`/api/clients/${clientSlug}`, {
             method: "PATCH",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,

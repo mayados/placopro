@@ -3,7 +3,10 @@ const baseUrl = process.env.NEXT_PUBLIC_API_URL
   // Retrieve a specific Company
   export const fetchCompany = async (companySlug: string): Promise<CompanyType> => {
     try {
-      const response = await fetch(`${baseUrl}/api/companies/${companySlug}`);
+      const response = await fetch(`${baseUrl}/api/companies/${companySlug}`, {
+            method: "GET",
+            credentials: "include", 
+        });
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
       const data: CompanyType = await response.json();
@@ -18,7 +21,10 @@ const baseUrl = process.env.NEXT_PUBLIC_API_URL
   // Retrieve all the companies
   export const fetchCompanies = async (): Promise<CompanyListType> => {
     try {
-      const response = await fetch(`/api/companies`);
+      const response = await fetch(`/api/companies`, {
+            method: "GET",
+            credentials: "include", 
+        });
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
       const data: CompanyListType = await response.json();
@@ -35,6 +41,7 @@ export const deleteCompany = async (companySlug: string): Promise<void> => {
   try {
       const response = await fetch(`/api/companies/${companySlug}`, {
           method: "DELETE",
+          credentials: "include"
       });
       if (!response.ok) {
           throw new Error("Error with company deletion");
@@ -50,6 +57,7 @@ export const updateCompany = async (company: CompanyType, csrfToken: string): Pr
   try {
       const response = await fetch(`/api/companies/${company.slug}`, {
           method: "PUT",
+          credentials: "include",
           headers: {
               "Content-Type": "application/json",
               "X-CSRF-Token": csrfToken,
@@ -77,6 +85,7 @@ export const createCompany = async (company: CompanyFormValueType, csrfToken: st
   try {
       const response = await fetch(`/api/companies`, {
           method: "POST",
+          credentials: "include",
           headers: {
               "Content-Type": "application/json",
               "X-CSRF-Token": csrfToken,

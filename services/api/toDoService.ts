@@ -1,7 +1,10 @@
 // Retrieve to dos list
 export const fetchToDos = async (): Promise<ToDosWithTotalsAndStatus> => {
     try {
-      const response = await fetch(`/api/todos`);
+      const response = await fetch(`/api/todos`, {
+            method: "GET",
+            credentials: "include", 
+        });
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
       const data: ToDosWithTotalsAndStatus = await response.json();
@@ -18,6 +21,7 @@ export const checkOrUncheckToDo = async (toDoId: string,csrfToken: string): Prom
     try {
         const response = await fetch(`/api/todos/${toDoId}`, {
             method: "PATCH",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,
@@ -42,6 +46,7 @@ export const archiveOrUnarchiveToDo = async (toDoId: string,csrfToken: string): 
     try {
         const response = await fetch(`/api/todos/${toDoId}`, {
             method: "PATCH",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,
@@ -67,6 +72,7 @@ export const archiveOrUnarchiveToDo = async (toDoId: string,csrfToken: string): 
     try {
         const response = await fetch(`/api/todos/${toDoId}`, {
             method: "PATCH",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,
@@ -92,6 +98,7 @@ export const archiveOrUnarchiveToDo = async (toDoId: string,csrfToken: string): 
     try {
         const response = await fetch(`/api/todos/${toDoId}`, {
             method: "PATCH",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,
@@ -119,6 +126,7 @@ export const deleteToDo = async (toDoId: string,csrfToken: string): Promise<void
     try {
         const response = await fetch(`/api/todos/${toDoId}`, {
             method: "DELETE",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,
@@ -139,6 +147,7 @@ export const createClassicToDo = async (toDo: ClassicToDoCreationType, csrfToken
     try {
         const response = await fetch(`/api/todos`, {
             method: "POST",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,
@@ -166,6 +175,7 @@ export const createAssignedToDo = async (toDo: AssignedToDoCreationType, csrfTok
     try {
         const response = await fetch(`/api/todos`, {
             method: "POST",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,

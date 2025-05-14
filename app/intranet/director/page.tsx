@@ -13,6 +13,7 @@ export default async function Page() {
 
   const csrfToken = h.get('X-CSRF-Token') || 'missing'
 
+  // const  datas  = await fetchDirectorDatas(cookie)
   const  datas  = await fetchDirectorDatas(cookie)
   
   console.log("CSRF Token:", csrfToken);  

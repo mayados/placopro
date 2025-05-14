@@ -182,6 +182,11 @@ import { NextResponse } from "next/server";
 import jwt,{ JwtPayload } from 'jsonwebtoken';
 // import { csrfMiddleware } from "./lib/csrf";
 
+const ALLOWED_ORIGINS = [
+  "http://localhost:3000",
+  "https://www.placopro.pro",
+];
+
 // ----- Matchers -----
 const isAuthRoute = createRouteMatcher([
   '/api/auth/(.*)',
@@ -251,6 +256,38 @@ const csrfProtect = createCsrfProtect({
 export const middleware = clerkMiddleware(async (auth, req) => {
   // Créer une réponse par défaut pour pouvoir y ajouter le cookie CSRF
   const response = NextResponse.next();
+    const origin = req.headers.get("origin") || "";
+
+  // ————— CORS HEADER INJECTION —————
+  if (req.nextUrl.pathname.startsWith("/api/") && ALLOWED_ORIGINS.includes(origin)) {
+    response.headers.set("Access-Control-Allow-Origin", origin);
+    response.headers.set("Access-Control-Allow-Credentials", "true");
+    response.headers.set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,PATCH,OPTIONS");
+    response.headers.set(
+      "Access-Control-Allow-Headers",
+      "Content-Type, X-CSRF-Token, Authorization"
+    );
+    response.headers.set(
+  "Access-Control-Allow-Headers",
+  [
+    "Content-Type",
+    "X-CSRF-Token",
+    "Authorization",
+    "X-Create-Type",
+    "X-Update-Type",
+    "X-post-type",
+    "X-patch-type",
+    "X-create-Type",
+    "X-get-type"
+  ].join(", ")
+);
+  }
+  if (req.method === "OPTIONS") {
+    return new NextResponse(null, {
+      status: 204,
+      headers: response.headers,
+    });
+  }
 
   // const url = new URL(req.url);
   const { userId, redirectToSignIn, getToken } = await auth();

@@ -1,6 +1,9 @@
 export const fetchUnits = async (): Promise<UnitType[]> => {
   try {
-    const response = await fetch(`/api/units`);
+    const response = await fetch(`/api/units`, {
+            method: "GET",
+            credentials: "include", 
+        });
     if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
 
     const data: UnitType[] = await response.json();
@@ -16,6 +19,7 @@ export const updateUnit = async (unitId: string, updatedValues: UnitUpdateType, 
   try {
     const response = await fetch(`/api/units/${unitId}`, {
       method: "PATCH",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "X-CSRF-Token": csrfToken,
@@ -41,6 +45,7 @@ export const deleteUnit = async (unitId: string,csrfToken: string): Promise<void
   try {
       const response = await fetch(`/api/units/${unitId}`, {
           method: "DELETE",
+          credentials: "include",
           headers: {
               "Content-Type": "application/json",
               "X-CSRF-Token": csrfToken,
@@ -61,6 +66,7 @@ export const createUnit = async (unit: UnitCreationType, csrfToken: string): Pro
   try {
       const response = await fetch(`/api/units`, {
           method: "POST",
+          credentials: "include",
           headers: {
               "Content-Type": "application/json",
               "X-CSRF-Token": csrfToken,

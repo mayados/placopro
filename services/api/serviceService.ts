@@ -1,6 +1,9 @@
 export const fetchServices = async (): Promise<ServiceEntityType[]> => {
     try {
-      const response = await fetch(`/api/service`);
+      const response = await fetch(`/api/service`, {
+            method: "GET",
+            credentials: "include", 
+        });
       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
   
       const data: ServiceEntityType[] = await response.json();
@@ -16,6 +19,7 @@ export const fetchServices = async (): Promise<ServiceEntityType[]> => {
     try {
       const response = await fetch(`/api/service/${serviceId}`, {
         method: "PATCH",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
           "X-CSRF-Token": csrfToken,
@@ -41,6 +45,7 @@ export const fetchServices = async (): Promise<ServiceEntityType[]> => {
     try {
         const response = await fetch(`/api/service/${serviceId}`, {
             method: "DELETE",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,
