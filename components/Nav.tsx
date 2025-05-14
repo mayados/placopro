@@ -3,11 +3,7 @@
 import React, { useState } from 'react'
 import { Menu, X, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
-import {
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from '@clerk/nextjs'
+
 
 interface NavProps {
   logo: string
@@ -80,24 +76,10 @@ const Nav: React.FC<NavProps> = ({ logo }) => {
             <li><Link href="/public/prestations/peinture" className="block px-4 py-2 hover:bg-slate-600">Peinture</Link></li>
           </ul>
         </li>
-        <li><Link href="/realisations" className="hover:text-gray-400 transition">Réalisations</Link></li>
+        <li><Link href="/" className="hover:text-gray-400 transition">Réalisations</Link></li>
 
-        <li><Link href="/contact" className="hover:text-gray-400 transition">Contact</Link></li>
+        <li><Link href="public/contact" className="hover:text-gray-400 transition">Contact</Link></li>
 
-        {/* Auth */}
-        <li>
-          <SignedOut>
-
-            {/* <SignInButton>
-              <button className="text-sm px-4 py-2 rounded hover:text-gray-400 transition">
-                Accéder à l&apos;intranet
-              </button>
-            </SignInButton> */}
-          </SignedOut>
-          <SignedIn>
-            <UserButton />
-          </SignedIn>
-        </li>
       </ul>
     </nav>
   )

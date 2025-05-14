@@ -1,7 +1,13 @@
 // app/platrerie/page.tsx (ou pages/platrerie.tsx selon Next.js version)
 
+import { Metadata } from 'next';
 import Image from 'next/image'
 import Link from 'next/link'
+
+export const metadata: Metadata = {
+  title: 'Placopro • Plâtrerie',
+  description: 'Bienvenue sur Placopro, services de plâtrerie sur strasbourg et vallée de la Bruche.',
+};
 
 export default function PlatreriePage() {
   return (

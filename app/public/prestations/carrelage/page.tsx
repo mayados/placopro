@@ -1,6 +1,12 @@
+import { Metadata } from 'next';
 import Image from 'next/image'
 import Link from 'next/link'
 
+
+export const metadata: Metadata = {
+  title: 'Placopro • Carrelage',
+  description: 'Bienvenue sur Placopro, services de carrelage sur strasbourg et vallée de la Bruche.',
+};
 
 export default function CarrelagePage() {
   return (

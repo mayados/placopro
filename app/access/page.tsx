@@ -89,7 +89,7 @@ export default function LoginPage() {
         </button>
 
         <p className="text-sm text-center">
-          <a href="./intranet/forgot-password" className="text-primary hover:underline">
+          <a href="./access/forgot-password" className="text-primary hover:underline">
             Mot de passe oublié ?
           </a>
         </p>
