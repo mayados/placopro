@@ -38,7 +38,7 @@ export default function LoginPage() {
         await setActive({ session: result.createdSessionId });
 
         toast.success('Connexion réussie');
-        router.push('./intranet/post-login');
+        router.push('./access/post-login');
       }
     } catch (err: unknown) {
       console.error("Erreur lors de la connexion :", err);
