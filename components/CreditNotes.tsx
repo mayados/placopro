@@ -2,11 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { formatDate } from '@/lib/utils'
-// import toast, { Toaster } from 'react-hot-toast';
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import Link from "next/link";
 import { fetchCreditNotes } from "@/services/api/creditNoteService";
-// import { useSearchParams } from "next/navigation";
 import { Pagination } from "@/components/Pagination";
 import { useSearchParams } from "next/navigation";
 
@@ -16,10 +14,6 @@ const LIMIT = 15;
 
 export default function CreditNotes() {
 
-
-    // const page = parseInt(searchParams.page || "1", 10);
-    // const pageSettled = parseInt(searchParams.pageSettled || "1", 10);
-    // const pageNotSettled = parseInt(searchParams.pageNotSettled|| "1", 10);
 
     const searchParams = useSearchParams();
     const page = parseInt(searchParams.get("page") || "1", 10);
@@ -33,8 +27,7 @@ export default function CreditNotes() {
     const [totalCreditNotes, setTotalCreditNotes] = useState<number>(0)
     const [totalSettledCreditNotes, setTotalSettledCreditNotes] = useState<number>(0)
     const [totalNotSettledCreditNotes, setTotalNotSettledCreditNotes] = useState<number>(0)
-    // const for the modal
-    // const [isOpen, setIsOpen] = useState(false);
+
 
     useEffect(() => {
         const loadCreditNotes = async () => {

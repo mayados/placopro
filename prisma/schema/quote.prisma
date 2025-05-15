@@ -35,7 +35,7 @@ model Quote{
     travelCosts Float @default(0)
 
     // Type de frais de déplacement (forfait unique / journalier...)
-    travelCostsType String?
+    travelCostsType QuoteTravelCostsTypeEnum @default(NONE)
     // Conditions de paiement
     paymentTerms String 
     // Délais de paiement (ex. : 30 jours)
@@ -55,7 +55,7 @@ model Quote{
     author String?
     updatedAt DateTime?
     modifiedBy String?
-    discountReason QuoteDiscountReasonEnum?
+    discountReason QuoteDiscountReasonEnum @default(NONE)
     // global discount HT amount
     discountAmount Float? @default(0) 
 
@@ -99,4 +99,10 @@ enum QuoteStatusEnum {
 enum QuoteDiscountReasonEnum {
     FIDELITY
     EXCEPTIONAL
+    NONE
+}
+
+enum QuoteTravelCostsTypeEnum {
+    UNIQUE
+    NONE
 }

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { updateClassicQuoteSchema } from "@/validation/quoteValidation";
 import { sanitizeData } from "@/lib/sanitize"; 
 import { currentUser } from "@clerk/nextjs/server";
+import { QuoteStatusEnum, WorkSiteStatusEnum } from "@prisma/client";
 
 export async function PUT(req: NextRequest, {params}: {params: {quoteSlug: string}}) {
   const resolvedParams = await params;
@@ -79,26 +80,50 @@ export async function PUT(req: NextRequest, {params}: {params: {quoteSlug: strin
       return new NextResponse("No data to update", { status: 400 });
     }
 
-    // Update in database
-    const updatedQuote = await db.quote.update({
+  const result = await db.$transaction(async (tx) => {
+    const updatedQuote = await tx.quote.update({
       where: { slug: quoteSlug },
       data: {
         ...updateData,
-        updatedAt : new Date().toISOString(),
-        modifiedBy: user?.id
+        updatedAt: new Date().toISOString(),
+        modifiedBy: user?.id,
       },
       include: {
-        client: true, 
+        client: true,
         workSite: true,
-        services: {
-          include: {
-            service: true, 
-          },
-        },
+        services: { include: { service: true } },
       },
     });
 
-    return NextResponse.json(updatedQuote);
+    // If the quote is Accepted and if the client is a prospect, we convert him as a client
+  if (
+    sanitizedData.status === QuoteStatusEnum.ACCEPTED &&
+    updatedQuote.clientId !== null &&
+    updatedQuote.client?.status === "PROSPECT"
+  ) {
+    await tx.client.update({
+      where: { id: updatedQuote.clientId },
+      data: {
+        status: "CLIENT",
+        convertedAt: new Date(),
+      },
+    });
+  }
+
+  // 3) Passage du chantier lié au devis en status COMMING
+  if (sanitizedData.status === QuoteStatusEnum.ACCEPTED && updatedQuote.workSiteId) {
+    await tx.workSite.update({
+      where: { id: updatedQuote.workSiteId },
+      data: {
+        status: WorkSiteStatusEnum.COMING,
+      },
+    });
+  }
+
+    return updatedQuote;
+  });
+
+  return NextResponse.json(result);
   } catch (error) {
     console.error("Error with quote's update:", error);
     return new NextResponse("Internal error", { status: 500 });

@@ -1,7 +1,8 @@
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { currentUser } from '@clerk/nextjs/server'
-import { BillStatusEnum, ClientOrProspectEnum, QuoteStatusEnum, UserRoleEnum, WorkSiteStatusEnum } from "@prisma/client";
+import { BillStatusEnum, ClientOrProspectEnum, QuoteStatusEnum, WorkSiteStatusEnum } from "@prisma/client";
+import { clerkClient} from "@clerk/express";
 
 
 
@@ -54,11 +55,12 @@ export async function GET() {
             },
         });
 
-        const employees: number = await db.user.count({ 
-            where: {
-                role: UserRoleEnum.EMPLOYEE,
-            },
-        });
+    const allUserResponse = await clerkClient.users.getUserList();
+    const allUsers = allUserResponse.data;
+    const employees = allUsers.map(
+        (u: GetUserType) => u.publicMetadata?.role === "EMPLOYEE"
+    );
+    const countEmployees = employees.length;
 
 
           
@@ -69,7 +71,7 @@ export async function GET() {
             quotes: quotes,
             workSites: workSites,
             clients: clients,
-            employees: employees
+            employees: countEmployees
         })
 
     } catch (error) {
