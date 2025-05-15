@@ -414,7 +414,7 @@ const LIMIT = 15;
                       <td className="px-3 py-2">{bill.status}</td>
                       <td className="px-3 py-2">
                         <Link
-                          href={`/director/bills/${bill?.slug}`}
+                          href={`/intranet/common-intranet/bills/${bill?.slug}`}
                           className="text-[#1873BF] underline hover:text-[#FDA821]"
                         >
                           Consulter les détails
