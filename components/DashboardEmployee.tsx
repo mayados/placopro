@@ -12,15 +12,15 @@ import PlanningEmployee from "./PlanningEmployee";
 // } from "@fortawesome/free-solid-svg-icons";
 
 type EmployeeDashboardDatas = {
-  workSites: [],
-  plannings: []
+  workSites: WorkSiteType[],
+  plannings: PlanningType[]
 };
 
 interface EmployeeDashboardProps {
   datas: EmployeeDashboardDatas;
 }
 
-export default function DirectorDashboard({
+export default function DashboardEmployee({
   datas,
 }: EmployeeDashboardProps) {
   const {
