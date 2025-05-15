@@ -1,5 +1,5 @@
 // /validation/billValidation.ts
-import { QuoteDiscountReasonEnum } from '@prisma/client';
+import { QuoteDiscountReasonEnum, QuoteTravelCostsTypeEnum } from '@prisma/client';
 import { z } from 'zod';
 
 // Transformation of string into Date with personnalized message (Because when retrieving Date in JSON in API route they became string)
@@ -112,9 +112,9 @@ export const createQuoteFinalSchema = z.object({
   travelCosts: z.preprocess(
     (val) => Number(val),
     z.number()
-      .min(1, { message: "Le montant de frais de déplacement est requis" })
+      .nullable()
   ),
-  travelCostsType: z.string().min(1, "Le type de frais de déplacement est requis"),
+  travelCostsType: z.nativeEnum(QuoteTravelCostsTypeEnum),
   depositAmount: z.preprocess(
     (val) => Number(val),
     z.number()
@@ -123,7 +123,7 @@ export const createQuoteFinalSchema = z.object({
   discountAmount: z.preprocess(
     (val) => Number(val),
     z.number()
-      .min(1, { message: "Le montant de réduction est requis" })
+      .nullable()
   ),
   discountReason: z.nativeEnum(QuoteDiscountReasonEnum).nullable().optional(),
   paymentTerms: z.string().min(10, "Les conditions de paiement sont requises"),
