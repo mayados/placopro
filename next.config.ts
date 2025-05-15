@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  experimental: {
+    nodeMiddleware: true,
+  },
+  // ...autres options éventuelles
 };
 
-export default nextConfig;
+export default nextConfig
