@@ -1,30 +1,22 @@
 import React from "react";
-import jsPDF from "jspdf";
-// import autoTable from 'jspdf-autotable'
-import 'jspdf-autotable'
-import { formatDate } from '@/lib/utils'
-import { UserOptions } from 'jspdf-autotable';
-
-
-interface jsPDFCustom extends jsPDF {
-  autoTable: (options: UserOptions) => void;
-}
+import { jsPDF } from "jspdf";
+import autoTable from 'jspdf-autotable';
+import { formatDate } from '@/lib/utils';
 
 interface DownloadBillPDFProps {
-  bill: BillType; 
-  company: CompanyType; 
-  vatAmountTravelCost: number; 
+  bill: BillType;
+  company: CompanyType;
+  vatAmountTravelCost: number;
   priceTTCTravelCost: number;
 }
 
-
 const DownloadBillPDF: React.FC<DownloadBillPDFProps> = ({ bill, company, vatAmountTravelCost, priceTTCTravelCost }) => {
   const generatePDF = () => {
-    const doc = new jsPDF() as jsPDFCustom;
-    
+    const doc = new jsPDF();
+
     // Title
     doc.setFontSize(18);
-    doc.text(`Devis ${bill?.number}`, 105, 20, { align: "center" });
+    doc.text(`Facture ${bill?.number}`, 105, 20, { align: "center" });
 
     // Emetteur section
     doc.setFontSize(14);
@@ -51,7 +43,6 @@ const DownloadBillPDF: React.FC<DownloadBillPDFProps> = ({ bill, company, vatAmo
     doc.text(`Date de fin  : ${formatDate(bill.workEndDate)}`, 10, 95);
     doc.text(`Durée de travaux  : ${bill?.workDuration}`, 10, 100);
 
-
     // Services Table
     const servicesData = bill?.services.map(service => [
       `${service.service.label} - ${service.service.type}`,
@@ -63,17 +54,25 @@ const DownloadBillPDF: React.FC<DownloadBillPDFProps> = ({ bill, company, vatAmo
       `${service.totalHT} €`,
       `${service.totalTTC} €`,
     ]);
-    // Variable pour récupérer la position du dernier tableau
+
     let lastY = 10;
 
-    doc.autoTable({
-      startY: 100,
+    // Services Table using autoTable
+    autoTable(doc, {
+      startY: 110,
       head: [["Service", "Description", "Quantité", "Prix Unitaire", "TVA", "Montant TVA", "Prix HT", "Prix TTC"]],
       body: servicesData,
+      margin: { top: 10 },  // Add margin for spacing
+      didDrawPage: (data) => {
+        if (data.cursor?.y !== undefined) {
+          lastY = data.cursor.y;
+        }
+      },
     });
 
-    // Travel costs
-    doc.autoTable({
+    // Travel costs table
+    autoTable(doc, {
+      startY: lastY + 10,
       head: [["Frais de déplacement HT", "Type de forfait", "TVA", "Montant TVA", "Frais TTC"]],
       body: [
         [
@@ -84,44 +83,43 @@ const DownloadBillPDF: React.FC<DownloadBillPDFProps> = ({ bill, company, vatAmo
           `${priceTTCTravelCost} €`,
         ],
       ],
+      margin: { top: 10 },
       didDrawPage: (data) => {
-        // `data.cursor.y` donne la position Y du dernier tableau après son rendu
-        // Assurez-vous que data.cursor est défini avant d'assigner à lastY
-        if (data?.cursor?.y !== undefined) {
+        if (data.cursor?.y !== undefined) {
           lastY = data.cursor.y;
         }
       },
     });
 
-    // Total bill cost
-    doc.autoTable({
+    // Total Bill cost table
+    autoTable(doc, {
+      startY: lastY + 10,
       head: [["Total HT", "Montant total TVA", "Total TTC"]],
       body: [
         [`${bill?.totalHt} €`, `${bill?.vatAmount} €`, `${bill?.totalTtc} €`],
       ],
+      margin: { top: 10 },
       didDrawPage: (data) => {
-        // `data.cursor.y` donne la position Y du dernier tableau après son rendu
-        // Assurez-vous que data.cursor est défini avant d'assigner à lastY
-        if (data?.cursor?.y !== undefined) {
+        if (data.cursor?.y !== undefined) {
           lastY = data.cursor.y;
         }
       },
     });
 
-    // Footer (conditions, etc.)
+    // Footer
     doc.setFontSize(12);
-    doc.text(`Devis créé le : ${formatDate(bill.issueDate)}`, 10, lastY + 20);
-    doc.text(`Valable jusqu'au : ${formatDate(bill.dueDate)}`, 10, lastY + 25);
-    doc.text(`Accompte demandé : ${bill?.quote.depositAmount} %`, 10, lastY + 30);
+    doc.text(`Factue créée le : ${formatDate(bill.issueDate)}`, 10, lastY + 20);
+    doc.text(`Date limite de paiement : ${formatDate(bill.dueDate)}`, 10, lastY + 25);
+    doc.text(`Accompte demandé au devis : ${bill?.quote.depositAmount} %`, 10, lastY + 30);
 
-    // Download PDF : name of the file
-    doc.save(`Devis_${bill?.number}.pdf`);
+    // Save PDF
+    doc.save(`Facture_${bill?.number}.pdf`);
   };
 
   return (
     <div>
       <button onClick={generatePDF} className="btn btn-primary">
-        Télécharger le devis
+        Télécharger la facture
       </button>
     </div>
   );
