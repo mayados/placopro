@@ -1,18 +1,12 @@
-import { clerkMiddleware } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextApiRequest } from "next";
+import { NextRequest, NextResponse } from "next/server";
 
-export const middleware = clerkMiddleware(async (auth, req) => {
-  try {
-    const { userId } = await auth();
-    console.log("✅ auth() ok :", userId);
-  } catch (err) {
-    console.error("❌ auth() failed", err);
-  }
-
+export function middleware(req: NextRequest) {
+  console.log("✅ middleware simple fonctionne :", req.nextUrl.pathname);
   return NextResponse.next();
-});
+}
 
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
-  runtime: "nodejs",
+  runtime: "nodejs", // très important
 };
