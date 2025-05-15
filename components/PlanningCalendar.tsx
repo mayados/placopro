@@ -128,7 +128,7 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId, 
 
     await fetch(`/api/plannings/${updatedEvent.id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
       body: JSON.stringify(updatedEvent),
     });
 

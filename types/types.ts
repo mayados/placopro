@@ -1164,6 +1164,6 @@ interface SecretaryDashboardDatas{
 }
   
 interface EmployeeDashboardDatas{
-    workSites: [],
-    plannings: []
+    workSites: WorkSiteType[],
+    plannings: PlanningType[]
 }

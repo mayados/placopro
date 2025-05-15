@@ -80,7 +80,7 @@ export default function Home() {
                             Professionnel et humain, les qualités d&apos;un bon artisan.
                         </p>
                         <Link
-                            href="/"
+                            href="/public/contact"
                             className={`
           inline-block
 
@@ -90,7 +90,7 @@ export default function Home() {
           md:bg-primary md:text-white
         `}
                         >
-                            Estimer mon devis
+                            Contactez-nous
                         </Link>
                     </div>
                 </div>
@@ -194,7 +194,7 @@ export default function Home() {
                 <div className="text-center flex text-black items-center justify-center gap-3">
                     <p>Explorez nos réalisations</p>
                     <Link
-                        href=""
+                        href="/public/realisations"
                         className="py-2 px-3 bg-secondary rounded text-custom-gray hover:bg-secondary/90 transition"
                     >
                         Consulter

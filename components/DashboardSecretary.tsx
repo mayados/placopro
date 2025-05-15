@@ -34,7 +34,7 @@ export default function DirectorDashboard({
   } = datas;
 
   return (
-    <main className="p-4 space-y-12">
+    <div className="p-4 space-y-12">
       {/* Page title */}
       <h1 className="text-2xl font-bold text-primary text-center">
         Tableau de bord secrétaire
@@ -110,6 +110,6 @@ export default function DirectorDashboard({
         </div>
       </section>
 
-    </main>
+    </div>
   );
 }

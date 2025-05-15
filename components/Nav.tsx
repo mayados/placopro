@@ -76,9 +76,9 @@ const Nav: React.FC<NavProps> = ({ logo }) => {
             <li><Link href="/public/prestations/peinture" className="block px-4 py-2 hover:bg-slate-600">Peinture</Link></li>
           </ul>
         </li>
-        <li><Link href="/" className="hover:text-gray-400 transition">Réalisations</Link></li>
+        <li><Link href="/public/realisations" className="hover:text-gray-400 transition">Réalisations</Link></li>
 
-        <li><Link href="public/contact" className="hover:text-gray-400 transition">Contact</Link></li>
+        <li><Link href="/public/contact" className="hover:text-gray-400 transition">Contact</Link></li>
 
       </ul>
     </nav>

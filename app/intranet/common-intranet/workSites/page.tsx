@@ -5,12 +5,13 @@ export const metadata = {
   },
 };
 
+import LoadingSpinner from "@/components/LoadingSpinner";
 import WorkSites from "@/components/WorkSites";
 import { Suspense } from "react";
 
 export default function Page() {
   return (
-    <Suspense fallback={<div>Chargement des données...</div>}>
+    <Suspense fallback={<LoadingSpinner />}>
 
       <WorkSites />
     </Suspense>
