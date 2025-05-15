@@ -6,15 +6,16 @@ export const metadata = {
 };
 
 import Bills from "@/components/Bills";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { Suspense } from "react";
 
 export default function Page() {
 
-    return (
-      <Suspense fallback={<div>Chargement des données...</div>}>
-  
-        <Bills />
-      </Suspense>
-    )
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+
+      <Bills />
+    </Suspense>
+  )
 
 }

@@ -1,13 +1,7 @@
 import React from "react";
-import jsPDF from "jspdf";
-import 'jspdf-autotable'
-import { formatDate } from '@/lib/utils'
-import { UserOptions } from 'jspdf-autotable';
-
-
-interface jsPDFCustom extends jsPDF {
-  autoTable: (options: UserOptions) => void;
-}
+import { jsPDF } from "jspdf"; // Changement d'import
+import autoTable from "jspdf-autotable"; // Import spécifique pour autoTable
+import { formatDate } from '@/lib/utils';
 
 interface DownloadQuotePDFProps {
   quote: QuoteType; 
@@ -18,8 +12,8 @@ interface DownloadQuotePDFProps {
 
 const DownloadQuotePDF: React.FC<DownloadQuotePDFProps> = ({ quote, company, vatAmountTravelCost, priceTTCTravelCost }) => {
   const generatePDF = () => {
-    const doc = new jsPDF() as jsPDFCustom;
-    
+    const doc = new jsPDF();  // Pas besoin du cast ici
+
     // Title
     doc.setFontSize(18);
     doc.text(`Devis ${quote?.number}`, 105, 20, { align: "center" });
@@ -49,7 +43,6 @@ const DownloadQuotePDF: React.FC<DownloadQuotePDFProps> = ({ quote, company, vat
     doc.text(`Date de fin estimée : ${formatDate(quote.estimatedWorkEndDate)}`, 10, 95);
     doc.text(`Durée de travaux estimée : ${quote?.estimatedWorkDuration}`, 10, 100);
 
-
     // Services Table
     const servicesData = quote?.services.map(service => [
       `${service.service.label} - ${service.service.type}`,
@@ -62,17 +55,16 @@ const DownloadQuotePDF: React.FC<DownloadQuotePDFProps> = ({ quote, company, vat
       `${service.totalTTC} €`,
     ]);
 
-    // Variable pour récupérer la position du dernier tableau
     let lastY = 10;
 
-    doc.autoTable({
+    autoTable(doc, { // Utilisation de autoTable comme fonction externe
       startY: 100,
       head: [["Service", "Description", "Quantité", "Prix Unitaire", "TVA", "Montant TVA", "Prix HT", "Prix TTC"]],
       body: servicesData,
     });
 
     // Travel costs
-    doc.autoTable({
+    autoTable(doc, {
       head: [["Frais de déplacement HT", "Type de forfait", "TVA", "Montant TVA", "Frais TTC"]],
       body: [
         [
@@ -84,8 +76,6 @@ const DownloadQuotePDF: React.FC<DownloadQuotePDFProps> = ({ quote, company, vat
         ],
       ],
       didDrawPage: (data) => {
-        // `data.cursor.y` donne la position Y du dernier tableau après son rendu
-        // Assurez-vous que data.cursor est défini avant d'assigner à lastY
         if (data?.cursor?.y !== undefined) {
           lastY = data.cursor.y;
         }
@@ -93,14 +83,12 @@ const DownloadQuotePDF: React.FC<DownloadQuotePDFProps> = ({ quote, company, vat
     });
 
     // Total Quote cost
-    doc.autoTable({
+    autoTable(doc, {
       head: [["Total HT", "Montant total TVA", "Total TTC"]],
       body: [
         [`${quote?.priceHT} €`, `${quote?.vatAmount} €`, `${quote?.priceTTC} €`],
       ],
       didDrawPage: (data) => {
-        // `data.cursor.y` donne la position Y du dernier tableau après son rendu
-        // Assurez-vous que data.cursor est défini avant d'assigner à lastY
         if (data?.cursor?.y !== undefined) {
           lastY = data.cursor.y;
         }
@@ -125,6 +113,5 @@ const DownloadQuotePDF: React.FC<DownloadQuotePDFProps> = ({ quote, company, vat
     </div>
   );
 };
-
 
 export default DownloadQuotePDF;
