@@ -6,10 +6,11 @@ export const metadata = {
 };
 import { Suspense } from "react";
 import CreditNotes from "@/components/CreditNotes";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function Page() {
   return (
-    <Suspense fallback={<div>Chargement des données...</div>}>
+    <Suspense fallback={<LoadingSpinner />}>
 
       <CreditNotes />
     </Suspense>

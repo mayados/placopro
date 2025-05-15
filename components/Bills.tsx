@@ -11,6 +11,7 @@ import { Pagination } from "@/components/Pagination";
 import Button from "@/components/Button";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useSearchParams } from "next/navigation";
+import LoadingSpinner from "./LoadingSpinner";
 
 const LIMIT = 15;
 
@@ -118,7 +119,7 @@ const LIMIT = 15;
         return null; 
     };
     if (isLoading) {
-        return <div>Loading...</div>;  // Display loading state while fetching data
+        return <LoadingSpinner />;  // Display loading state while fetching data
     }
 
   return (
