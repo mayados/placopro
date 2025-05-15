@@ -76,7 +76,6 @@ interface ClientFormValueType{
     postalCode:string,
     city: string,
     additionalAddress: string | null,
-    prospectNumber: string | null,
 }
 
 interface CompanyTypeSingle{
