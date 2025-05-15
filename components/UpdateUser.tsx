@@ -7,6 +7,7 @@ import { fetchEmployee, updateUser } from "@/services/api/userService";
 import { updateUserSchema } from "@/validation/userValidation";
 import { toast } from 'react-hot-toast';
 import Breadcrumb from "@/components/BreadCrumb";
+import { UserRoleEnum } from "@prisma/client";
 
 type UpdateUserProps = {
     csrfToken: string;
@@ -17,7 +18,7 @@ export default function UpdateUser({csrfToken, employeeSlug}: UpdateUserProps){
 
     const [employee, setEmployee] = useState<UserType | null>(null);
     // Define options for select
-    const roleChoices = ["employé","directeur","secrétaire"];
+    const roleChoices = [UserRoleEnum.EMPLOYEE,UserRoleEnum.DIRECTOR,UserRoleEnum.SECRETARY];
     const router = useRouter();
     const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
     
