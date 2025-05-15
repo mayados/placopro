@@ -10,8 +10,9 @@ export const createClientSchema = z.object({
     addressNumber: z.string().min(1, "Le numéro de bâtiment est requis"),
     postalCode: z.string().min(5, "Le code postal est requis"),
     city: z.string().min(1, "La ville est requise"),
-    additionalAddress: z.string().min(1, "Le complément d'adresse est requis"),
+    additionalAddress: z.string().nullable(),
     mail: z.string().min(1, "L'email est requis").email("Format d'email invalide"),
+    
 
 })
 
