@@ -180,6 +180,7 @@ import { CsrfError, createCsrfProtect } from '@edge-csrf/nextjs';
 import { hasRole } from '@/lib/clerk_utils';
 import { NextResponse } from "next/server";
 import jwt,{ JwtPayload } from 'jsonwebtoken';
+import { UserRoleEnum } from "@prisma/client";
 // import { csrfMiddleware } from "./lib/csrf";
 
 const ALLOWED_ORIGINS = [
@@ -358,23 +359,23 @@ if (userId && (isForConnectedUsersApiRoute(req) || isForConnectedUsersPage(req))
     return new NextResponse(JSON.stringify({ error: "Access Forbidden" }), { status: 403 });
   }
 
-  if (isDirectorApiRoute(req) && role !== 'directeur') {
+  if (isDirectorApiRoute(req) && role !== UserRoleEnum.DIRECTOR) {
     return new NextResponse(JSON.stringify({ error: "Access Forbidden" }), { status: 403 });
   }
 
-  if (isSecretaryOrDirectorApiRoute(req) && !hasRole(payload, ['directeur', 'secretaire'])) {
+  if (isSecretaryOrDirectorApiRoute(req) && !hasRole(payload, [UserRoleEnum.DIRECTOR, UserRoleEnum.SECRETARY])) {
     return new NextResponse(JSON.stringify({ error: "Access Forbidden" }), { status: 403 });
   }
 
-  if (isSecretaryOrDirectorPage(req) && !hasRole(payload, ['directeur', 'secretaire'])) {
+  if (isSecretaryOrDirectorPage(req) && !hasRole(payload, [UserRoleEnum.DIRECTOR, UserRoleEnum.SECRETARY])) {
     return NextResponse.redirect(new URL('/403', req.url));
   }
 
-  if (isDirectorPage(req) && role !== 'directeur') {
+  if (isDirectorPage(req) && role !== UserRoleEnum.DIRECTOR) {
     return NextResponse.redirect(new URL('/403', req.url));
   }
 
-  if (isEmployeePage(req) && role !== 'employe') {
+  if (isEmployeePage(req) && role !== UserRoleEnum.EMPLOYEE) {
     return NextResponse.redirect(new URL('/403', req.url));
   }
 

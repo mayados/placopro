@@ -3,6 +3,7 @@ import { useUser } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { UserRoleEnum } from '@prisma/client';
 
 export default function PostLoginRedirect() {
   const { user, isLoaded } = useUser();
@@ -16,11 +17,11 @@ export default function PostLoginRedirect() {
 
     // Redirect after user datas were retrieved
 
-    if (role === 'directeur') {
+    if (role === UserRoleEnum.DIRECTOR) {
       router.push('/intranet/director');
-    } else if (role === 'secretaire') {
+    } else if (role === UserRoleEnum.SECRETARY) {
       router.push('/intranet/secretary');
-    } else if (role === 'employe') {
+    } else if (role === UserRoleEnum.EMPLOYEE) {
       router.push('/intranet/employee');
     } else {
       router.push('/');
