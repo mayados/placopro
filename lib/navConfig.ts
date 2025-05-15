@@ -20,7 +20,7 @@ import {
       children?: { label: string; href: string }[];
     }[];
   } = {
-    directeur: [
+    DIRECTOR: [
       { label: 'Dashboard', icon: faClipboardList, href: '/intranet/director' },
 
       { label: 'To do list', icon: faClipboardList, href: '/intranet/common-intranet/toDo' },
@@ -63,13 +63,13 @@ import {
       { label: 'Avoirs', icon: faFileContract, href: '/intranet/common-intranet/creditNotes' },
       { label: 'Calculer un temps de trajet', icon: faHourglassHalf, href: '/intranet/common-intranet/travel' },
     ],
-    employe: [
+    EMPLOYEE: [
       { label: 'Dashboard', icon: faClipboardList, href: '/intranet/employee' },
       { label: 'Planning', icon: faCalendarDays, href: '/intranet/employee/planning' },
       { label: 'Mes chantiers', icon: faHammer, href: '/intranet/employee/workSites' },
       { label: 'Calculer un temps de trajet', icon: faHourglassHalf, href: '/intranet/common-intranet/travel' },
     ],
-    secretaire: [
+    SECRETARY: [
       { label: 'Dashboard', icon: faClipboardList, href: '/intranet/secretary' },
 
         { label: 'To do list', icon: faClipboardList, href: '/intranet/common-intranet/toDo' },
