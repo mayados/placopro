@@ -19,11 +19,7 @@ const LIMIT = 15;
 
   export default function Bills() {
   
-    // const page = parseInt(searchParams.page || "1", 10);
-    // const pageReadyToBeSent = parseInt(searchParams.pageReadyToBeSent || "1", 10);
-    // const pageSent = parseInt(searchParams.pageSent || "1", 10);
-    // const pageDraft = parseInt(searchParams.pageDraft || "1", 10);
-    // const pageCanceled = parseInt(searchParams.pageCanceled || "1", 10);
+
     const searchParams = useSearchParams();
     const page = parseInt(searchParams.get("page") || "1", 10);
     const pageReadyToBeSent = parseInt(searchParams.get("pageReadyToBeSent") || "1", 10);
@@ -124,240 +120,6 @@ const LIMIT = 15;
 
   return (
 
-    // <>
-
-
-    //         <section className="flex-[8] px-4 py-6 bg-[#F5F5F5] rounded-md shadow-sm">
-    //             <header className="mb-6">
-    //           <h1 className="text-3xl font-bold text-[#1873BF] text-center mb-2">Factures</h1>
-    //         </header>
-    //             <TabGroup className="w-full">
-    //                 <TabList className="flex flex-wrap justify-center gap-3 mb-6">
-    //                     <Tab className="text-base font-medium text-[#637074] data-[selected]:bg-[#1873BF] data-[selected]:text-white data-[hover]:bg-[#1873BF]/80 py-2 px-4 rounded-md">Tous ({totalBills})</Tab>
-    //                     <Tab className="text-base font-medium text-[#637074] data-[selected]:bg-[#1873BF] data-[selected]:text-white data-[hover]:bg-[#1873BF]/80 py-2 px-4 rounded-md">Brouillons ({totalDraftBills})</Tab>
-    //                     <Tab className="text-base font-medium text-[#637074] data-[selected]:bg-[#1873BF] data-[selected]:text-white data-[hover]:bg-[#1873BF]/80 py-2 px-4 rounded-md">Prêtes à l&apos;envoi ({totalReadyToBeSentBills})</Tab>
-    //                     <Tab className="text-base font-medium text-[#637074] data-[selected]:bg-[#1873BF] data-[selected]:text-white data-[hover]:bg-[#1873BF]/80 py-2 px-4 rounded-md">Envoyées ({totalSentBills})</Tab>
-    //                     <Tab className="text-base font-medium text-[#637074] data-[selected]:bg-[#1873BF] data-[selected]:text-white data-[hover]:bg-[#1873BF]/80 py-2 px-4 rounded-md">Annulées ({totalCanceledBills})</Tab>
-    //                 </TabList>
-    //                 <TabPanels>
-                        
-    //                     {/* All */}
-    //                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
-    //                         <table className="table-auto">
-    //                             <thead>
-    //                                 <tr>
-    //                                     <th>N° de facture</th>
-    //                                     <th>Client</th>
-    //                                     <th>Date d&apos;émission</th>
-    //                                     <th>Date d&apos;échéance</th>
-    //                                     <th>Statut</th>
-    //                                     <th>Afficher</th>
-    //                                 </tr>  
-    //                             </thead>
-    //                             <tbody>
-    //                             {
-    //                                 bills.map((bill) => {
-    //                                     console.log("date :"+bill.issueDate)
-                                    
-    //                                 return (
-    //                                     <tr key={bill.id}>
-    //                                         <td>{bill.number}</td>
-    //                                         <td>{bill.client.name}</td>
-    //                                         <td>{formatDate(bill.issueDate)}</td>
-    //                                         <td>{formatDate(bill.dueDate)}</td>
-    //                                         <td>{bill.status}</td>
-    //                                         <td>Afficher</td>
-    //                                         <td>
-    //                                             <Link href={`/director/bills/${bill?.slug}`}>
-    //                                                 Consulter les détails
-    //                                             </Link>
-    //                                         </td>
-    //                                     </tr>
-    //                                 );
-    //                                 })
-    //                             }
-    //                             </tbody>
-    //                         </table> 
-    //                         {renderPagination(totalBills, "page")}
-    
-    //                     </TabPanel>
-    //                     {/* Drafts */}
-    //                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
-    //                         <table className="table-auto">
-    //                             <thead>
-    //                                 <tr>
-    //                                     <th>N° de facture</th>
-    //                                     <th>Client</th>
-    //                                     <th>Date d&apos;émission</th>
-    //                                     <th>Date d&apos;échéance</th>
-    //                                     <th>Statut</th>
-    //                                     <th>Afficher</th>
-    //                                 </tr>  
-    //                             </thead>
-    //                             <tbody>
-    //                             {
-    //                                 draftBills.map((bill) => {
-                                    
-    //                                 return (
-    //                                     <tr key={bill.id}>
-    //                                         <td>{bill.number}</td>
-    //                                         <td>{bill.client.name}</td>
-    //                                         <td>{formatDate(bill?.issueDate)}</td>
-    //                                         <td>{formatDate(bill.dueDate)}</td>
-    //                                         <td>
-    //                                             <Link href={`/director/bills/${bill?.slug}`}>
-    //                                                 Consulter les détails
-    //                                             </Link>
-    //                                         </td>
-    //                                         <td>
-    //                                             <Link href={`/director/bills/${bill?.slug}/update`}>
-    //                                                 Modifier
-    //                                             </Link>
-    //                                         </td>
-    //                                         <td>
-    //                                         <Button label="Remove" icon={faXmark} type="button" action={() => openDeleteDialog(bill.id)} specifyBackground="text-red-500" />
-    //                                         </td>
-    //                                     </tr>
-    //                                 );
-    //                                 })
-    //                             }
-    //                             </tbody>
-    //                         </table>   
-    //                         {renderPagination(totalDraftBills, "page")}
-    
-    //                     </TabPanel>
-    //                     {/* Ready */}
-    //                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
-    //                         <table className="table-auto">
-    //                             <thead>
-    //                                 <tr>
-    //                                     <th>N° de facture</th>
-    //                                     <th>Client</th>
-    //                                     <th>Date d&apos;émission</th>
-    //                                     <th>Date d&apos;échéance</th>
-    //                                     <th>Statut</th>
-    //                                     <th>Afficher</th>
-    //                                 </tr>  
-    //                             </thead>
-    //                             <tbody>
-    //                             {
-    //                                 readyToBeSentBills.map((bill) => {
-                                    
-    //                                 return (
-    //                                     <tr key={bill.id}>
-    //                                         <td>{bill.number}</td>
-    //                                         <td>{bill.client.name}</td>
-    //                                         <td>{formatDate(bill?.issueDate)}</td>
-    //                                         <td>{formatDate(bill.dueDate)}</td>
-    //                                         <td>Afficher</td>
-    //                                         <td>
-    //                                             <Link href={`/director/bills/${bill?.slug}`}>
-    //                                                 Consulter les détails
-    //                                             </Link>
-    //                                         </td>
-    //                                     </tr>
-    //                                 );
-    //                                 })
-    //                             }
-    //                             </tbody>
-    //                         </table>  
-    //                         {renderPagination(totalReadyToBeSentBills, "page")}
-    
-    //                     </TabPanel>
-    //                     {/* Sent */}
-    //                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
-    //                         <table className="table-auto">
-    //                             <thead>
-    //                                 <tr>
-    //                                     <th>N° de facture</th>
-    //                                     <th>Client</th>
-    //                                     <th>Date d&apos;émission</th>
-    //                                     <th>Date d&apos;échéance</th>
-    //                                     <th>Statut</th>
-    //                                     <th>Afficher</th>
-    //                                 </tr>  
-    //                             </thead>
-    //                             <tbody>
-    //                             {
-    //                                 sentBills.map((bill) => {
-                                    
-    //                                 return (
-    //                                     <tr key={bill.id}>
-    //                                         <td>{bill.number}</td>
-    //                                         <td>{bill.client.name}</td>
-    //                                         <td>{formatDate(bill?.issueDate)}</td>
-    //                                         <td>{formatDate(bill.dueDate)}</td>
-    //                                         <td>Afficher</td>
-    //                                         <td>
-    //                                             <Link href={`/director/bills/${bill?.slug}`}>
-    //                                                 Consulter les détails
-    //                                             </Link>
-    //                                         </td>
-    //                                     </tr>
-    //                                 );
-    //                                 })
-    //                             }
-    //                             </tbody>
-    //                         </table>   
-    //                         {renderPagination(totalSentBills, "page")}
-    
-    //                     </TabPanel>
-    //                     {/* Canceled */}
-    //                     <TabPanel className="flex flex-row gap-5 flex-wrap justify-center lg:justify-between">
-    //                         <table className="table-auto">
-    //                             <thead>
-    //                                 <tr>
-    //                                     <th>N° de facture</th>
-    //                                     <th>Client</th>
-    //                                     <th>Date d&apos;émission</th>
-    //                                     <th>Date d&apos;échéance</th>
-    //                                     <th>Statut</th>
-    //                                     <th>Afficher</th>
-    //                                 </tr>  
-    //                             </thead>
-    //                             <tbody>
-    //                             {
-    //                                 canceledBills.map((bill) => {
-                                    
-    //                                 return (
-    //                                     <tr key={bill.id}>
-    //                                         <td>{bill.number}</td>
-    //                                         <td>{bill.client.name}</td>
-    //                                         <td>{formatDate(bill?.issueDate)}</td>
-    //                                         <td>{formatDate(bill.dueDate)}</td>
-    //                                         <td>
-    //                                             <Link href={`/director/bills/${bill?.slug}`}>
-    //                                                 Consulter les détails
-    //                                             </Link>
-    //                                         </td>
-    //                                     </tr>
-    //                                 );
-    //                                 })
-    //                             }
-    //                             </tbody>
-    //                         </table>  
-    //                         {renderPagination(totalCanceledBills, "page")}
-    
-    //                     </TabPanel>
-    //                 </TabPanels>
-    //             </TabGroup>  
-    //         </section>  
-    //         {/* Delete quote Dialog */}
-    //         {isOpen && billToDelete && (
-    //         <Dialog open={isOpen} onClose={closeDeleteDialog} className="absolute top-[50%] left-[25%]" >
-    //             <DialogPanel className="bg-gray-300 p-5 rounded-md shadow-lg text-black">
-    //             <DialogTitle>Supprimer la facture</DialogTitle>
-    //             <Description>Cette action est irréversible</Description>
-    //             <p>Etes-vous sûr de vouloir supprimer cette facture ? Toutes ses données seront supprimées de façon permanente. Cette action est irréversible.</p>
-    //                 <div className="flex justify-between mt-4">
-    //                     <button onClick={() => handleDelete(billToDelete)} className="bg-red-600 text-white px-4 py-2 rounded-md">Delete</button>
-    //                     <button onClick={closeDeleteDialog} className="bg-gray-300 text-black px-4 py-2 rounded-md">Cancel</button>
-    //                 </div>
-    //             </DialogPanel>
-    //         </Dialog>
-    //             )}   
-
-    // </>
 <>
   <div className="w-full px-4 py-6 bg-[#F5F5F5] rounded-md shadow-sm">
     <section className="flex-[8]">
@@ -414,7 +176,7 @@ const LIMIT = 15;
                       <td className="px-3 py-2">{bill.status}</td>
                       <td className="px-3 py-2">
                         <Link
-                          href={`/director/bills/${bill?.slug}`}
+                          href={`/intranet/common-intranet/bills/${bill?.slug}`}
                           className="text-[#1873BF] underline hover:text-[#FDA821]"
                         >
                           Consulter les détails
@@ -424,7 +186,7 @@ const LIMIT = 15;
                         <>
                           <td className="px-3 py-2">
                             <Link
-                              href={`/director/bills/${bill?.slug}/update`}
+                              href={`/intranet/common-intranet/bills/${bill?.slug}/update`}
                               className="text-[#FDA821] underline hover:text-[#1873BF]"
                             >
                               Modifier
