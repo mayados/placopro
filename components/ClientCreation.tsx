@@ -24,7 +24,6 @@ export default function ClientCreation({csrfToken}: ClientCreationProps){
         postalCode: "",
         city: "",
         additionalAddress: "",
-        prospectNumber: "",
     })
     const router = useRouter();
     const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
@@ -43,16 +42,7 @@ export default function ClientCreation({csrfToken}: ClientCreationProps){
 
     const handleClientCreation = async () => {
         try{
-            console.log("Nom du client : "+client.name)
-            console.log("Prénom du client : "+client.firstName)
-            console.log("mail du client : "+client.mail)
-            console.log("Téléphone du client : "+client.phone)
-            console.log("rue du client : "+client.road)
-            console.log("Numéro d'adresse du client : "+client.addressNumber)
-            console.log("Code postal du client : "+client.postalCode)
-            console.log("Ville du client : "+client.city)
-            console.log("Complément d'adresse du client : "+client.additionalAddress)
-            console.log("Numéro de prospect : "+client.prospectNumber)
+
 
             // Validation des données du formulaire en fonction du statut
             const validationResult = createClientSchema.safeParse(client);
@@ -78,7 +68,7 @@ export default function ClientCreation({csrfToken}: ClientCreationProps){
 
                 try {
                     // We redirect to the clients' list
-                    router.push(`/director/clients/${newClient.slug}`);
+                    router.push(`/intranet/common-intranet/clients/${newClient.slug}`);
                 } catch (err) {
                     console.error("Redirection failed :", err);
             }
@@ -116,7 +106,6 @@ export default function ClientCreation({csrfToken}: ClientCreationProps){
         { label: "Complément d'adresse", name: 'additionalAddress' },
         { label: 'Code postal', name: 'postalCode' },
         { label: 'Ville', name: 'city' },
-        { label: 'Numéro de prospect', name: 'prospectNumber' },
       ].map(({ label, name, type = 'text' }) => {
         const errorId = `error-${name}`;
         return (
@@ -145,6 +134,7 @@ export default function ClientCreation({csrfToken}: ClientCreationProps){
           </div>
         );
       })}
+    
     </fieldset>
 
     <Input type="hidden" name="csrf_token" value={csrfToken} />

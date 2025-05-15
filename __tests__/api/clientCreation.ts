@@ -54,6 +54,7 @@ describe('API Client Creation Route', () => {
       isPseudonymized: false,
       convertedAt: null,
       status: ClientOrProspectEnum.CLIENT,
+      pseudonymizedAt: null,
       // createdAt: new Date(),
       // updatedAt: new Date(),
     };
