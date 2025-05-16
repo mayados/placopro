@@ -1,21 +1,45 @@
 // Retrieve all the clients
 // Return a promise with object of type QuoteWithTotalsAndStatus
-export const fetchClients = async (): Promise<ClientTypeList> => {
-    try {
-      const response = await fetch(`/api/clients`, {
-            method: "GET",
-            credentials: "include", 
-        });
-      if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
-  
-      const data: ClientTypeList = await response.json();
-      console.log("Données reçues après le fetch :", data);
-      return data;
-    } catch (error) {
-      console.error("Erreur lors de la récupération des clients :", error);
-      throw error;
+export const fetchClients = async ({
+  page,
+  limit,
+  search
+}: {
+  page: number,
+  limit: number,
+  search: string
+}): Promise<ClientsWithTotal> => {
+  try {
+    // Construit les paramètres de l’URL
+    const params = new URLSearchParams();
+    params.set("page", page.toString());
+    params.set("limit", limit.toString());
+    if (search) {
+      params.set("search", encodeURIComponent(search));
     }
-  };
+
+    const response = await fetch(`/api/clients?${params.toString()}`, {
+      method: "GET",
+      credentials: "include",
+        headers: {
+            "X-get-type": "clients-list",
+
+        },
+    });
+
+    if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
+
+    const data: ClientsWithTotal = await response.json();
+    console.log("Données reçues après le fetch :", data);
+    return data;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des clients :", error);
+    throw error;
+  }
+};
+
+
+
 export const fetchPseudonymizedClients = async (): Promise<ClientTypeList> => {
     try {
       const response = await fetch(`/api/clients`, {

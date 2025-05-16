@@ -266,7 +266,14 @@ interface CreateBillFormValueType{
     discountReason: string | null | undefined
 }
 
-
+interface ClientForListType{
+    id: string;
+    clientNumber: string;
+    city: string;
+    name: string;
+    firstName: string;
+    slug: string;
+}
 
 interface BillForListType{
     id: string;
@@ -564,6 +571,12 @@ interface BillsWithTotalsAndStatus{
     totalSentBills : number,
     totalAcceptedBills : number,
     totalCanceledBills : number,
+}
+
+interface ClientsWithTotal{
+    success: boolean,
+    clients: ClientForListType[],
+    totalClients : number,
 }
 
 interface BillFormValueType{

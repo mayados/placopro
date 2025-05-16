@@ -5,11 +5,12 @@ import { GET as getClients} from "@/app/api/clients/list";
 import { GET as findClient} from "@/app/api/clients/find"; 
 
 export async function GET(req: NextRequest) {
-    if(req.nextUrl.searchParams.get('search')){
-        return findClient(req); 
+    if(req.headers.get('X-get-type') === 'clients-list'){
+      return getClients(req); 
 
     }
-    return getClients(); 
+      return findClient(req); 
+
 }
 
 export async function POST(req: NextRequest) {
