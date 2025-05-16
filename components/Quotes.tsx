@@ -11,9 +11,10 @@ import { Pagination } from "@/components/Pagination";
 import Button from "@/components/Button";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useSearchParams } from "next/navigation";
+import SearchBar from "./SearchBar";
 
 
-const LIMIT = 10;
+const LIMIT = 2;
 
 export default function Quotes() {
     const searchParams = useSearchParams();
@@ -23,6 +24,8 @@ export default function Quotes() {
     const pageSent = parseInt(searchParams.get("pageSent") || "1", 10);
     const pageAccepted = parseInt(searchParams.get("pageAccepted") || "1", 10);
     const pageRefused = parseInt(searchParams.get("pageRefused") || "1", 10);
+    const searchQuery = searchParams.get("search") || "";
+
 
     // a const for each quote status
     const [quotes, setQuotes] = useState<QuoteForListType[]>([])
@@ -45,6 +48,8 @@ export default function Quotes() {
     const [totalRefusedQuotes, setTotalRefusedQuotes] = useState<number>(0)
     // const to set a quote if it's selected to be deleted
     const [quoteToDelete, setQuoteToDelete] = useState<string | null>(null);
+        const [search, setSearch] = useState(searchQuery);
+
     // const for the modal
     const [isOpen, setIsOpen] = useState(false);
 
@@ -60,6 +65,7 @@ export default function Quotes() {
                     pageAccepted,
                     pageRefused,
                     limit: LIMIT,
+                    search
                 });
 
                 setQuotes(data.quotes);
@@ -82,7 +88,7 @@ export default function Quotes() {
         };
 
         loadQuotes();
-    }, [page, pageDraft, pageReadyToBeSent, pageSent, pageAccepted, pageRefused]);
+    }, [page, pageDraft, pageReadyToBeSent, pageSent, pageAccepted, pageRefused, search]);
 
     // Delete a quote
     const handleDelete = async (quoteId: string) => {
@@ -117,7 +123,12 @@ export default function Quotes() {
             <header className="mb-6">
               <h1 className="text-3xl font-bold text-[#1873BF] text-center mb-2">Devis</h1>
             </header>
-      
+                      <SearchBar
+                          value={search}
+                          onChange={(e) => setSearch(e.target.value)}
+                          onClear={() => setSearch("")}
+                          placeholder="Rechercher un devis (numéro de devis, nom client)"
+                      />
             <TabGroup className="w-full">
               <TabList className="flex flex-wrap justify-center gap-3 mb-6" >
                 <Tab className="text-base font-medium text-[#637074] data-[selected]:bg-[#1873BF] data-[selected]:text-white data-[hover]:bg-[#1873BF]/80 py-2 px-4 rounded-md" >
