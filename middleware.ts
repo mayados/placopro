@@ -124,6 +124,7 @@ export const middleware = clerkMiddleware(async (auth, req) => {
   // Créer une réponse par défaut pour pouvoir y ajouter le cookie CSRF
   const response = NextResponse.next();
     const origin = req.headers.get("origin") || "";
+
  
   // ————— CORS HEADER INJECTION —————
   if (req.nextUrl.pathname.startsWith("/api/") && ALLOWED_ORIGINS.includes(origin)) {
@@ -204,19 +205,6 @@ export const middleware = clerkMiddleware(async (auth, req) => {
     console.error('Erreur lors du décodage du JWT :', e);
   }
  
-// if (userId && (isForConnectedUsersApiRoute(req) || isForConnectedUsersPage(req))) {
-//   const token = await getToken({ template: "user_public_metadata_role" });
- 
-//   if (token) {
-//     const decodedToken = jwt.decode(token, { complete: true });
-//     payload = (decodedToken as jwt.Jwt | null)?.payload as JwtPayload | undefined;
-//     role = payload?.role;
-//     console.log("role du user :", role);
-//   } else {
-//     console.warn("Token introuvable pour utilisateur connecté.");
-//   }
-// }
-
  
   // AUTHORIZATION LOGIC
   if (isForConnectedUsersPage(req) && !userId) {
