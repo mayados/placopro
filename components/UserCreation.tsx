@@ -68,7 +68,7 @@ export default function UserCreation({csrfToken}: UserCreationProps){
             toast.success("Utilisateur créé avec succès");
 
             try {
-                router.push(`/director/employees/${newEmployee.slug}`);
+                router.push(`/intranet/director/employees/${newEmployee.slug}`);
             } catch (err) {
                 console.error("Redirection failed :", err);
             }
@@ -85,8 +85,8 @@ export default function UserCreation({csrfToken}: UserCreationProps){
             <h1 className="text-3xl text-white ml-3 text-center">Création utilisateur : {employee?.firstName} {employee?.lastName}</h1>
             <Breadcrumb
                 items={[
-                    { label: "Tableau de bord", href: "/director" },
-                    { label: "Employés", href: "/director/employees" },
+                    { label: "Tableau de bord", href: "/intranet/director" },
+                    { label: "Employés", href: "/intranet/director/employees" },
                     { label: "Création d'employé" }, 
                 ]}
             />
