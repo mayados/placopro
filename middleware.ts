@@ -93,6 +93,7 @@ const isForConnectedUsersApiRoute = createRouteMatcher([
   '/api/vatRates(.*)',
   '/api/workSites(.*)',
   '/api/plannings(.*)',
+  '/api/dashboards(.*)',
   // '/api/users(.*)',
 ]);
  
@@ -183,29 +184,6 @@ export const middleware = clerkMiddleware(async (auth, req) => {
     }
     return response;
   }
- 
- 
-  const token = await getToken({ template: 'user_public_metadata_role' });
-  if (!token) {
-    console.warn('Token introuvable pour utilisateur connecté.');
-    return NextResponse.next();
-  }
-
-  let role: string | undefined;
-  try {
-    // 2) Découpe et décode la partie payload
-    const payloadBase64 = token.split('.')[1];
-    const payloadJson = atob(payloadBase64);
-    const payload = JSON.parse(payloadJson) as { role?: string };
-
-    // 3) Lis le rôle
-    role = payload.role;
-    console.log('role du user :', role);
-  } catch (e) {
-    console.error('Erreur lors du décodage du JWT :', e);
-  }
- 
- 
   // AUTHORIZATION LOGIC
   if (isForConnectedUsersPage(req) && !userId) {
     return redirectToSignIn();
@@ -213,7 +191,19 @@ export const middleware = clerkMiddleware(async (auth, req) => {
  
   if (isForConnectedUsersApiRoute(req) && !userId) {
     return new NextResponse(JSON.stringify({ error: "Access Forbidden" }), { status: 403 });
-  }
+  } 
+ 
+if (userId && (isForConnectedUsersApiRoute(req) || isForConnectedUsersPage(req))) {
+  const token = await getToken({ template: "user_public_metadata_role" });
+
+  if (token) {
+    try {
+      const payloadBase64 = token.split('.')[1];
+      const payloadJson = atob(payloadBase64);
+      const payload = JSON.parse(payloadJson);
+      const role = payload?.role;
+
+
  
   if (isDirectorApiRoute(req) && role !== "DIRECTOR") {
     return new NextResponse(JSON.stringify({ error: "Access Forbidden" }), { status: 403 });
@@ -240,6 +230,20 @@ if (
   if (isEmployeePage(req) && role !== "EMPLOYEE") {
     return NextResponse.redirect(new URL('/403', req.url));
   }
+
+    } catch (e) {
+      console.error("Erreur lors du décodage du JWT :", e);
+      return new NextResponse("Invalid token", { status: 403 });
+    }
+  } else {
+    console.warn("Token introuvable pour utilisateur connecté.");
+    return new NextResponse("Unauthorized", { status: 403 });
+  }
+}
+
+ 
+ 
+
  
 
  
