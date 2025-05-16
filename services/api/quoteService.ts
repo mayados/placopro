@@ -4,37 +4,54 @@ const baseUrl = process.env.NEXT_PUBLIC_API_URL
 // Retrieve all the quotes
 // Return a promise with object of type QuoteWithTotalsAndStatus
 export const fetchQuotes = async ({
-    page,
-    pageDraft,
-    pageReadyToBeSent,
-    pageSent,
-    pageAccepted,
-    pageRefused,
-    limit,
-  }: {
-    page: number;
-    pageDraft: number;
-    pageReadyToBeSent: number;
-    pageSent: number;
-    pageAccepted: number;
-    pageRefused: number;
-    limit: number;
+  page,
+  pageDraft,
+  pageReadyToBeSent,
+  pageSent,
+  pageAccepted,
+  pageRefused,
+  limit,
+  search = "", // si tu veux ajouter la recherche
+}: {
+  page: number;
+  pageDraft: number;
+  pageReadyToBeSent: number;
+  pageSent: number;
+  pageAccepted: number;
+  pageRefused: number;
+  limit: number;
+  search: string; 
 }): Promise<QuotesWithTotalsAndStatus> => {
-    try {
-      const response = await fetch(`/api/quote?page=${page}&pageDraft=${pageDraft}&pageReadyToBeSent=${pageReadyToBeSent}&pageSent=${pageSent}&pageAccepted=${pageAccepted}&pageRefused=${pageRefused}&limit=${limit}`, {
-            method: "GET",
-            credentials: "include", 
-        });
-      if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
-  
-      const data: QuotesWithTotalsAndStatus = await response.json();
-      console.log("Données reçues après le fetch :", data);
-      return data;
-    } catch (error) {
-      console.error("Erreur lors de la récupération des devis :", error);
-      throw error;
+  try {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      pageDraft: pageDraft.toString(),
+      pageReadyToBeSent: pageReadyToBeSent.toString(),
+      pageSent: pageSent.toString(),
+      pageAccepted: pageAccepted.toString(),
+      pageRefused: pageRefused.toString(),
+      limit: limit.toString(),
+    });
+
+    if (search) {
+      params.set("search", search);
     }
-  };
+
+    const response = await fetch(`/api/quote?${params.toString()}`, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
+
+    const data: QuotesWithTotalsAndStatus = await response.json();
+    console.log("Données reçues après le fetch :", data);
+    return data;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des devis :", error);
+    throw error;
+  }
+};
 
   // Retrieve a specific Quote
   export const fetchQuote = async (quoteSlug: string): Promise<QuoteType> => {
