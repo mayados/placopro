@@ -2,47 +2,37 @@
 
 import { useEffect, useState } from "react";
 import Button from "@/components/Button";
-import { formatDate } from '@/lib/utils'
+import { formatDate } from '@/lib/utils';
 import { toast } from 'react-hot-toast';
 import { Dialog, DialogTitle, DialogPanel, Description, Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import Link from "next/link";
-// import { useSearchParams } from "next/navigation";
 import { deleteWorkSite, fetchWorkSites } from "@/services/api/workSiteService";
 import { Pagination } from "@/components/Pagination";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useSearchParams } from "next/navigation";
+import SearchBar from "./SearchBar";
 
 const LIMIT = 15;
 
-
 export default function WorkSites() {
-
-    // const page = parseInt(searchParams.page || "1", 10);
-    // const pageComming = parseInt(searchParams.pageComming || "1", 10);
-    // const pageCompleted = parseInt(searchParams.pageCompleted || "1", 10);
-    // const pageInProgress = parseInt(searchParams.pageInProgress || "1", 10);
-
     const searchParams = useSearchParams();
     const page = parseInt(searchParams.get("page") || "1", 10);
     const pageComming = parseInt(searchParams.get("pageComming") || "1", 10);
     const pageCompleted = parseInt(searchParams.get("pageCompleted") || "1", 10);
     const pageInProgress = parseInt(searchParams.get("pageInProgress") || "1", 10);
+    const searchQuery = searchParams.get("search") || "";
 
-
-    // a const for each workSite status
-    const [workSites, setWorkSites] = useState<WorkSiteForListType[]>([])
-    const [commingWorkSites, setCommingWorkSites] = useState<WorkSiteForListType[]>([])
-    const [inProgressWorkSites, setInProgressWorkSites] = useState<WorkSiteForListType[]>([])
-    const [completedWorkSites, setCompletedWorkSites] = useState<WorkSiteForListType[]>([])
-    // const to get total of workSites by status
-    const [totalWorkSites, setTotalWorkSites] = useState<number>(0)
-    const [totalCommingWorkSites, setTotalCommingWorkSites] = useState<number>(0)
-    const [totalInProgressWorkSites, setTotalInProgressWorkSites] = useState<number>(0)
-    const [totalCompletedWorkSites, setTotalCompletedWorkSites] = useState<number>(0)
-    // const to set a workSite if it's selected to be deleted
+    const [workSites, setWorkSites] = useState<WorkSiteForListType[]>([]);
+    const [commingWorkSites, setCommingWorkSites] = useState<WorkSiteForListType[]>([]);
+    const [inProgressWorkSites, setInProgressWorkSites] = useState<WorkSiteForListType[]>([]);
+    const [completedWorkSites, setCompletedWorkSites] = useState<WorkSiteForListType[]>([]);
+    const [totalWorkSites, setTotalWorkSites] = useState<number>(0);
+    const [totalCommingWorkSites, setTotalCommingWorkSites] = useState<number>(0);
+    const [totalInProgressWorkSites, setTotalInProgressWorkSites] = useState<number>(0);
+    const [totalCompletedWorkSites, setTotalCompletedWorkSites] = useState<number>(0);
     const [workSiteToDelete, setWorkSiteToDelete] = useState<string | null>(null);
-    // const for the modal
     const [isOpen, setIsOpen] = useState(false);
+    const [search, setSearch] = useState(searchQuery);
 
     useEffect(() => {
         const loadWorkSites = async () => {
@@ -53,41 +43,39 @@ export default function WorkSites() {
                     pageCompleted,
                     pageInProgress,
                     limit: LIMIT,
+                    search
                 });
                 console.log("données reçues après le fetch : " + data)
                 console.log("exemple d'un worksite reçu : " + data['workSites'][0])
-                // We hydrate each const with the datas
-                setWorkSites(data['workSites'])
-                setCommingWorkSites(data['commingWorkSites'])
-                setInProgressWorkSites(data['inProgressWorkSites'])
-                setCompletedWorkSites(data['completedWorkSites'])
 
-                setTotalWorkSites(data['totalWorkSites'] || 0)
-                setTotalCommingWorkSites(data['totalCommingWorkSites'] || 0)
-                setTotalInProgressWorkSites(data['totalInProgressWorkSites'] || 0)
-                setTotalCompletedWorkSites(data['totalCompletedWorkSites'] || 0)
+                setWorkSites(data['workSites']);
+                setCommingWorkSites(data['commingWorkSites']);
+                setInProgressWorkSites(data['inProgressWorkSites']);
+                setCompletedWorkSites(data['completedWorkSites']);
+
+                setTotalWorkSites(data['totalWorkSites'] || 0);
+                setTotalCommingWorkSites(data['totalCommingWorkSites'] || 0);
+                setTotalInProgressWorkSites(data['totalInProgressWorkSites'] || 0);
+                setTotalCompletedWorkSites(data['totalCompletedWorkSites'] || 0);
             } catch (error) {
                 console.error("Impossible to load workSites :", error);
             }
         }
 
-        loadWorkSites()
-    }, [page, pageComming, pageCompleted, pageInProgress]);
+        loadWorkSites();
+    }, [page, pageComming, pageCompleted, pageInProgress, search]);
 
-    // Delete a workSite
     const handleWorkSiteDeletion = async (workSiteSlug: string) => {
         try {
             await deleteWorkSite(workSiteSlug);
             setIsOpen(false);
             toast.success('Chantier supprimé avec succès');
             setWorkSites(prevWorkSites => prevWorkSites.filter(workSite => workSite.slug !== workSiteSlug));
-
         } catch (error) {
             toast.error('Erreur lors de la suppression du chantier');
             console.error("Erreur avec la suppression du chantier", error);
         }
     };
-
 
     const openDeleteDialog = (workSiteSlug: string) => {
         setWorkSiteToDelete(workSiteSlug);
@@ -102,20 +90,23 @@ export default function WorkSites() {
         if (total > 0) {
             return <Pagination pageParam={pageParam} total={total} limit={LIMIT} />;
         }
-        // Don't display anything it there are no datas
         return null;
     };
 
     return (
-
         <>
             <section className="flex-[8] px-4 py-6 bg-[#F5F5F5] rounded-md shadow-sm">
                 <header className="mb-6">
                     <h1 className="text-3xl font-bold text-[#1873BF] text-center mb-2">Chantiers</h1>
                 </header>
+                <SearchBar
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    onClear={() => setSearch("")}
+                    placeholder="Rechercher un chantier (titre, numéro client)"
+                />
                 <TabGroup className="w-full">
-                    <TabList className="flex flex-wrap justify-center gap-3 mb-6" >
-
+                    <TabList className="flex flex-wrap justify-center gap-3 mb-6">
                         <Tab className="text-base font-medium text-[#637074] data-[selected]:bg-[#1873BF] data-[selected]:text-white data-[hover]:bg-[#1873BF]/80 py-2 px-4 rounded-md">Tous ({totalWorkSites})</Tab>
                         <Tab className="text-base font-medium text-[#637074] data-[selected]:bg-[#1873BF] data-[selected]:text-white data-[hover]:bg-[#1873BF]/80 py-2 px-4 rounded-md">En cours ({totalInProgressWorkSites})</Tab>
                         <Tab className="text-base font-medium text-[#637074] data-[selected]:bg-[#1873BF] data-[selected]:text-white data-[hover]:bg-[#1873BF]/80 py-2 px-4 rounded-md">A venir ({totalCommingWorkSites})</Tab>
@@ -123,10 +114,7 @@ export default function WorkSites() {
                     </TabList>
                     <TabPanels>
                         {[workSites, inProgressWorkSites, commingWorkSites, completedWorkSites].map((list, index) => (
-                            <TabPanel
-                                key={index}
-                                className="overflow-x-auto bg-white p-4 rounded-md shadow-inner mb-6"
-                            >
+                            <TabPanel key={index} className="overflow-x-auto bg-white p-4 rounded-md shadow-inner mb-6">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-[#1873BF] text-white">
@@ -134,63 +122,62 @@ export default function WorkSites() {
                                             <th className="px-3 py-2">Date de début</th>
                                             <th className="px-3 py-2">Ville</th>
                                             <th className="px-3 py-2">Afficher</th>
-                                            {/* <th className="px-3 py-2">Modifier</th>
-                                            <th className="px-3 py-2">Supprimer</th> */}
                                             {index === 1 && <th className="px-3 py-2">Modifier</th>}
                                             {index === 1 && <th className="px-3 py-2">Supprimer</th>}
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {
-                                            list.map((workSite) => {
-
-                                                return (
-                                                    <tr key={workSite.id}>
-                                                        <td>{workSite.title}</td>
-                                                        <td>{formatDate(workSite.beginsThe)}</td>
-                                                        <td>{workSite.city}</td>
-                                                        <td>
-                                                            <Link href={`/director/workSites/${workSite?.slug}`}>
-                                                                Consulter les détails
-                                                            </Link>
-                                                        </td>
-                                                        {index === 1 && (
-                                                            <>
-                                                                <td className="px-3 py-2">
-                                                                    <Link
-                                                                        href={`/director/workSites/${workSite?.slug}/update`}
-                                                                        className="text-[#FDA821] underline hover:text-[#1873BF]"
-                                                                    >
-                                                                        Modifier
-                                                                    </Link>
-                                                                </td>
-                                                                <td className="px-3 py-2">
-                                                                    <Button
-                                                                        label="Remove"
-                                                                        icon={faXmark}
-                                                                        type="button"
-                                                                        action={() => openDeleteDialog(workSite.id)}
-                                                                        specifyBackground="text-red-500"
-                                                                    />
-                                                                </td>
-                                                            </>
-                                                        )}
-                                                    </tr>
-                                                );
-                                            })
-                                        }
+                                        {list.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={index === 1 ? 6 : 4} className="text-center py-4 text-gray-500">
+                                                    Rien à afficher
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            list.map((workSite) => (
+                                                <tr key={workSite.id}>
+                                                    <td>{workSite.title}</td>
+                                                    <td>{formatDate(workSite.beginsThe)}</td>
+                                                    <td>{workSite.city}</td>
+                                                    <td>
+                                                        <Link href={`/director/workSites/${workSite?.slug}`}>
+                                                            Consulter les détails
+                                                        </Link>
+                                                    </td>
+                                                    {index === 1 && (
+                                                        <>
+                                                            <td className="px-3 py-2">
+                                                                <Link
+                                                                    href={`/director/workSites/${workSite?.slug}/update`}
+                                                                    className="text-[#FDA821] underline hover:text-[#1873BF]">
+                                                                    Modifier
+                                                                </Link>
+                                                            </td>
+                                                            <td className="px-3 py-2">
+                                                                <Button
+                                                                    label="Remove"
+                                                                    icon={faXmark}
+                                                                    type="button"
+                                                                    action={() => openDeleteDialog(workSite.id)}
+                                                                    specifyBackground="text-red-500"
+                                                                />
+                                                            </td>
+                                                        </>
+                                                    )}
+                                                </tr>
+                                            ))
+                                        )}
                                     </tbody>
                                 </table>
-                                {renderPagination(totalWorkSites, "page")}
-
+                                {list.length > 0 && renderPagination(
+                                    [totalWorkSites, totalInProgressWorkSites, totalCommingWorkSites, totalCompletedWorkSites][index],
+                                    ["page", "pageInProgress", "pageComming", "pageCompleted"][index]
+                                )}
                             </TabPanel>
-
                         ))}
                     </TabPanels>
                 </TabGroup>
             </section>
-            {/* Delete workSite Dialog */}
-
 
             {isOpen && workSiteToDelete && (
                 <Dialog
@@ -228,7 +215,5 @@ export default function WorkSites() {
                 </Dialog>
             )}
         </>
-
-    )
+    );
 }
-

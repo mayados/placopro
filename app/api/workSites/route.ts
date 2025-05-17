@@ -13,10 +13,12 @@ import { GET as findWorkSite} from "@/app/api/workSites/find";
 // }
 
 export async function GET(req: NextRequest) {
-  if (req.nextUrl.searchParams.get("search")) {
-      return findWorkSite(req);
+  if (req.headers.get('X-get-type') === "workSites-list") {
+        return getWorkSites(req);
+
   }
-  return getWorkSites(req);
+      return findWorkSite(req);
+
 }
 
 export async function POST(req: NextRequest) {

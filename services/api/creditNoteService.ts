@@ -74,32 +74,48 @@ export const fetchCreditNote = async (creditNoteNumber: string): Promise<CreditN
 // Retrieve all the credit notes
 // Return a promise with object of type CreditNotesWithTotalsAndStatus
 export const fetchCreditNotes = async ({
-    page,
-    pageSettled,
-    pageNotSettled,
-    limit,  
-    }: {
-    page: number;
-    pageSettled: number;
-    pageNotSettled: number;
-    limit: number;
-  }): Promise<CreditNotesWithTotalsAndStatus> => {
-    try {
-      const response = await fetch(`/api/creditNotes?page=${page}&pageSettled=${pageSettled}&pageNotSettled=${pageNotSettled}&limit=${limit}`, {
-            method: "GET",
-            credentials: "include", 
-        });
-      if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
-  
-      
-      const data: CreditNotesWithTotalsAndStatus = await response.json();
-      console.log("Données reçues après le fetch :", data);
-      return data;
-    } catch (error) {
-      console.error("Erreur lors de la récupération des credit notes :", error);
-      throw error;
+  page,
+  pageSettled,
+  pageNotSettled,
+  limit,
+  search = "",
+}: {
+  page: number;
+  pageSettled: number;
+  pageNotSettled: number;
+  limit: number;
+  search?: string;
+}): Promise<CreditNotesWithTotalsAndStatus> => {
+  try {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      pageSettled: pageSettled.toString(),
+      pageNotSettled: pageNotSettled.toString(),
+      limit: limit.toString(),
+    });
+
+    if (search.trim()) {
+      params.set("search", search.trim());
     }
+
+    const response = await fetch(`/api/creditNotes?${params.toString()}`, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP: ${response.status}`);
+    }
+
+    const data: CreditNotesWithTotalsAndStatus = await response.json();
+    console.log("Données reçues après le fetch :", data);
+    return data;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des credit notes :", error);
+    throw error;
+  }
 };
+
 
 // Delete a credit note
 export const deleteCreditNote = async (creditNoteNumber: string): Promise<void> => {
