@@ -1,35 +1,52 @@
 // Retrieve all the bills
 // Return a promise with object of type BillsWithTotalsAndStatus
 export const fetchBills = async ({
-    page,
-    pageReadyToBeSent,
-    pageSent,
-    pageDraft,
-    pageCanceled,
-    limit,
-} : {
-    page: number,
-    pageReadyToBeSent: number,
-    pageSent: number,
-    pageDraft: number,
-    pageCanceled: number,
-    limit: number,
+  page,
+  pageReadyToBeSent,
+  pageSent,
+  pageDraft,
+  pageCanceled,
+  limit,
+  search = ""
+}: {
+  page: number,
+  pageReadyToBeSent: number,
+  pageSent: number,
+  pageDraft: number,
+  pageCanceled: number,
+  limit: number,
+  search?: string
 }): Promise<BillsWithTotalsAndStatus> => {
-    try {
-      const response = await fetch(`/api/bills?page=${page}&pageReadyToBeSent=${pageReadyToBeSent}&pageSent=${pageSent}&pageDraft=${pageDraft}&pageCanceled=${pageCanceled}&limit=${limit}`, {
-            method: "GET",
-            credentials: "include", 
-        });
-      if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
-  
-      const data: BillsWithTotalsAndStatus = await response.json();
-      console.log("Données reçues après le fetch :", data);
-      return data;
-    } catch (error) {
-      console.error("Erreur lors de la récupération des factures :", error);
-      throw error;
+  try {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      pageReadyToBeSent: pageReadyToBeSent.toString(),
+      pageSent: pageSent.toString(),
+      pageDraft: pageDraft.toString(),
+      pageCanceled: pageCanceled.toString(),
+      limit: limit.toString(),
+    });
+
+    if (search.trim()) {
+      params.set("search", search.trim());
     }
-  };
+
+    const response = await fetch(`/api/bills?${params.toString()}`, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
+
+    const data: BillsWithTotalsAndStatus = await response.json();
+    console.log("Données reçues après le fetch :", data);
+    return data;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des factures :", error);
+    throw error;
+  }
+};
+
 
 // Retrieve a specific Bill
 export const fetchBill = async (billSlug: string): Promise<BillTypeSingle> => {

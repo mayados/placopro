@@ -12,8 +12,9 @@ import Button from "@/components/Button";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useSearchParams } from "next/navigation";
 import LoadingSpinner from "./LoadingSpinner";
+import SearchBar from "./SearchBar";
 
-const LIMIT = 15;
+const LIMIT = 2;
 
 
 
@@ -26,6 +27,7 @@ const LIMIT = 15;
     const pageSent = parseInt(searchParams.get("pageSent") || "1", 10);
     const pageDraft = parseInt(searchParams.get("pageDraft") || "1", 10);
     const pageCanceled = parseInt(searchParams.get("pageCanceled") || "1", 10);
+    const searchQuery = searchParams.get("search") || "";
 
 
     // a const for each quote status
@@ -49,6 +51,7 @@ const LIMIT = 15;
     // const for the modal
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);  // To track if data is loading
+        const [search, setSearch] = useState(searchQuery);
 
 
     useEffect(() => {
@@ -62,6 +65,7 @@ const LIMIT = 15;
                 pageDraft,
                 pageCanceled,
                 limit: LIMIT,
+                search
             });
               
               setBills(data.bills);
@@ -85,7 +89,7 @@ const LIMIT = 15;
           };
       
           loadBills();
-    },[page, pageReadyToBeSent, pageSent, pageDraft, pageCanceled]);
+    },[page, pageReadyToBeSent, pageSent, pageDraft, pageCanceled, search]);
 
     // Delete a bill
     const handleDelete = async (billId: string) => {
@@ -124,7 +128,12 @@ const LIMIT = 15;
   <div className="w-full px-4 py-6 bg-[#F5F5F5] rounded-md shadow-sm">
     <section className="flex-[8]">
       <h1 className="text-3xl font-bold text-[#1873BF] text-center mb-4">Factures</h1>
-
+                      <SearchBar
+                          value={search}
+                          onChange={(e) => setSearch(e.target.value)}
+                          onClear={() => setSearch("")}
+                          placeholder="Rechercher une facture (numéro de facture, nom client)"
+                      />
       <TabGroup>
         <TabList className="flex flex-wrap justify-center gap-3 mb-6">
           <Tab className="text-base font-medium text-[#637074] data-[selected]:bg-[#1873BF] data-[selected]:text-white data-[hover]:bg-[#1873BF]/80 py-2 px-4 rounded-md">
