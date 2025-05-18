@@ -494,6 +494,8 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                             {workSiteSuggestions.map((suggestion) => (
                                 <li
                                     key={suggestion.id}
+                                            data-cy="workSite-suggestion"
+
                                     className="cursor-pointer p-2 hover:bg-gray-600"
                                     onClick={() => handleClickSuggestion("workSite", suggestion.id, suggestion.title)}
                                 >
@@ -804,7 +806,7 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                     >
                         {hasRightOfWithdrawalChoices.map((choice) => (
                             <Field key={choice} className="flex gap-2 items-center">
-                                <Radio value={choice} className="border-2 border-custom-gray group flex size-5 items-center justify-center rounded-full bg-white data-[checked]:bg-pink-600" />
+                                <Radio value={choice} className="border-2 border-custom-gray group flex size-5 items-center justify-center rounded-full bg-white data-[checked]:bg-pink-600" data-cy={`radio-${choice}`} />
                                 <Label>{choice}</Label>
                             </Field>
                         ))}

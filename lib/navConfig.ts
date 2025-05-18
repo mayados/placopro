@@ -22,6 +22,7 @@ import {
   } = {
     "DIRECTOR": [
       { label: 'Dashboard', icon: faClipboardList, href: '/intranet/director' },
+      { label: 'Entreprise', icon: faClipboardList, href: '/intranet/director/companies' },
 
       { label: 'To do list', icon: faClipboardList, href: '/intranet/common-intranet/toDo' },
       {
@@ -61,6 +62,9 @@ import {
       },
       { label: 'Factures', icon: faFileInvoiceDollar, href: '/intranet/common-intranet/bills' },
       { label: 'Avoirs', icon: faFileContract, href: '/intranet/common-intranet/creditNotes' },
+      { label: 'Taux de TVA', icon: faClipboardList, href: '/intranet/director/vatRates' },
+      { label: 'Unités', icon: faClipboardList, href: '/intranet/director/units' },
+      { label: 'Services', icon: faClipboardList, href: '/intranet/director/services' },
       { label: 'Calculer un temps de trajet', icon: faHourglassHalf, href: '/intranet/common-intranet/travel' },
     ],
     "EMPLOYEE": [

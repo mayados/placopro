@@ -1,9 +1,9 @@
 const baseUrl = process.env.NEXT_PUBLIC_API_URL  
 // (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
   // Retrieve a specific Company
-  export const fetchCompany = async (companySlug: string): Promise<CompanyType> => {
+  export const fetchCompany = async (): Promise<CompanyType> => {
     try {
-      const response = await fetch(`${baseUrl}/api/companies/${companySlug}`, {
+      const response = await fetch(`${baseUrl}/api/companies`, {
             method: "GET",
             credentials: "include", 
         });
@@ -18,39 +18,6 @@ const baseUrl = process.env.NEXT_PUBLIC_API_URL
     }
   };
 
-  // Retrieve all the companies
-  export const fetchCompanies = async (): Promise<CompanyListType> => {
-    try {
-      const response = await fetch(`/api/companies`, {
-            method: "GET",
-            credentials: "include", 
-        });
-      if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
-  
-      const data: CompanyListType = await response.json();
-      console.log("Données reçues après le fetch :", data);
-      return data;
-    } catch (error) {
-      console.error("Erreur lors de la récupération des entreprises :", error);
-      throw error;
-    }
-  };
-
-  // Delete a company
-export const deleteCompany = async (companySlug: string): Promise<void> => {
-  try {
-      const response = await fetch(`/api/companies/${companySlug}`, {
-          method: "DELETE",
-          credentials: "include"
-      });
-      if (!response.ok) {
-          throw new Error("Error with company deletion");
-      }
-  } catch (error) {
-      console.error("Error with company deletion :", error);
-      throw error;
-  }
-};
 
 // Update company
 export const updateCompany = async (company: CompanyType, csrfToken: string): Promise<CompanyType> => {

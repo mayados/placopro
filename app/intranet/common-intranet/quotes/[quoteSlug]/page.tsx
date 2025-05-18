@@ -23,7 +23,7 @@ export default async function Page({ params }: { params: Params }) {
   const csrfToken = h.get('X-CSRF-Token') || 'missing'
 
   const  quote  = await fetchQuote(quoteSlug)
-  const  company  = await fetchCompany('placopro')
+  const  company  = await fetchCompany()
   
   console.log("CSRF Token:", csrfToken);  
   // Once we get the csrf token and billNumber, we can give it to the component

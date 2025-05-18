@@ -579,6 +579,12 @@ interface ClientsWithTotal{
     totalClients : number,
 }
 
+interface ServicesWithTotal{
+    success: boolean,
+    services: ServiceEntityType[],
+    totalServices : number,
+}
+
 interface BillFormValueType{
     validityEndDate: string,
     natureOfWork: string,
