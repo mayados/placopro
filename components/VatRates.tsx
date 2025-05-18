@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Button from "@/components/Button";
 import { toast } from 'react-hot-toast';
 import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react';
-import { faXmark, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import { Field, Input } from '@headlessui/react';
 import { createVatRate, deleteVatRate, fetchVatRates, updateVatRate } from "@/services/api/vatRateService";
 import { createVatRateSchema } from "@/validation/vatRateValidation";
@@ -186,95 +184,180 @@ export default function ToDos({ csrfToken }: VatRateProps) {
 
     return (
 
-        <>
+  <>
+  <section className="flex-[8] px-4 py-6 bg-[#F5F5F5] rounded-md shadow-sm">
+    <header className="mb-6">
+      <h1 className="text-3xl font-bold text-primary text-center mb-4">Taux de TVAs</h1>
+    </header>
 
-                <section className="border-2 border-green-800 flex-[8]">
-                    <h1 className="text-3xl text-white text-center">Taux de TVAs</h1>
+    <section>
+      <h2 className="text-xl font-semibold mb-3">Créer un Taux de TVA</h2>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleUnitCreation();
+        }}
+        aria-label="Formulaire de création d'un taux de TVA"
+        className="mb-8"
+      >
+        <div className="mb-4">
+          <label htmlFor="vat-rate" className="block mb-1 font-medium text-gray-700">
+            Taux de TVA
+          </label>
+          <Field>
+            <Input
+              id="vat-rate"
+              type="text"
+              name="rate"
+              className="w-full h-9 rounded-md bg-gray-700 text-white pl-3"
+              value={vatRateFormValues.rate ?? ""}
+              onChange={handleInputChange}
+              aria-invalid={errors.rate ? "true" : "false"}
+              aria-describedby={errors.rate ? "rate-error" : undefined}
+            />
+          </Field>
+          {errors.rate && (
+            <p id="rate-error" className="mt-1 text-sm text-red-600" role="alert">
+              {errors.rate}
+            </p>
+          )}
+        </div>
 
-                    <section>
-                        <p>Créer un Taux de TVA</p>
-                        <form
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                handleUnitCreation();
-                            }}
-                        >
-                            <div>
-                                <label htmlFor="rate">rate</label>
-                                <Field className="w-full">
-                                    <Input type="text" name="rate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
-                                        // Avoid uncontrolled input. Operateur nullish coalescing ?? allows to put an empty string if the value is null or undefined
-                                        value={vatRateFormValues.rate ?? ""}
-                                        onChange={handleInputChange}
-                                    >
-                                    </Input>
-                                </Field>
-                                {errors.rate && <p style={{ color: "red" }}>{errors.rate}</p>}
-                            </div>
-                            <Input type="hidden" name="csrf_token" value={csrfToken} />
+        <Input type="hidden" name="csrf_token" value={csrfToken} />
 
-                            <button type="submit">Ajouter</button>
-                        </form>
-                        {
-                            vatRates.map((unit) => {
+        <button
+          type="submit"
+          className="bg-primary text-white px-5 py-2 rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-[#FDA821]"
+        >
+          Ajouter
+        </button>
+      </form>
 
-                                return (
-                                    <article key={unit.id}>
-                                        <p>{unit.rate}</p>
-                                        <Button
-                                            label="Supprimer"
-                                            icon={faXmark}
-                                            type="button"
-                                            specifyBackground="bg-red-500"
-                                            action={() => openDeleteDialog(unit)}
-                                        />
+      <table className="w-full text-left border-collapse">
+        <thead>
+          <tr className="bg-primary text-white">
+            <th className="px-3 py-2">Taux</th>
+            <th className="px-3 py-2">Modifier</th>
+            <th className="px-3 py-2">Supprimer</th>
+          </tr>
+        </thead>
+        <tbody>
+          {vatRates.map((vatRate) => (
+            <tr key={vatRate.id} className="even:bg-[#F5F5F5]">
+              <td className="px-3 py-2">{vatRate.rate}</td>
+              <td className="px-3 py-2">
+                <button
+                  onClick={() => openEditModal(vatRate)}
+                  aria-label={`Modifier le taux de TVA ${vatRate.rate}`}
+                  className="text-[#FDA821] underline hover:text-primary focus:outline-none focus:ring-2 focus:ring-[#FDA821] rounded"
+                >
+                  Modifier
+                </button>
+              </td>
+              <td className="px-3 py-2">
+                <button
+                  onClick={() => openDeleteDialog(vatRate)}
+                  aria-label={`Supprimer le taux de TVA ${vatRate.rate}`}
+                  className="text-red-500 underline hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 rounded"
+                >
+                  Supprimer
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
-                                        <Button
-                                            label="Modifier"
-                                            icon={faPenToSquare}
-                                            type="button"
-                                            specifyBackground="bg-orange-500"
-                                            action={() => openEditModal(unit)}
-                                        />
-                                        <Dialog open={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} className="absolute top-[50%] left-[25%]">
-                                            <DialogPanel>
-                                                <DialogTitle>Modifier le Taux de TVA</DialogTitle>
+      {/* Modal modification taux de TVA */}
+      <Dialog
+        open={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+        aria-labelledby="edit-vat-title"
+        aria-describedby="edit-vat-desc"
+      >
+        <DialogPanel className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full text-black">
+          <DialogTitle id="edit-vat-title" className="text-xl font-semibold text-primary mb-4">
+            Modifier le Taux de TVA
+          </DialogTitle>
 
-                                                <label>Taux de TVA</label>
-                                                <Input
-                                                    name="rate"
-                                                    value={editedValues.rate || ""}
-                                                    onChange={handleEditChange}
-                                                    className="w-full text-black"
-                                                />
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleUpdate();
+            }}
+            aria-describedby="edit-vat-desc"
+          >
+            <label htmlFor="edit-vat-rate" className="block mb-1 font-medium text-gray-700">
+              Taux de TVA
+            </label>
+            <Input
+              id="edit-vat-rate"
+              name="rate"
+              value={editedValues.rate || ""}
+              onChange={handleEditChange}
+              className="w-full mb-6 text-black"
+            />
 
-                                                <button onClick={handleUpdate}>Enregistrer</button>
-                                                <button onClick={() => setIsEditModalOpen(false)}>Annuler</button>
-                                            </DialogPanel>
-                                        </Dialog>
+            <div className="flex justify-end gap-4">
+              <button
+                type="submit"
+                className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-[#FDA821]"
+              >
+                Enregistrer
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsEditModalOpen(false)}
+                className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-[#FDA821]"
+              >
+                Annuler
+              </button>
+            </div>
+          </form>
+        </DialogPanel>
+      </Dialog>
+    </section>
+  </section>
 
-                                    </article>
-                                );
-                            })
-                        }
-                    </section>
+  {/* Delete taux de TVA Dialog */}
+  {isOpen && vatRateToDelete && (
+    <Dialog
+      open={isOpen}
+      onClose={closeDeleteDialog}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      aria-labelledby="vat-delete-title"
+      aria-describedby="vat-delete-desc"
+    >
+      <DialogPanel className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full text-black">
+        <DialogTitle id="vat-delete-title" className="text-xl font-semibold text-primary mb-2">
+          Supprimer le Taux de TVA
+        </DialogTitle>
+        <Description id="vat-delete-desc" className="mb-4">
+          Cette action est irréversible.
+        </Description>
+        <p className="mb-6">
+          Êtes-vous sûr de vouloir supprimer le taux de TVA <strong>{vatRateToDelete.rate}</strong> ? Toutes ses données seront supprimées de façon permanente.
+        </p>
+        <div className="flex justify-end gap-4">
+          <button
+            onClick={() => handleUnitDeletion(vatRateToDelete)}
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
+          >
+            Supprimer
+          </button>
+          <button
+            onClick={closeDeleteDialog}
+            className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FDA821]"
+          >
+            Annuler
+          </button>
+        </div>
+      </DialogPanel>
+    </Dialog>
+  )}
+</>
 
-                </section>
-                {/* Delete unit Dialog */}
-                {isOpen && vatRateToDelete && (
-                    <Dialog open={isOpen} onClose={closeDeleteDialog} className="absolute top-[50%] left-[25%]" >
-                        <DialogPanel className="bg-gray-300 p-5 rounded-md shadow-lg text-black">
-                            <DialogTitle>Supprimer le Taux de TVA</DialogTitle>
-                            <Description>Cette action est irréversible</Description>
-                            <p>Etes-vous sûr de vouloir supprimer cette Taux de TVA ? Toutes ses données seront supprimées de façon permanente. Cette action est irréversible.</p>
-                            <div className="flex justify-between mt-4">
-                                <button onClick={() => handleUnitDeletion(vatRateToDelete)} className="bg-red-600 text-white px-4 py-2 rounded-md">Delete</button>
-                                <button onClick={closeDeleteDialog} className="bg-gray-300 text-black px-4 py-2 rounded-md">Cancel</button>
-                            </div>
-                        </DialogPanel>
-                    </Dialog>
-                )}
-        </>
 
     )
 }
