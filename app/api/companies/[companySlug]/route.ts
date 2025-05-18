@@ -27,7 +27,7 @@ export async function DELETE(req: NextRequest) {
   
   export async function PUT(req: NextRequest) {
     const pathname = req.nextUrl.pathname;
-    const companySlug = pathname.split("/").pop(); // Get companySlug from the URL
+    const companySlug = pathname.split("/").pop(); 
   
     if (!companySlug) {
       return NextResponse.json({ error: "companySlug is required" }, { status: 400 });

@@ -28,7 +28,7 @@ export default function ModifyCompany({csrfToken, companySlug}: ModifyCompanyPro
         async function loadCompany() {
                     
             try{
-            const data = await fetchCompany(companySlug)
+            const data = await fetchCompany()
             setCompany(data);
             }catch (error) {
                 console.error("Impossible to load the company :", error);
@@ -103,246 +103,286 @@ export default function ModifyCompany({csrfToken, companySlug}: ModifyCompanyPro
     }
 
     return (
-        <>
-            {/* <div><Toaster/></div> */}
-            <h1 className="text-3xl text-white ml-3 text-center">Modification de l&apos;entreprise : {company?.name}</h1>
-            {/* <div><Toaster /></div> */}
-            <form 
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    handleCompanyUpdate();
-                }}
-            >
-                {/* Company name */}
-                <div>
-                    <label htmlFor="name">Nom</label>
-                    <Field className="w-full">
-                        <Input type="text" name="name" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={company.name}
-                            onChange={handleInputChange}
-                        >
-                        </Input>                           
+<>
+  <header className="text-center my-6">
+    <h1 className="text-4xl font-bold text-primary">Modification de l&apos;entreprise : {company?.name}</h1>
+  </header>
+  <form
+    autoComplete="off"
+    onSubmit={(e) => {
+      e.preventDefault();
+      handleCompanyUpdate();
+    }}
+    className="max-w-3xl mx-auto bg-custom-white border-4 border-primary rounded-lg p-8 shadow-md"
+  >
+    {/* Company name */}
+    <div className="mb-6">
+      <label htmlFor="name" className="block mb-2 font-semibold text-primary">Nom</label>
+      <Field>
+        <Input
+          type="text"
+          name="name"
+          value={company.name}
+          onChange={handleInputChange}
+          className="w-full border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </Field>
+      {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+    </div>
 
-                    </Field>
-                    {errors.name && <p style={{ color: "red" }}>{errors.name}</p>}
+    {/* Type of company */}
+    <div className="mb-6">
+      <label htmlFor="type" className="block mb-2 font-semibold text-primary">Type d&apos;entreprise</label>
+      <Select
+        name="type"
+        value={company.type}
+        onChange={handleInputChange}
+        className="w-full border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+      >
+        <option value="">Sélectionnez un type</option>
+        {typeChoices.map((type) => (
+          <option key={type} value={type}>{type}</option>
+        ))}
+      </Select>
+      {errors.type && <p className="mt-1 text-sm text-red-600">{errors.type}</p>}
+    </div>
 
-                </div>
-                {/* type of company */}
-                <div>
-                    <label htmlFor="type">Type d&apos;entreprise</label>
-                    <Select
-                        name="type"
-                        value={company.type}
-                        onChange={handleInputChange}
-                        className="w-full rounded-md bg-gray-700 text-white pl-3"
-                    >
-                    <option value="">Sélectionnez un type</option>
-                        {typeChoices.map((type) => (
-                            <option key={type} value={type}>{type}</option>
-                        ))}
-                    </Select>
-                    {errors.type && <p style={{ color: "red" }}>{errors.type}</p>}
+    {/* Phone */}
+    <div className="mb-6">
+      <label htmlFor="phone" className="block mb-2 font-semibold text-primary">Téléphone</label>
+      <Field>
+        <Input
+          type="text"
+          name="phone"
+          value={company.phone}
+          onChange={handleInputChange}
+          className="w-full border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </Field>
+      {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
+    </div>
 
-                </div>
-                {/* phone */}
-                <div>
-                    <label htmlFor="phone">Téléphone</label>
-                    <Field className="w-full">
-                        <Input type="text" name="phone" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={company.phone}                           
-                           onChange={handleInputChange}
-                        >
-                        </Input>
-                    </Field>
-                    {errors.phone && <p style={{ color: "red" }}>{errors.phone}</p>}
+    {/* Mail */}
+    <div className="mb-6">
+      <label htmlFor="email" className="block mb-2 font-semibold text-primary">Mail</label>
+      <Field>
+        <Input
+          type="email"
+          name="email"
+          value={company.mail}
+          onChange={handleInputChange}
+          className="w-full border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </Field>
+      {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+    </div>
 
-                </div>
-                {/* mail */}
-                <div>
-                    <label htmlFor="email">Mail</label>
-                    <Field className="w-full">
-                        <Input type="email" name="email" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={company.mail}                            
-                            onChange={handleInputChange}
-                            >
-                        </Input>
-                    </Field>
-                    {errors.email && <p style={{ color: "red" }}>{errors.email}</p>}
+    {/* Capital */}
+    <div className="mb-6">
+      <label htmlFor="capital" className="block mb-2 font-semibold text-primary">Capital de l&apos;entreprise en €</label>
+      <Field>
+        <Input
+          type="number"
+          name="capital"
+          value={company.capital}
+          onChange={handleInputChange}
+          className="w-full border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </Field>
+      {errors.capital && <p className="mt-1 text-sm text-red-600">{errors.capital}</p>}
+    </div>
 
-                </div>
-                {/* Company's capital */}
-                <div>
-                    <label htmlFor="capital">Capital de l&apos;entreprise en € </label>
-                    <Field className="w-full">
-                        <Input type="number" name="capital" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={company.capital}
-                            onChange={handleInputChange}
-                            >
-                        </Input>
-                    </Field>
-                    {errors.capital && <p style={{ color: "red" }}>{errors.capital}</p>}
+    {/* RCS */}
+    <div className="mb-6">
+      <label htmlFor="rcs" className="block mb-2 font-semibold text-primary">RCS de l&apos;entreprise : ville d&apos;immatriculation + numéro SIREN.</label>
+      <Field>
+        <Input
+          type="text"
+          name="rcs"
+          value={company.rcs}
+          onChange={handleInputChange}
+          className="w-full border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </Field>
+      {errors.rcs && <p className="mt-1 text-sm text-red-600">{errors.rcs}</p>}
+    </div>
 
-                </div>
-                {/* Company's RCS */}
-                <div>
-                    <label htmlFor="rcs">RCS de l&apos;entreprise : ville d&papos;immatriculation + numéro SIREN.</label>
-                    <Field className="w-full">
-                        <Input type="text" name="rcs" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={company.rcs}
-                            onChange={handleInputChange}
-                            >
-                        </Input>
-                    </Field>
-                    {errors.rcs && <p style={{ color: "red" }}>{errors.rcs}</p>}
+    {/* SIRET */}
+    <div className="mb-6">
+      <label htmlFor="siret" className="block mb-2 font-semibold text-primary">Numéro SIRET</label>
+      <Field>
+        <Input
+          type="text"
+          name="siret"
+          value={company.siret}
+          onChange={handleInputChange}
+          className="w-full border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </Field>
+      {errors.siret && <p className="mt-1 text-sm text-red-600">{errors.siret}</p>}
+    </div>
 
-                </div>
-                {/* SIRET number */}
-                <div>
-                    <label htmlFor="siret">Numéro SIRET</label>
-                    <Field className="w-full">
-                        <Input type="text" name="siret" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={company.siret}
-                            onChange={handleInputChange}
-                            >
-                        </Input>
-                    </Field>
-                    {errors.siret && <p style={{ color: "red" }}>{errors.siret}</p>}
+    {/* APE */}
+    <div className="mb-6">
+      <label htmlFor="ape" className="block mb-2 font-semibold text-primary">code APE</label>
+      <Field>
+        <Input
+          type="text"
+          name="ape"
+          value={company.ape}
+          onChange={handleInputChange}
+          className="w-full border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </Field>
+      {errors.ape && <p className="mt-1 text-sm text-red-600">{errors.ape}</p>}
+    </div>
 
-                </div>
-                {/* APE code */}
-                <div>
-                    <label htmlFor="ape">code APE</label>
-                    <Field className="w-full">
-                        <Input type="text" name="ape" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={company.ape}
-                            onChange={handleInputChange}
-                            >
-                        </Input>
-                    </Field>
-                    {errors.ape && <p style={{ color: "red" }}>{errors.ape}</p>}
+    {/* TVA intracommunautaire */}
+    <div className="mb-6">
+      <label htmlFor="intraCommunityVat" className="block mb-2 font-semibold text-primary">Tva intracommunautaire</label>
+      <Field>
+        <Input
+          type="text"
+          name="intraCommunityVat"
+          value={company.intraCommunityVat}
+          onChange={handleInputChange}
+          className="w-full border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </Field>
+      {errors.intraCommunityVat && <p className="mt-1 text-sm text-red-600">{errors.intraCommunityVat}</p>}
+    </div>
 
-                </div>
-                {/* Intra community VAT */}
-                <div>
-                    <label htmlFor="intraCommunityVat">Tva intracommunautaire</label>
-                    <Field className="w-full">
-                        <Input type="text" name="intraCommunityVat" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={company.intraCommunityVat}
-                            onChange={handleInputChange}
-                            >
-                        </Input>
-                    </Field>
-                    {errors.intraCommunityVat && <p style={{ color: "red" }}>{errors.intraCommunityVat}</p>}
+    {/* Address Number */}
+    <div className="mb-6">
+      <label htmlFor="addressNumber" className="block mb-2 font-semibold text-primary">Numéro de voie</label>
+      <Field>
+        <Input
+          type="text"
+          name="addressNumber"
+          value={company.addressNumber}
+          onChange={handleInputChange}
+          className="w-full border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </Field>
+      {errors.addressNumber && <p className="mt-1 text-sm text-red-600">{errors.addressNumber}</p>}
+    </div>
 
-                </div>
-                {/* Address number */}
-                <div>
-                    <label htmlFor="addressNumber">Numéro de voie</label>
-                    <Field className="w-full">
-                        <Input type="text" name="addressNumber" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={company.addressNumber}
-                            onChange={handleInputChange}
-                            >
-                        </Input>
-                    </Field>
-                    {errors.addressNumber && <p style={{ color: "red" }}>{errors.addressNumber}</p>}
+    {/* Road */}
+    <div className="mb-6">
+      <label htmlFor="road" className="block mb-2 font-semibold text-primary">Nom de rue</label>
+      <Field>
+        <Input
+          type="text"
+          name="road"
+          value={company.road}
+          onChange={handleInputChange}
+          className="w-full border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </Field>
+      {errors.road && <p className="mt-1 text-sm text-red-600">{errors.road}</p>}
+    </div>
 
-                </div>
-                {/* Company's road */}
-                <div>
-                    <label htmlFor="road">Nom de rue</label>
-                    <Field className="w-full">
-                        <Input type="text" name="road" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={company.road}
-                            onChange={handleInputChange}
-                            >
-                        </Input>
-                    </Field>
-                    {errors.road && <p style={{ color: "red" }}>{errors.road}</p>}
+    {/* Additional address */}
+    <div className="mb-6">
+      <label htmlFor="additionnalAddress" className="block mb-2 font-semibold text-primary">Adresse additionnelle</label>
+      <Field>
+        <Input
+          type="text"
+          name="additionnalAddress"
+          value={company?.additionnalAddress || ""}
+          onChange={handleInputChange}
+          className="w-full border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </Field>
+      {errors.additionnalAddress && <p className="mt-1 text-sm text-red-600">{errors.additionnalAddress}</p>}
+    </div>
 
-                </div>
-                {/* Additionnal address */}
-                <div>
-                    <label htmlFor="additionnalAddress">Adresse additionnelle</label>
-                    <Field className="w-full">
-                        <Input type="text" name="additionnalAddress" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={company?.additionnalAddress || ""}
-                            onChange={handleInputChange}
-                            >
-                        </Input>
-                    </Field>
-                    {errors.additionnalAddress && <p style={{ color: "red" }}>{errors.additionalAddress}</p>}
+    {/* Postal Code */}
+    <div className="mb-6">
+      <label htmlFor="postalCode" className="block mb-2 font-semibold text-primary">Code postal</label>
+      <Field>
+        <Input
+          type="text"
+          name="postalCode"
+          value={company.postalCode}
+          onChange={handleInputChange}
+          className="w-full border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </Field>
+      {errors.postalCode && <p className="mt-1 text-sm text-red-600">{errors.postalCode}</p>}
+    </div>
 
-                </div>
-                {/* Company's postal code */}
-                <div>
-                    <label htmlFor="postalCode">Code postal</label>
-                    <Field className="w-full">
-                        <Input type="text" name="postalCode" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={company.postalCode}
-                            onChange={handleInputChange}
-                            >
-                        </Input>
-                    </Field>
-                    {errors.postalCode && <p style={{ color: "red" }}>{errors.postalCode}</p>}
+    {/* City */}
+    <div className="mb-6">
+      <label htmlFor="city" className="block mb-2 font-semibold text-primary">Ville</label>
+      <Field>
+        <Input
+          type="text"
+          name="city"
+          value={company.city}
+          onChange={handleInputChange}
+          className="w-full border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </Field>
+      {errors.city && <p className="mt-1 text-sm text-red-600">{errors.city}</p>}
+    </div>
 
-                </div>
-                {/* Company's city */}
-                <div>
-                    <label htmlFor="city">Ville</label>
-                    <Field className="w-full">
-                        <Input type="text" name="city" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={company.city}
-                            onChange={handleInputChange}
-                            >
-                        </Input>
-                    </Field>
-                    {errors.city && <p style={{ color: "red" }}>{errors.city}</p>}
+    {/* Insurance name */}
+    <div className="mb-6">
+      <label htmlFor="insuranceName" className="block mb-2 font-semibold text-primary">Assurance décennale</label>
+      <Field>
+        <Input
+          type="text"
+          name="insuranceName"
+          value={company.decennialInsuranceName}
+          onChange={handleInputChange}
+          className="w-full border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </Field>
+      {errors.insuranceName && <p className="mt-1 text-sm text-red-600">{errors.insuranceName}</p>}
+    </div>
 
-                </div>
-                {/* Decennial insurance name */}
-                <div>
-                    <label htmlFor="insuranceName">Assurance décennale</label>
-                    <Field className="w-full">
-                        <Input type="text" name="insuranceName" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={company.decennialInsuranceName}
-                            onChange={handleInputChange}
-                            >
-                        </Input>
-                    </Field>
-                    {errors.insuranceName && <p style={{ color: "red" }}>{errors.insuranceName}</p>}
+    {/* Insurance contract number */}
+    <div className="mb-6">
+      <label htmlFor="insuranceContractNumber" className="block mb-2 font-semibold text-primary">Numéro de contrat de l&apos;assurance décennale</label>
+      <Field>
+        <Input
+          type="text"
+          name="insuranceContractNumber"
+          value={company.insuranceContractNumber}
+          onChange={handleInputChange}
+          className="w-full border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </Field>
+      {errors.insuranceContractNumber && <p className="mt-1 text-sm text-red-600">{errors.insuranceContractNumber}</p>}
+    </div>
 
-                </div>
-                {/* Insurance contract number */}
-                <div>
-                    <label htmlFor="insuranceContractNumber">Numéro de contrat de l&apos;assurance décennale</label>
-                    <Field className="w-full">
-                        <Input type="text" name="insuranceContractNumber" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={company.insuranceContractNumber}
-                            onChange={handleInputChange}
-                            >
-                        </Input>
-                    </Field>
-                    {errors.insuranceContractNumber && <p style={{ color: "red" }}>{errors.insuranceContractNumber}</p>}
+    {/* Insurance covered zone */}
+    <div className="mb-6">
+      <label htmlFor="insuranceCoveredZone" className="block mb-2 font-semibold text-primary">Zone couverte par l&apos;assurance décennale</label>
+      <Field>
+        <Input
+          type="text"
+          name="insuranceCoveredZone"
+          value={company.aeraCoveredByInsurance}
+          onChange={handleInputChange}
+          className="w-full border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </Field>
+      {errors.insuranceCoveredZone && <p className="mt-1 text-sm text-red-600">{errors.insuranceCoveredZone}</p>}
+    </div>
 
-                </div>
-                {/* Aera covered by insurance */}
-                <div>
-                    <label htmlFor="insuranceCoveredZone">Zone couverte par l&apos;assurance décennale</label>
-                    <Field className="w-full">
-                        <Input type="text" name="insuranceCoveredZone" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                            value={company.aeraCoveredByInsurance}
-                            onChange={handleInputChange}
-                            >
-                        </Input>
-                    </Field>
-                    {errors.insuranceCoveredZone && <p style={{ color: "red" }}>{errors.insuranceCoveredZone}</p>}
+    <Input type="hidden" name="csrf_token" value={csrfToken} />
 
-                </div>
-                <Input type="hidden" name="csrf_token" value={csrfToken} />
-                
-                <button type="submit">Modifier</button>
-            </form>
-        </>
+    <button
+      type="submit"
+      className="w-full bg-primary text-custom-white font-bold py-3 rounded-md hover:bg-primary-dark transition-colors"
+    >
+      Modifier
+    </button>
+  </form>
+</>
+
+
     );
 };
