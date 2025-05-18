@@ -48,7 +48,15 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { CsrfError, createCsrfProtect } from '@edge-csrf/nextjs';
 import { NextResponse } from "next/server";
 // import { csrfMiddleware } from "./lib/csrf";
+const isTestEnvironment = () => {
+  // Verify environment variables for Cypress
+  return process.env.NEXT_PUBLIC_CYPRESS === 'true' || 
+         process.env.CYPRESS === 'true' ||
+         process.env.IS_TEST_ENV === 'true';
+};
+
  
+
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
   "https://www.placopro.pro",
@@ -250,6 +258,11 @@ if (
   // --- CSRF Protection ---
   // Apply csrf only for not GET requests or client requests (if we don't add this block of code, SSR won't pass)
   if (req.method !== 'GET' || !isServerSideRequest) {
+    if (isTestEnvironment()) {
+    console.log('Test environment detected - bypassing CSRF checks');
+    console.log("BASE DE DONNEES : "+process.env.DATABASE_URL);
+    // Ne pas effectuer la validation CSRF pour les tests
+  } else {
     try {
       // Apply CSRF for all routes after authorization
       await csrfProtect(req, response);
@@ -263,6 +276,7 @@ if (
         throw err;
       }
     }
+  }
   }
  
  

@@ -1,19 +1,42 @@
-export const fetchServices = async (): Promise<ServiceEntityType[]> => {
-    try {
-      const response = await fetch(`/api/service`, {
-            method: "GET",
-            credentials: "include", 
-        });
-      if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
-  
-      const data: ServiceEntityType[] = await response.json();
-      console.log("Données reçues après le fetch :", data);
-      return data;
-    } catch (error) {
-      console.error("Erreur lors de la récupération des unités :", error);
-      throw error;
+export const fetchServices = async ({
+  search,
+  limit,
+  page,
+}: {
+  search?: string;
+  limit: number;
+  page: number;
+}): Promise<ServicesWithTotal> => {
+  try {
+    const params = new URLSearchParams();
+    params.set("page", page.toString());
+    params.set("limit", limit.toString());
+    if (search) {
+      params.set("search", encodeURIComponent(search));
     }
-  };
+
+    const response = await fetch(`/api/service?${params.toString()}`, {
+      method: "GET",
+      credentials: "include",
+              headers: {
+            "X-get-type": "services-list",
+
+        },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP: ${response.status}`);
+    }
+
+    const data: ServicesWithTotal = await response.json();
+    console.log("Données reçues après le fetch :", data);
+    return data;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des services :", error);
+    throw error;
+  }
+};
+
   
   export const updateService = async (serviceId: string, updatedValues: ServiceUpdateType, csrfToken: string): Promise<ServiceEntityType> => {
     try {

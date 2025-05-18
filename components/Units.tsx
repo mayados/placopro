@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Button from "@/components/Button";
 import { toast } from 'react-hot-toast';
 import { Dialog, DialogTitle, DialogPanel, Description} from '@headlessui/react';
-import { faXmark, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import { Field, Input } from '@headlessui/react';
 import { createUnit, deleteUnit, fetchUnits, updateUnit } from "@/services/api/unitService";
 import { createUnitSchema } from "@/validation/unitValidation";
@@ -185,97 +183,180 @@ export default function ToDos({ csrfToken }: UnitsProps) {
 
     return (
 
-        <>
-            <div className="flex w-screen">
+   <>
+  <section className="flex-[8] px-4 py-6 bg-[#F5F5F5] rounded-md shadow-sm">
+    <header className="mb-6">
+      <h1 className="text-3xl font-bold text-primary text-center mb-4">Unités</h1>
+    </header>
 
-                <section className="border-2 border-green-800 flex-[8]">
-                    <h1 className="text-3xl text-white text-center">Unités</h1>
+    <section>
+      <h2 className="text-xl font-semibold mb-3">Créer une unité</h2>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleUnitCreation();
+        }}
+        aria-label="Formulaire de création d'une unité"
+        className="mb-8"
+      >
+        <div className="mb-4">
+          <label htmlFor="unit-label" className="block mb-1 font-medium text-gray-700">
+            Label
+          </label>
+          <Field>
+            <Input
+              id="unit-label"
+              type="text"
+              name="label"
+              className="w-full h-9 rounded-md bg-gray-700 text-white pl-3"
+              value={unitFormValues.label ?? ""}
+              onChange={handleInputChange}
+              aria-invalid={errors.label ? "true" : "false"}
+              aria-describedby={errors.label ? "label-error" : undefined}
+            />
+          </Field>
+          {errors.label && (
+            <p id="label-error" className="mt-1 text-sm text-red-600" role="alert">
+              {errors.label}
+            </p>
+          )}
+        </div>
 
-                    <section>
-                        <p>Créer une unité</p>
-                        <form
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                handleUnitCreation();
-                            }}
-                        >
-                            <div>
-                                <label htmlFor="label">Label</label>
-                                <Field className="w-full">
-                                    <Input type="text" name="label" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
-                                        // Avoid uncontrolled input. Operateur nullish coalescing ?? allows to put an empty string if the value is null or undefined
-                                        value={unitFormValues.label ?? ""}
-                                        onChange={handleInputChange}
-                                    >
-                                    </Input>
-                                </Field>
-                                {errors.label && <p style={{ color: "red" }}>{errors.label}</p>}
-                            </div>
-                            <Input type="hidden" name="csrf_token" value={csrfToken} />
+        <Input type="hidden" name="csrf_token" value={csrfToken} />
 
-                            <button type="submit">Ajouter</button>
-                        </form>
-                        {
-                            units.map((unit) => {
+        <button
+          type="submit"
+          className="bg-primary text-white px-5 py-2 rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-[#FDA821]"
+        >
+          Ajouter
+        </button>
+      </form>
 
-                                return (
-                                    <article key={unit.id}>
-                                        <p>{unit.label}</p>
-                                        <Button
-                                            label="Supprimer"
-                                            icon={faXmark}
-                                            type="button"
-                                            specifyBackground="bg-red-500"
-                                            action={() => openDeleteDialog(unit)}
-                                        />
+      <table className="w-full text-left border-collapse">
+        <thead>
+          <tr className="bg-primary text-white">
+            <th className="px-3 py-2">Label</th>
+            <th className="px-3 py-2">Modifier</th>
+            <th className="px-3 py-2">Supprimer</th>
+          </tr>
+        </thead>
+        <tbody>
+          {units.map((unit) => (
+            <tr key={unit.id} className="even:bg-[#F5F5F5]">
+              <td className="px-3 py-2">{unit.label}</td>
+              <td className="px-3 py-2">
+                <button
+                  onClick={() => openEditModal(unit)}
+                  aria-label={`Modifier l'unité ${unit.label}`}
+                  className="text-[#FDA821] underline hover:text-primary focus:outline-none focus:ring-2 focus:ring-[#FDA821] rounded"
+                >
+                  Modifier
+                </button>
+              </td>
+              <td className="px-3 py-2">
+                <button
+                  onClick={() => openDeleteDialog(unit)}
+                  aria-label={`Supprimer l'unité ${unit.label}`}
+                  className="text-red-500 underline hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 rounded"
+                >
+                  Supprimer
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
-                                        <Button
-                                            label="Modifier"
-                                            icon={faPenToSquare}
-                                            type="button"
-                                            specifyBackground="bg-orange-500"
-                                            action={() => openEditModal(unit)}
-                                        />
-                                        <Dialog open={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} className="absolute top-[50%] left-[25%]">
-                                            <DialogPanel>
-                                                <DialogTitle>Modifier l&apos;unité</DialogTitle>
+      {/* Modal modification unité */}
+      <Dialog
+        open={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+        aria-labelledby="edit-unit-title"
+        aria-describedby="edit-unit-desc"
+      >
+        <DialogPanel className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full text-black">
+          <DialogTitle id="edit-unit-title" className="text-xl font-semibold text-primary mb-4">
+            Modifier l&apos;unité
+          </DialogTitle>
 
-                                                <label>Unité</label>
-                                                <Input
-                                                    name="label"
-                                                    value={editedValues.label || ""}
-                                                    onChange={handleEditChange}
-                                                    className="w-full text-black"
-                                                />
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleUpdate();
+            }}
+            aria-describedby="edit-unit-desc"
+          >
+            <label htmlFor="edit-unit-label" className="block mb-1 font-medium text-gray-700">
+              Unité
+            </label>
+            <Input
+              id="edit-unit-label"
+              name="label"
+              value={editedValues.label || ""}
+              onChange={handleEditChange}
+              className="w-full mb-6 text-black"
+            />
 
-                                                <button onClick={handleUpdate}>Enregistrer</button>
-                                                <button onClick={() => setIsEditModalOpen(false)}>Annuler</button>
-                                            </DialogPanel>
-                                        </Dialog>
-
-                                    </article>
-                                );
-                            })
-                        }
-                    </section>
-
-                </section>
-                {/* Delete unit Dialog */}
-                {isOpen && unitToDelete && (
-                    <Dialog open={isOpen} onClose={closeDeleteDialog} className="absolute top-[50%] left-[25%]" >
-                        <DialogPanel className="bg-gray-300 p-5 rounded-md shadow-lg text-black">
-                            <DialogTitle>Supprimer l&apos;unité</DialogTitle>
-                            <Description>Cette action est irréversible</Description>
-                            <p>Etes-vous sûr de vouloir supprimer cette unité ? Toutes ses données seront supprimées de façon permanente. Cette action est irréversible.</p>
-                            <div className="flex justify-between mt-4">
-                                <button onClick={() => handleUnitDeletion(unitToDelete)} className="bg-red-600 text-white px-4 py-2 rounded-md">Delete</button>
-                                <button onClick={closeDeleteDialog} className="bg-gray-300 text-black px-4 py-2 rounded-md">Cancel</button>
-                            </div>
-                        </DialogPanel>
-                    </Dialog>
-                )}
+            <div className="flex justify-end gap-4">
+              <button
+                type="submit"
+                className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-[#FDA821]"
+              >
+                Enregistrer
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsEditModalOpen(false)}
+                className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-[#FDA821]"
+              >
+                Annuler
+              </button>
             </div>
-        </>
+          </form>
+        </DialogPanel>
+      </Dialog>
+    </section>
+  </section>
+
+  {/* Delete unit Dialog */}
+  {isOpen && unitToDelete && (
+    <Dialog
+      open={isOpen}
+      onClose={closeDeleteDialog}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      aria-labelledby="unit-delete-title"
+      aria-describedby="unit-delete-desc"
+    >
+      <DialogPanel className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full text-black">
+        <DialogTitle id="unit-delete-title" className="text-xl font-semibold text-primary mb-2">
+          Supprimer l&apos;unité
+        </DialogTitle>
+        <Description id="unit-delete-desc" className="mb-4">
+          Cette action est irréversible.
+        </Description>
+        <p className="mb-6">
+          Êtes-vous sûr de vouloir supprimer l&apos;unité <strong>{unitToDelete.label}</strong> ? Toutes ses données seront supprimées de façon permanente.
+        </p>
+        <div className="flex justify-end gap-4">
+          <button
+            onClick={() => handleUnitDeletion(unitToDelete)}
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
+          >
+            Supprimer
+          </button>
+          <button
+            onClick={closeDeleteDialog}
+            className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FDA821]"
+          >
+            Annuler
+          </button>
+        </div>
+      </DialogPanel>
+    </Dialog>
+  )}
+</>
+
 
     )
 }

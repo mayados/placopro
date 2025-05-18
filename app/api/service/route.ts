@@ -4,9 +4,11 @@ import { GET as findServices} from "@/app/api/service/find";
 import { GET as getList} from "@/app/api/service/list"; 
 
 export async function GET(req: NextRequest) {
-    if(req.nextUrl.searchParams.get('search')){
-        return findServices(req);
+    if(req.headers.get('X-get-type') === 'services-list'){
+        return getList(req);
+
     }else{
-        return getList();
+                return findServices(req);
+
     }
 }
