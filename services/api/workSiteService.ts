@@ -26,33 +26,55 @@ export const fetchWorkSitesWithoutPagination = async (): Promise<WorkSiteWithTot
 
 // Retrieve all the workSites with pagination
 export const fetchWorkSites = async ({
-    page,
-    pageComming,
-    pageCompleted,
-    pageInProgress,
-    limit,
-  }: {
-    page: number;
-    pageComming: number;
-    pageCompleted: number;
-    pageInProgress: number;
-    limit: number;
-  }): Promise<WorkSiteWithTotalsAndStatus> => {
-    try {
-      const response = await fetch(`/api/workSites?page=${page}&pageComming=${pageComming}&pageCompleted=${pageCompleted}&pageInProgress=${pageInProgress}&limit=${limit}`, {
-            method: "GET",
-            credentials: "include", 
-        });
-      if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
-  
-      const data: WorkSiteWithTotalsAndStatus = await response.json();
-      console.log("Données reçues après le fetch :", data);
-      return data;
-    } catch (error) {
-      console.error("Erreur lors de la récupération des chantiers :", error);
-      throw error;
+  page,
+  pageComming,
+  pageCompleted,
+  pageInProgress,
+  limit,
+  search = "",
+}: {
+  page: number;
+  pageComming: number;
+  pageCompleted: number;
+  pageInProgress: number;
+  limit: number;
+  search?: string;
+}): Promise<WorkSiteWithTotalsAndStatus> => {
+  try {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      pageComming: pageComming.toString(),
+      pageCompleted: pageCompleted.toString(),
+      pageInProgress: pageInProgress.toString(),
+      limit: limit.toString(),
+    });
+
+    if (search.trim()) {
+      params.set("search", search.trim());
     }
-  };
+
+    const response = await fetch(`/api/workSites?${params.toString()}`, {
+      method: "GET",
+      credentials: "include",
+                  headers: {
+                "X-get-type": "workSites-list",
+
+            },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP: ${response.status}`);
+    }
+
+    const data: WorkSiteWithTotalsAndStatus = await response.json();
+    console.log("Données reçues après le fetch :", data);
+    return data;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des chantiers :", error);
+    throw error;
+  }
+};
+
   
 
 // Retrieve a specific WorkSite

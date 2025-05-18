@@ -53,13 +53,18 @@ export async function GET(req: NextRequest) {
       };
 
       // RunCommandRaw to find corresponding documents (onlys IDs)
-      await db.$runCommandRaw({
+      const mongoResult = await db.$runCommandRaw({
         find: "Quote",
         filter: mongoFilter,
         projection: { _id: 1 },
       });
 
       // mongoResult.cursor.firstBatch est un tableau des docs Mongo
+            // Extraire les IDs Mongo (_id) du résultat
+      type MongoFindResult = { _id: string };
+
+const firstBatch = (mongoResult.cursor as { firstBatch?: MongoFindResult[] })?.firstBatch ?? [];
+    firstBatch.map(doc => doc._id.toString());
   // const firstBatch = (mongoResult.cursor as { firstBatch?: any[] } | undefined)?.firstBatch ?? [];
 // const quotesWithBackupIds = firstBatch.map(doc => doc._id.toString());
     }

@@ -7,6 +7,7 @@ import Link from "next/link";
 import { fetchCreditNotes } from "@/services/api/creditNoteService";
 import { Pagination } from "@/components/Pagination";
 import { useSearchParams } from "next/navigation";
+import SearchBar from "./SearchBar";
 
 
 const LIMIT = 15;
@@ -19,6 +20,8 @@ export default function CreditNotes() {
     const page = parseInt(searchParams.get("page") || "1", 10);
     const pageSettled = parseInt(searchParams.get("pageSettled") || "1", 10);
     const pageNotSettled = parseInt(searchParams.get("pageNotSettled") || "1", 10);
+        const searchQuery = searchParams.get("search") || "";
+
 
     // a const for each workSite status
     const [creditNotes, setCreditNotes] = useState<CreditNoteForListType[]>([])
@@ -27,6 +30,7 @@ export default function CreditNotes() {
     const [totalCreditNotes, setTotalCreditNotes] = useState<number>(0)
     const [totalSettledCreditNotes, setTotalSettledCreditNotes] = useState<number>(0)
     const [totalNotSettledCreditNotes, setTotalNotSettledCreditNotes] = useState<number>(0)
+        const [search, setSearch] = useState(searchQuery);
 
 
     useEffect(() => {
@@ -37,6 +41,7 @@ export default function CreditNotes() {
                     pageSettled,
                     pageNotSettled,
                     limit: LIMIT,
+                    search
                 });
                 console.log("données reçues après le fetch : " + data)
                 // We hydrate each const with the datas
@@ -53,7 +58,7 @@ export default function CreditNotes() {
         }
 
         loadCreditNotes()
-    }, [page, pageSettled, pageNotSettled]);
+    }, [page, pageSettled, pageNotSettled, search]);
 
     const renderPagination = (total: number, pageParam: string) => {
         if (total > 0) {
@@ -71,6 +76,12 @@ export default function CreditNotes() {
                 <header className="mb-6">
                     <h1 className="text-3xl font-bold text-[#1873BF] text-center mb-2">Avoirs</h1>
                 </header>
+                                   <SearchBar
+                                          value={search}
+                                          onChange={(e) => setSearch(e.target.value)}
+                                          onClear={() => setSearch("")}
+                                          placeholder="Rechercher une facture (numéro d'avoir, nom client)"
+                                      />
                 <TabGroup className="w-full">
                     <TabList className="flex flex-wrap justify-center gap-3 mb-6" >
 
