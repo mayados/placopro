@@ -50,7 +50,7 @@ export async function PUT(req: NextRequest) {
   
   // Détecter si la facture est enregistrée en tant que "brouillon" ou en "final"
   // Exclure 'status' du schéma de validation Zod
-  const { status, quoteId, number, ...dataWithoutStatus } = data;
+  const { status, quoteId, ...dataWithoutStatus } = data;
   console.log("Quote ID extrait:", quoteId); // Vérifie s'il est bien défini
 
   // Choisir le schéma en fonction du statut (avant ou après validation)
@@ -71,9 +71,9 @@ export async function PUT(req: NextRequest) {
   console.log("Données nettoyées :", JSON.stringify(sanitizedData));
      
   // Ajoute le statut aux données validées
-  sanitizedData.status = status;
+  // sanitizedData.status = status;
   sanitizedData.quoteId = quoteId;
-  sanitizedData.number = number;
+  // sanitizedData.number = number;
 
   console.log(data)
   console.log("valeur de saveMode  : "+data.status)

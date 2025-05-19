@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
         console.log("Données nettoyées :", JSON.stringify(sanitizedData));
     
         // Ajoute le statut aux données validées
-        sanitizedData.status = status;
+        // sanitizedData.status = status;
         const clientId = data.clientId;
 
         // Execute all operations in one transaction for integrity

@@ -1,6 +1,6 @@
 // modules/quote/services.ts
 import { serviceRepository } from "./serviceRepository";
-import type { Service as PrismaService } from "@prisma/client";
+import type { Prisma, Service as PrismaService } from "@prisma/client";
 
 export async function createOrUpdateService(
   service: ServiceType,
@@ -40,10 +40,13 @@ export async function createOrUpdateService(
 }
 
 export async function createOrUpdateServices(
-  services: ServiceType[]
+  services: ServiceType[],
+  tx: Prisma.TransactionClient
 ): Promise<Array<PrismaService | null>> {
-  return serviceRepository.runInTransaction(async (tx) => {
-    const repo = serviceRepository.createServiceRepo(tx);
-    return Promise.all(services.map(service => createOrUpdateService(service, repo)));
-  });
+  // return serviceRepository.runInTransaction(async (tx) => {
+  //   const repo = serviceRepository.createServiceRepo(tx);
+  //   return Promise.all(services.map(service => createOrUpdateService(service, repo)));
+  // });
+   const repo = serviceRepository.createServiceRepo(tx); // create repo with existing tx
+  return Promise.all(services.map(service => createOrUpdateService(service, repo)));
 }
