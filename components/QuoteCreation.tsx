@@ -831,9 +831,7 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                 <button
                     className="bg-red-400"
                     type="submit"
-                    onClick={() => {
-                        handleQuoteCreation();
-                    }}
+       
                 >Enregistrer à l&apos;état de brouillon
                 </button>
                 <button
