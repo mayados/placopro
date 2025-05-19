@@ -1,6 +1,12 @@
-// /validation/billValidation.ts
+// /validation/quoteValidation.ts
 import { QuoteDiscountReasonEnum, QuoteTravelCostsTypeEnum } from '@prisma/client';
 import { z } from 'zod';
+
+export type DraftQuoteData = z.infer<typeof createQuoteDraftSchema>;
+export type FinalQuoteData = z.infer<typeof createQuoteFinalSchema>;
+export type ServiceFormData = z.infer<typeof serviceFormQuoteSchema>;
+
+export type CreateQuoteData = DraftQuoteData | FinalQuoteData;
 
 // Transformation of string into Date with personnalized message (Because when retrieving Date in JSON in API route they became string)
 const createDateSchema = (message: string) =>

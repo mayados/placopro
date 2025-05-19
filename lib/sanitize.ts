@@ -24,3 +24,32 @@ export function sanitizeData(data: any) {
   
     return data;
   }
+
+// import DOMPurify from "dompurify";
+// import { JSDOM } from "jsdom";
+
+// /**
+//  * Fonction utilitaire pour assainir récursivement les champs string d'un objet (contre XSS).
+//  * Elle conserve le type original de l'objet en sortie.
+//  */
+// export function sanitizeData<T extends object>(data: T): T {
+//   const { window } = new JSDOM("");
+//   const purify = DOMPurify(window);
+
+//   for (const key of Object.keys(data) as (keyof T)[]) {
+//     const value = data[key];
+
+//     if (typeof value === "string") {
+//       data[key] = purify.sanitize(value) as T[keyof T];
+//     } else if (
+//       value !== null &&
+//       typeof value === "object" &&
+//       !Array.isArray(value)
+//     ) {
+//       // Cast nécessaire ici pour forcer TypeScript à accepter value comme objet
+//       data[key] = sanitizeData(value as Record<string, unknown>) as T[keyof T];
+//     }
+//   }
+
+//   return data;
+// }
