@@ -1,22 +1,12 @@
 
 /* eslint-disable */
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 const db = new PrismaClient();
 
-// Define exact type of tx object injected by prisma
-export type TransactionClient = Omit<
-  PrismaClient,
-  "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
->;
+
 
 export const serviceRepository = {
-    // Util function to execute a transaction
-  runInTransaction: <T>(fn: (tx: TransactionClient) => Promise<T>): Promise<T> => {
-    return db.$transaction(fn); // On utilise bien la bonne surcharge ici
-  },
-
-  // Create a tiny repo from a transaction's client
-  createServiceRepo: (tx: TransactionClient) => ({
+  createServiceRepo: (tx: Prisma.TransactionClient) => ({
     findUnitByLabel: (label: string) =>
       tx.unit.findUnique({ where: { label } }),
 
@@ -29,7 +19,7 @@ export const serviceRepository = {
         include: { units: true, vatRates: true },
       }),
 
-    createService: (data: any) =>
+    createService: (data: Prisma.ServiceCreateInput) =>
       tx.service.create({ data }),
 
     createServiceUnit: (serviceId: string, unitId: string) =>
@@ -44,6 +34,12 @@ export const serviceRepository = {
   }),
 };
 
-export async function findServiceByLabel(label: string) {
-  return db.service.findUnique({ where: { label } });
+// export async function findServiceByLabelFactory(label: string) {
+//   return db.service.findUnique({ where: { label } });
+// }
+
+export function findServiceByLabelFactory(tx: PrismaClient | Prisma.TransactionClient) {
+  return (label: string) => {
+    return tx.service.findUnique({ where: { label } });
+  };
 }

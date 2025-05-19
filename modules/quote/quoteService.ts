@@ -1,16 +1,23 @@
-import { createQuoteService } from "./quoteServiceRepository";
+import { createQuoteServiceFactory } from "./quoteServiceRepository";
 import { calculateServiceTotals } from "@/modules/quote/calulation";
 import { buildServiceBackup } from "@/modules/quote/backup";
-import { findServiceByLabel } from "@/modules/quote/serviceRepository";
+import { findServiceByLabelFactory } from "@/modules/quote/serviceRepository";
+import { Prisma, PrismaClient } from "@prisma/client";
 
 export async function createQuoteServicesAndBackup(
   services: ServiceAndQuoteServiceType[],
-  quoteId: string
+  quoteId: string,
+  tx: Prisma.TransactionClient | PrismaClient
+
 ) {
+
+  const createQuoteService = createQuoteServiceFactory(tx);
+  const findServiceByLabel = findServiceByLabelFactory(tx);
   const backup: ServiceBackup[] = [];
   let totalHT = 0;
   let totalTTC = 0;
   let totalVAT = 0;
+console.log("Services à traiter pour backup:", services);
 
   for (const service of services) {
     const serviceRetrieved = await findServiceByLabel(service.label);

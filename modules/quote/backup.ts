@@ -21,8 +21,8 @@ export function buildServiceBackup(
   };
 }
 
-export async function buildClientBackup(clientId: string) {
-  const client = await clientRepository.findById(clientId);
+export async function buildClientBackup(clientId: string, tx: Prisma.TransactionClient) {
+  const client = await clientRepository(tx).findById(clientId); 
 
   return {
     firstName: client?.firstName,
@@ -36,8 +36,9 @@ export async function buildClientBackup(clientId: string) {
   };
 }
 
-export async function buildWorkSiteBackup(workSiteId: string) {
-  const workSite = await workSiteRepository.findById(workSiteId);
+export async function buildWorkSiteBackup(workSiteId: string, tx: Prisma.TransactionClient) {
+    const workSite = await workSiteRepository(tx).findById(workSiteId); 
+
 
   return {
     road: workSite?.road,
@@ -56,8 +57,14 @@ export async function buildWorkSiteBackup(workSiteId: string) {
 //   );
 // }
 
+// export function formatServicesBackupForJson(
+//   services: ServiceBackup[]
+// ): Prisma.JsonValue {
+//   return services as unknown as Prisma.JsonValue;
+// }
+
 export function formatServicesBackupForJson(
   services: ServiceBackup[]
 ): Prisma.JsonValue {
-  return services as unknown as Prisma.JsonValue;
+  return JSON.parse(JSON.stringify(services));
 }

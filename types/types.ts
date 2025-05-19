@@ -651,7 +651,7 @@ interface ServiceCompleteVerificationType{
 }
 
 interface ServiceType{
-    id: string,
+    id?: string,
     label: string,
     unitPriceHT: string,
     type: string;
