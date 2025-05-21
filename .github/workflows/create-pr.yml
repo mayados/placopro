@@ -13,7 +13,10 @@ jobs:
       - name: Checkout test branch
         uses: actions/checkout@v4
         with:
-          ref: test  # ⬅️ Force l'environnement Git à être sur la bonne branche
+          ref: test  # ⚠️ indispensable
+
+      - name: 🔍 DEBUG - Affiche la branche actuelle
+        run: git branch --show-current
 
       - name: Vérifier si test est en avance sur main
         run: |
