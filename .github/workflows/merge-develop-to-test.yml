@@ -8,13 +8,14 @@ on:
 jobs:
   merge:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_PAT_MERGE }}
           fetch-depth: 0
-          
+
       - name: Configure Git identity
         run: |
           git config --global user.name "github-actions"
@@ -24,7 +25,7 @@ jobs:
         run: |
           git fetch origin
           git checkout test
-          git merge origin/develop --no-ff --allow-unrelated-histories -m "Auto-merge develop -> test"
+          git merge origin/develop --no-ff -m "Auto-merge develop -> test"
           git push origin test
 
       - name: Déclencher la création de PR test -> main
@@ -33,3 +34,4 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           event-type: create-pr-from-test
           client-payload: '{"ref": "refs/heads/test"}'
+ 

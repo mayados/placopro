@@ -8,7 +8,7 @@ import { sanitizeData } from "@/lib/sanitize";
 // Asynchrone : waits for a promise
 export async function POST(req: NextRequest) {
     const data = await req.json();
-
+    console.log("test pr")
     const { 
             name, 
             type, 

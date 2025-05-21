@@ -13,7 +13,7 @@ jobs:
       - name: Checkout test branch
         uses: actions/checkout@v4
         with:
-          ref: test  # ⚠️ indispensable
+          ref: test
 
       - name: 🔍 DEBUG - Affiche la branche actuelle
         run: git branch --show-current
@@ -36,5 +36,4 @@ jobs:
           body: "Tests validés ✅ - PR prête à être revue."
           draft: false
           push-to-fork: false
- 
  
