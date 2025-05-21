@@ -17,10 +17,10 @@ import { faPlane, faXmark } from "@fortawesome/free-solid-svg-icons";
 // import toast, { Toaster } from 'react-hot-toast';
 type CreationBillFromQuoteProps = {
     csrfToken: string;
-    quoteNumber: string;
+    quoteSlug: string;
   };
 
-export default function CreationBillFromQuote({csrfToken, quoteNumber}: CreationBillFromQuoteProps){
+export default function CreationBillFromQuote({csrfToken, quoteSlug}: CreationBillFromQuoteProps){
 
     const [quote, setQuote] = useState<QuoteType>();
     const [createBillFormValues, setCreateBillFormValues] = useState<CreateBillFormValueType>({
@@ -84,7 +84,7 @@ export default function CreationBillFromQuote({csrfToken, quoteNumber}: Creation
         async function loadQuote() {
 
                 try{
-                    const data = await fetchQuote(quoteNumber)
+                    const data = await fetchQuote(quoteSlug)
                     let isDiscountFromQuote = false
                     if(data?.discountAmount !== 0 || data?.discountAmount !== null){
                         isDiscountFromQuote = true;
@@ -148,7 +148,7 @@ export default function CreationBillFromQuote({csrfToken, quoteNumber}: Creation
         loadQuote();
         loadVatRates();
         loadUnits();
-    },[quoteNumber,csrfToken, errors]);
+    },[quoteSlug,csrfToken, errors]);
 
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -467,11 +467,14 @@ const addService = () => {
     // console.log("Les services enlevés de bill :", JSON.stringify(createBillFormValues.servicesToUnlink));
 
     return (
-        <div className="relative">
-            {/* <div><Toaster/></div> */}
-            <h1 className="text-3xl text-white ml-3 text-center">Création de facture liée au devis n°{quote.number}</h1>
-            {/* <div><Toaster /></div> */}
+        <>
+          <header className="text-center my-4">
+    <h1 className="text-3xl text-primary font-semibold mb-8 text-center">Création de facture liée au devis n°{quote.number}</h1>
+  </header>
+
             <form 
+                className="text-primary bg-custom-white mx-auto max-w-3xl  rounded p-5 border-2 border-primary"
+
                 autoComplete="off"
                 onSubmit={(e) => {
                     e.preventDefault();
@@ -484,7 +487,8 @@ const addService = () => {
                     <Field className="w-full">
                         <Input type="text" name="client" 
                             value={quote.client.name+" "+quote.client.firstName}
-                            className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                                                    className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
                             readOnly
                         >
                         </Input>
@@ -497,7 +501,8 @@ const addService = () => {
                     <Field className="w-full">
                         <Input type="text" name="workSite" 
                             value={`${quote?.workSite.addressNumber} ${quote?.workSite.road} ${quote?.workSite.additionalAddress ? quote?.workSite.additionalAddress + " " : ""}${quote?.workSite.postalCode} ${quote?.workSite.city}`}
-                            className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                                                    className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
                             readOnly
                         >
                         </Input>
@@ -508,7 +513,9 @@ const addService = () => {
                 <div>
                     <label htmlFor="natureOfWork">Nature des travaux</label>
                     <Field className="w-full">
-                        <Input type="text" name="natureOfWork" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="text" name="natureOfWork" 
+                                                className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
                             value={createBillFormValues.natureOfWork !== null
                                 ? createBillFormValues.natureOfWork
                                 : quote.natureOfWork ?? ""} 
@@ -524,7 +531,9 @@ const addService = () => {
                 <div>
                     <label htmlFor="description">Description</label>
                     <Field className="w-full">
-                        <Textarea name="description" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Textarea name="description" 
+                                                className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
                             value={createBillFormValues.description !== null
                                 ? createBillFormValues.description
                                 : quote.description ?? ""} 
@@ -539,7 +548,9 @@ const addService = () => {
                 <div>
                     <label htmlFor="workStartDate">Date de début des travaux</label>
                     <Field className="w-full">
-                        <Input type="date" name="workStartDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="date" name="workStartDate" 
+                                                className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -550,7 +561,9 @@ const addService = () => {
                 <div>
                     <label htmlFor="workEndDate">Date de fin des travaux</label>
                     <Field className="w-full">
-                        <Input type="date" name="workEndDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="date" name="workEndDate"
+                                                className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -562,7 +575,9 @@ const addService = () => {
                 <div>
                     <label htmlFor="workDuration">Durée des travaux (en jours)</label>
                     <Field className="w-full">
-                        <Input type="number" name="workDuration" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="number" name="workDuration" 
+                                                className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -574,7 +589,8 @@ const addService = () => {
                 <Select
                     name="travelCostsType"
                     value={createBillFormValues.travelCostsType || ""}
-                    className="w-full rounded-md bg-gray-700 text-white pl-3"
+                                            className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
                     disabled
                     >
                     <option value="">Type de frais de déplacement</option>
@@ -588,7 +604,9 @@ const addService = () => {
                 <div>
                     <label htmlFor="travelCosts">Frais de déplacement</label>
                     <Field className="w-full">
-                        <Input type="text" name="travelCosts" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="text" name="travelCosts" 
+                                                className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
                             value={createBillFormValues.travelCosts !== null
                                 ? createBillFormValues.travelCosts
                                 : quote.travelCosts ?? ""} 
@@ -601,7 +619,7 @@ const addService = () => {
             <h2>Services</h2>
             {createBillFormValues.services.map((service, index) => (
                 
-  <div key={index} className="p-4 border border-gray-600 rounded-md mb-4">
+  <div key={index}>
     {/* Label : Lecture seule pour services existants, modifiable pour nouveaux services */}
     <Input
       type="text"
@@ -609,7 +627,8 @@ const addService = () => {
       placeholder="Label du service"
       value={service.label}
       onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
-      className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
+                              className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
       disabled={!!service.id} // Si le service a un id, le label est en lecture seule
     />
     
@@ -636,7 +655,8 @@ const addService = () => {
       placeholder="Détails du service"
       value={service.detailsService}
       onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
-      className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
+                              className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
       disabled={!!service.id && !service.selectedFromSuggestions} // Désactivé si c'est un service existant ET qui n'a pas été selectionné des suggestions
     />
 
@@ -647,7 +667,8 @@ const addService = () => {
       placeholder="Prix unitaire"
       value={service.unitPriceHT || ""}
       onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
-      className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
+                              className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
       disabled={!!service.id || !!service.selectedFromSuggestions} // Désactivé si existant ou sélectionné via suggestion
     />
 
@@ -656,7 +677,8 @@ const addService = () => {
       name="type"
       onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
       value={service.type || ""}
-      className="w-full rounded-md bg-gray-700 text-white pl-3"
+                              className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
       disabled={!!service.id} // Désactivé si c'est un service existant
     >
       <option value="">Type de service</option>
@@ -672,7 +694,8 @@ const addService = () => {
       placeholder="Quantité"
       value={service.quantity || ""}
       onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
-      className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3 mb-2"
+                              className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
       disabled={!!service.id && !service.selectedFromSuggestions} // Désactivé si c'est un service existant ET qui n'a pas été selectionné des suggestions
     />
 
@@ -681,7 +704,8 @@ const addService = () => {
       name="unit"
       onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
       value={service.unit || ""}
-      className="w-full rounded-md bg-gray-700 text-white pl-3"
+                              className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
       disabled={!!service.id && !service.selectedFromSuggestions} // Désactivé si c'est un service existant ET qui n'a pas été selectionné des suggestions
     >
       <option value="">Unité</option>
@@ -695,7 +719,8 @@ const addService = () => {
       name="vatRate"
       onChange={(event) => handleServiceFieldChange(index, event.target.name, event.target.value)}
       value={service.vatRate || ""}
-      className="w-full rounded-md bg-gray-700 text-white pl-3"
+                              className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
       disabled={!!service.id && !service.selectedFromSuggestions} // Désactivé si c'est un service existant ET qui n'a pas été selectionné des suggestions
     >
       <option value="">Taux de TVA</option>
@@ -710,7 +735,7 @@ const addService = () => {
       icon={faXmark}
       type="button"
       action={() => addServiceToUnlink(service, index)}
-      specifyBackground="text-red-500"
+      specifyBackground="text-red-500 bg-red-500"
     />
   </div>
 ))}
@@ -721,13 +746,15 @@ const addService = () => {
   icon={faPlane}
   type="button"
   action={() => addService()}
-  specifyBackground="text-green-500"
+  specifyBackground="text-red-500 bg-primary text-custom-white"
 />
 {/* work duration */}
     <div>
         <label htmlFor="discountAmount">Montant remise</label>
         <Field className="w-full">
-            <Input type="number" name="discountAmount" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+            <Input type="number" name="discountAmount" 
+                                    className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
                 value={createBillFormValues.discountAmount || ""}
                 onChange={handleInputChange}
             >
@@ -739,7 +766,8 @@ const addService = () => {
         name="discountReason"
         value={createBillFormValues.discountReason || ""}
         onChange={handleInputChange}
-        className="w-full rounded-md bg-gray-700 text-white pl-3"
+                                className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
         >
         <option value="">Type de remise</option>
         {discountReasonChoices.map((type) => (
@@ -751,7 +779,9 @@ const addService = () => {
                     <label htmlFor="paymentTerms">Conditions de paiement</label>
                     <Field className="w-full">
                         <Textarea name="paymentTerms" 
-                            defaultValue={"Le paiement doit être effectué dans les 30 jours suivant la réception de la facture."} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                            defaultValue={"Le paiement doit être effectué dans les 30 jours suivant la réception de la facture."} 
+                                                    className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
                             onChange={handleInputChange}
                         >
                         </Textarea>
@@ -766,7 +796,9 @@ const addService = () => {
                 <div>
                     <label htmlFor="dueDate">Date limite de paiement</label>
                     <Field className="w-full">
-                        <Input type="date" name="dueDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="date" name="dueDate" 
+                                                className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -818,7 +850,7 @@ const addService = () => {
                 </Dialog>
             {/* )}  */}
 
-        </div>
+        </>
     );
 
 };
