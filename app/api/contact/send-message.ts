@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 
     await Promise.all([
       sendMail({
-        to: process.env.MAIL_TO!,
+        to: `${process.env.SMTP_USER}`,
         subject: 'Nouveau message via Placopro',
         html: adminHtml,
       }),
@@ -37,6 +37,8 @@ export async function POST(req: NextRequest) {
         html: userHtml,
       }),
     ]);
+
+    console.log("deux mails envoyés")
 
     return NextResponse.json({ ok: true }, { status: 200 });
   } catch (err) {
