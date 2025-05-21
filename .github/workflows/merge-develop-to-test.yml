@@ -1,37 +1,45 @@
-name: Auto Merge develop -> test
+name: Auto merge develop ➜ test
 
 on:
   push:
-    branches:
-      - develop
+    branches: [develop]
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   merge:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      # 1) Clone le commit exact qui vient d’être poussé (sur develop)
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_PAT_MERGE }}
-          fetch-depth: 0
+          fetch-depth: 0          # ← récupère toutes les branches
+          # ❌ PAS de `ref: test` ici
 
+      # 2) Identité Git pour le commit de merge
       - name: Configure Git identity
         run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
+          git config --global user.name  "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
+      # 3) Merge + push (sans force)
       - name: Merge develop into test
         run: |
-          git fetch origin
-          git checkout test
-          git merge origin/develop --no-ff -m "Auto-merge develop -> test"
+          set -e                               # stop si erreur
+          git fetch origin test                # assure d'avoir la branche distante
+          git checkout -B test origin/test || git checkout -b test
+          git merge origin/develop --no-ff -m "🤖 Auto-merge develop → test"
           git push origin test
 
-      - name: Déclencher la création de PR test -> main
+      # 4) Déclenche la PR test ➜ main (si le push a réussi)
+      - name: Dispatch event to create PR
         uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.GH_PAT }}
           event-type: create-pr-from-test
-          client-payload: '{"ref": "refs/heads/test"}'
- 
+          client-payload: '{"ref":"refs/heads/test"}'
