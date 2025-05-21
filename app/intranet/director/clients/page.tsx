@@ -5,7 +5,7 @@ export const metadata = {
   },
 };
 
-import Clients from "@/components/Clients";
+import PseudonymizedClients from "@/components/PseudonymizedClients";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Suspense } from "react";
 
@@ -14,7 +14,7 @@ export default function Page() {
   return (
     <Suspense fallback={<LoadingSpinner />}>
 
-      <Clients />
+      <PseudonymizedClients />
     </Suspense>
   )
 
