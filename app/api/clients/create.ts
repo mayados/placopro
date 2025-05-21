@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     //     } = data;
             // currentUser() is a founction from Clerk which allows to retrieve the current User
             const user = await currentUser()
-
+    console.log("test pr apres ajout dans main")
 
     try {
 
