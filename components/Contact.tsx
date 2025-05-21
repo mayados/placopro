@@ -16,7 +16,7 @@ type ContactProps = {
 };
 
 export default function Contact({ csrfToken }: ContactProps) {
-
+console.log("prrrrrrrrr")
   const [isSubmitted, setIsSubmitted] = useState(false)
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(ContactFormValidationSchema)
