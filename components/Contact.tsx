@@ -45,7 +45,6 @@ export default function Contact({ csrfToken }: ContactProps) {
   
   return (
     <div className="bg-custom-white text-primary">
-      {/* HERO */}
       <section
         className="relative min-h-[60vh] bg-cover bg-center flex items-center justify-center text-white px-6"
         style={{ backgroundImage: 'url(/images/trowel.webp)' }} 
