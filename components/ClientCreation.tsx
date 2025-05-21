@@ -5,6 +5,7 @@ import { Field,Input } from '@headlessui/react';
 import { useRouter } from "next/navigation";
 import { createClient } from "@/services/api/clientService";
 import { createClientSchema } from "@/validation/clientValidation";
+import Breadcrumb from "./BreadCrumb";
 
 // import toast, { Toaster } from 'react-hot-toast';
 
@@ -82,16 +83,26 @@ export default function ClientCreation({csrfToken}: ClientCreationProps){
 
     return (
 <>
+    <Breadcrumb
+      items={[
+        { label: "Tableau de bord", href: "/director" },
+        { label: `Création client` },
+      ]}
+    />
+            <header className="text-center my-4">
+
   <h1 className="text-3xl text-primary font-semibold mb-8 text-center">
-    Création client : {client.name} {client.firstName}
+    Création client  {client.name} {client.firstName}
   </h1>
+  </header>
 
   <form
     onSubmit={(e) => {
       e.preventDefault();
       handleClientCreation();
     }}
-    className="max-w-2xl mx-auto space-y-6 bg-primary p-4 sm:p-6 rounded-2xl shadow-xl"
+                    className="text-primary bg-custom-white mx-auto max-w-3xl  rounded p-5 border-2 border-primary"
+
   >
     <fieldset className="space-y-4">
       <legend className="sr-only">Informations client</legend>
@@ -112,7 +123,6 @@ export default function ClientCreation({csrfToken}: ClientCreationProps){
           <div key={name}>
             <label
               htmlFor={name}
-              className="block text-sm font-medium text-custom-white mb-1"
             >
               {label}
             </label>
@@ -121,7 +131,8 @@ export default function ClientCreation({csrfToken}: ClientCreationProps){
                 id={name}
                 type={type}
                 name={name}
-                className="w-full h-10 rounded-md bg-custom-white text-custom-gray px-3 focus:outline-none focus:ring-2 focus:ring-secondary"
+                                            className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
                 aria-describedby={errors[name] ? errorId : undefined}
                 onChange={handleInputChange}
               />

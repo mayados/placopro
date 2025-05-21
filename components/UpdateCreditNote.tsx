@@ -7,6 +7,8 @@ import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react
 import { fetchCreditNote, updateCreditNote, deleteCreditNote} from "@/services/api/creditNoteService";
 import { updateCreditNoteSchema } from "@/validation/creditNoteValidation";
 import { toast } from 'react-hot-toast';
+import Breadcrumb from "./BreadCrumb";
+import { formatDate } from "@/lib/utils";
 
 type UpdateCreditNoteProps = {
     csrfToken: string;
@@ -16,6 +18,7 @@ type UpdateCreditNoteProps = {
 export default function UpdateCreditNote({csrfToken, creditNoteNumber}: UpdateCreditNoteProps){
 
     const [creditNote, setCreditNote] = useState<CreditNoteType>();
+
     const settlementTypeChoices = 
     {
         REFUND: "Remboursement",
@@ -161,130 +164,213 @@ export default function UpdateCreditNote({csrfToken, creditNoteNumber}: UpdateCr
     if (!creditNote) return <div>Loading...</div>;
 
     return (
-        <div className="relative">
-            {/* <div><Toaster/></div> */}
-            <h1 className="text-3xl text-white ml-3 text-center">Avoir lié à la facture n°{creditNote.bill.number}</h1>
-            <p>Client : {creditNote?.clientBackup?.name} {creditNote?.clientBackup?.firstName}</p>
-            <p>Téléphone : {creditNote?.clientBackup?.phone}</p>
-            <p>Mail : {creditNote?.clientBackup?.mail}</p>
-            <p>Adresse : {creditNote?.clientBackup?.addressNumber} {creditNote?.clientBackup?.road} {creditNote?.clientBackup?.postalCode} {creditNote?.clientBackup?.city}</p>
-            <p>Complément d&apos;adresse : {creditNote?.clientBackup?.additionalAddress}</p>
-            {/* <div><Toaster /></div> */}
-            <form 
-                autoComplete="off"
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    handleCreditNoteUpdate();
-                }}
+       <>
+  <Breadcrumb
+    items={[
+      { label: "Tableau de bord", href: "/director" },
+      { label: "Avoirs", href: "/director/creditNotes" },
+      { label: `Avoir facture n°${creditNote.bill.number}` },
+    ]}
+  />
+
+  <article className="max-w-5xl mx-auto p-6 bg-custom-white rounded-2xl shadow-md space-y-8">
+    {/* Titre ------------------------------------------------------------- */}
+    <header className="text-center mb-6">
+      <h1 className="text-3xl font-bold text-primary">
+        Avoir lié à la facture n°{creditNote.bill.number}
+      </h1>
+    </header>
+
+    <section className="space-y-1 text-gray-800">
+      <p><strong>Client :</strong> {creditNote?.clientBackup?.name} {creditNote?.clientBackup?.firstName}</p>
+      <p><strong>Téléphone :</strong> {creditNote?.clientBackup?.phone}</p>
+      <p><strong>Mail :</strong> {creditNote?.clientBackup?.mail}</p>
+      <p><strong>Adresse :</strong> {creditNote?.clientBackup?.addressNumber} {creditNote?.clientBackup?.road}, {creditNote?.clientBackup?.postalCode} {creditNote?.clientBackup?.city}</p>
+      {creditNote?.clientBackup?.additionalAddress && (
+        <p><strong>Complément d&apos;adresse :</strong> {creditNote?.clientBackup?.additionalAddress}</p>
+      )}
+    </section>
+
+    <form
+      autoComplete="off"
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleCreditNoteUpdate();
+      }}
+      className="space-y-6"
+    >
+      <div>
+        <p className="block mb-2 text-sm font-medium text-gray-700">
+          L&apos;avoir a-t-il été réglé&nbsp;?
+        </p>
+
+        <RadioGroup
+          value={updateCreditNoteFormValues.isSettled}
+          onChange={(value) =>
+            setUpdateCreditNoteFormValues({ ...updateCreditNoteFormValues, isSettled: value })
+          }
+          className="flex gap-4"
+        >
+          {errors.isSettled && <p className="text-red-600">{errors.isSettled}</p>}
+
+          {/* Oui */}
+          <div
+            className={`cursor-pointer flex items-center gap-2 p-2 rounded-md
+              ${
+                updateCreditNoteFormValues.isSettled === true
+                  ? "bg-green-600 text-white"
+                  : "bg-gray-100 text-custom-gray"
+              }`}
+            onClick={() =>
+              setUpdateCreditNoteFormValues({ ...updateCreditNoteFormValues, isSettled: true })
+            }
+          >
+            <div
+              className={`w-4 h-4 flex items-center justify-center rounded-full border
+                ${
+                  updateCreditNoteFormValues.isSettled === true
+                    ? "border-white"
+                    : "border-custom-gray"
+                }`}
             >
+              {updateCreditNoteFormValues.isSettled === true && (
+                <div className="w-2 h-2 rounded-full bg-white" />
+              )}
+            </div>
+            <span>Oui</span>
+          </div>
 
-                <div className="mb-4">
-                        <p className="block mb-2">L&apos;avoir a-t-il été réglé ?</p>
-                        <RadioGroup
-                        value={updateCreditNoteFormValues.isSettled}
-                        onChange={(value) => {
-                            setUpdateCreditNoteFormValues({
-                            ...updateCreditNoteFormValues,
-                            isSettled: value
-                            });
-                        }}
-                        >
-                        {errors.isSettled && <p style={{ color: "red" }}>{errors.isSettled}</p>}
-
-                        <div className="flex gap-4">
-                            {/* Option Oui */}
-                            <div 
-                            className={`cursor-pointer flex items-center gap-2 p-2 rounded-md ${updateCreditNoteFormValues.isSettled === true ? 'bg-green-600 text-white' : 'bg-gray-700'}`}
-                            onClick={() => {
-                                setUpdateCreditNoteFormValues({
-                                ...updateCreditNoteFormValues,
-                                isSettled: true
-                                });
-                            }}
-                            >    
-                        <div className={`w-4 h-4 flex items-center justify-center rounded-full border ${updateCreditNoteFormValues.isSettled === true ? 'border-white' : 'border-gray-400'}`}>
-                            {updateCreditNoteFormValues.isSettled === true && <div className="w-2 h-2 rounded-full bg-white" />}
-                        </div>
-                        <span>Oui</span>
-                        </div>
-                        
-                        {/* Option Non */}
-                        <div 
-                        className={`cursor-pointer flex items-center gap-2 p-2 rounded-md ${updateCreditNoteFormValues.isSettled === false ? 'bg-red-600 text-white' : 'bg-gray-700'}`}
-                        onClick={() => {
-                            setUpdateCreditNoteFormValues({
-                            ...updateCreditNoteFormValues,
-                            isSettled: false
-                            });
-                        }}
-                        >
-                        <div className={`w-4 h-4 flex items-center justify-center rounded-full border ${updateCreditNoteFormValues.isSettled === false ? 'border-white' : 'border-gray-400'}`}>
-                            {updateCreditNoteFormValues.isSettled === false && <div className="w-2 h-2 rounded-full bg-white" />}
-                        </div>
-                        <span>Non</span>
-                        </div>
-                    </div>
-                    </RadioGroup>
-                </div>  
-                <Select
-                    name="settlementType"
-                    value={updateCreditNoteFormValues.settlementType || ""}
-                    className="w-full rounded-md bg-gray-700 text-white pl-3"
-                    onChange={handleInputChange}
-                    >
-                    <option value="" disabled>Sélectionnez un règlement</option>
-                    {Object.entries(settlementTypeChoices).map(([value, label]) => (
-                        <option key={value} value={value}>
-                            {label}
-                        </option>
-                    ))}
-                </Select>
-                {errors.reason && <p style={{ color: "red" }}>{errors.reason}</p>}
-                <Input type="hidden" name="csrf_token" value={csrfToken} />
-
-                    <button
-                        // type="button" avoid the form to be automatically submitted
-                        type="button"
-                        onClick={openChoiceDialog}
-                        className="bg-green-600 text-white px-4 py-2 rounded-md"
-                    >
-                        Enregistrer les modifications 
-                    </button>
-            </form>
-            <button
-                // type="button" avoid the form to be automatically submitted
-                type="button"
-                onClick={handleCreditNoteUpdate}
-                className="bg-green-600 text-white px-4 py-2 rounded-md"
+          {/* Non */}
+          <div
+            className={`cursor-pointer flex items-center gap-2 p-2 rounded-md
+              ${
+                updateCreditNoteFormValues.isSettled === false
+                  ? "bg-red-600 text-white"
+                  : "bg-gray-100 text-custom-gray"
+              }`}
+            onClick={() =>
+              setUpdateCreditNoteFormValues({ ...updateCreditNoteFormValues, isSettled: false })
+            }
+          >
+            <div
+              className={`w-4 h-4 flex items-center justify-center rounded-full border
+                ${
+                  updateCreditNoteFormValues.isSettled === false
+                    ? "border-white"
+                    : "border-custom-gray"
+                }`}
             >
-                Supprimer l&apos;avoir
-            </button>
-            {/* Dialog to save as final version of CreditNote*/}
-            {/* className=" top-[50%] left-[25%]" */}
-            {/* {isOpen ?? ( */}
-                <Dialog open={isOpen} onClose={closeChoiceDialog}  className="fixed top-[50%] left-[25%]" >
-                    <DialogPanel className="bg-gray-300 p-5 rounded-md shadow-lg text-black">
-                    <DialogTitle>Etes-vous sûr de vouloir supprimer l&apos;avoir ?</DialogTitle>
-                    <Description>Cette action est irréversible</Description>
-                    <p>L&apos;avoir n&apos;existera plus. </p>
-                        <div className="flex justify-between mt-4">
-                        <button
-                        // choice to to finalize quote
-                            onClick={() => {
-                                handleCreditNoteDeletion(); 
-                                closeChoiceDialog(); 
-                            }}
-                            className="bg-green-600 text-white px-4 py-2 rounded-md"
-                        >
-                            Finaliser l&apos;avoir
-                        </button>
-                            <button onClick={closeChoiceDialog} className="bg-gray-300 text-black px-4 py-2 rounded-md">Annuler</button>
-                        </div>
-                    </DialogPanel>
-                </Dialog>
-            {/* )}  */}
+              {updateCreditNoteFormValues.isSettled === false && (
+                <div className="w-2 h-2 rounded-full bg-white" />
+              )}
+            </div>
+            <span>Non</span>
+          </div>
+        </RadioGroup>
+      </div>
 
+      <div>
+        <Select
+          name="settlementType"
+          value={updateCreditNoteFormValues.settlementType || ""}
+          onChange={handleInputChange}
+          className="border-2 border-custom-gray w-full rounded-md text-custom-gray pl-3"
+        >
+          <option value="" disabled>Sélectionnez un règlement</option>
+          {Object.entries(settlementTypeChoices).map(([value, label]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </Select>
+        {errors.reason && <p className="text-red-600">{errors.reason}</p>}
+      </div>
+
+      <Input type="hidden" name="csrf_token" value={csrfToken} />
+
+      <button
+        type="button"
+        onClick={openChoiceDialog}
+        className="bg-secondary text-white px-4 py-2 rounded-md hover:bg-secondary/90 transition focus:outline-none focus:ring-2 focus:ring-[#FDA821]"
+      >
+        Enregistrer les modifications
+      </button>
+    </form>
+
+    <button
+      type="button"
+      onClick={handleCreditNoteUpdate}
+      className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition focus:outline-none focus:ring-2 focus:ring-[#FDA821]"
+    >
+      Supprimer l&apos;avoir
+    </button>
+
+<section className="space-y-2">
+  <h2 className="text-lg font-semibold text-custom-gray">Détails de l&apos;avoir</h2>
+  <ul className="text-gray-800">
+    <li><strong>Numéro&nbsp;:</strong> {creditNote.number}</li>
+    <li><strong>Émis le&nbsp;:</strong> {formatDate(creditNote.issueDate)}</li>
+    <li><strong>Montant&nbsp;:</strong> {creditNote.amount} €</li>
+    <li>
+    <strong>Raison :</strong> {creditNote.reason}
+
+
+
+    </li>
+    <li><strong>Réglé&nbsp;:</strong> {creditNote.isSettled ? "Oui" : "Non"}</li>
+
+
+  </ul>
+</section>
+
+
+  </article>
+
+  {isOpen && (
+    <Dialog
+      open={isOpen}
+      onClose={closeChoiceDialog}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      aria-labelledby="credit-delete-title"
+      aria-describedby="credit-delete-desc"
+    >
+      <DialogPanel className="bg-white text-[#637074] p-6 rounded-lg shadow-lg w-full max-w-md">
+        <DialogTitle
+          id="credit-delete-title"
+          className="text-xl font-semibold text-[#1873BF] mb-2"
+        >
+          Etes-vous sûr de vouloir supprimer l&apos;avoir&nbsp;?
+        </DialogTitle>
+
+        <Description id="credit-delete-desc" className="mb-2">
+          Cette action est irréversible
+        </Description>
+
+        <p className="text-sm mb-4">
+          L&apos;avoir n&apos;existera plus.
+        </p>
+
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={closeChoiceDialog}
+            className="bg-gray-200 hover:bg-gray-300 text-[#637074] px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FDA821]"
+          >
+            Annuler
+          </button>
+
+          <button
+            onClick={() => {
+              handleCreditNoteDeletion();
+              closeChoiceDialog();
+            }}
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FDA821]"
+          >
+            Supprimer
+          </button>
         </div>
+      </DialogPanel>
+    </Dialog>
+  )}
+</>
+
     );
 
 };

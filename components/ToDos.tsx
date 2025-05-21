@@ -9,6 +9,7 @@ import { archiveOrUnarchiveToDo, checkOrUncheckToDo, createAssignedToDo, createC
 import { faArchive, faXmark, faPenToSquare, faUndo } from '@fortawesome/free-solid-svg-icons';
 import { Input } from '@headlessui/react';
 import { createAssignedToDoSchema, createClassicToDoSchema } from "@/validation/toDoValidation";
+import Breadcrumb from "./BreadCrumb";
 
 
 type ToDosProps = {
@@ -430,8 +431,13 @@ export default function ToDos({ csrfToken }: ToDosProps) {
     return (
 
         <>
-
-            <section className=" border-green-800 ">
+    <Breadcrumb
+      items={[
+        { label: "Tableau de bord", href: "/director" },
+        { label: `To Do` },
+      ]}
+    />
+            <section >
                 <header>
                     <h1 className="text-3xl font-semibold text-center text-[#1873BF]">To do list</h1>
                 </header>

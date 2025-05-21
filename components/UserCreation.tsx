@@ -81,8 +81,7 @@ export default function UserCreation({csrfToken}: UserCreationProps){
 
     return (
         <>
-            
-            <h1 className="text-3xl text-white ml-3 text-center">Création utilisateur : {employee?.firstName} {employee?.lastName}</h1>
+
             <Breadcrumb
                 items={[
                     { label: "Tableau de bord", href: "/intranet/director" },
@@ -90,7 +89,13 @@ export default function UserCreation({csrfToken}: UserCreationProps){
                     { label: "Création d'employé" }, 
                 ]}
             />
+
+                          <header className="text-center my-4">
+    <h1 className="text-3xl text-primary font-semibold mb-8 text-center">Création utilisateur : {employee?.firstName} {employee?.lastName}</h1>
+  </header>
             <form 
+                        className="text-primary bg-custom-white mx-auto max-w-3xl  rounded p-5 border-2 border-primary"
+
                 onSubmit={(e) => {
                     e.preventDefault();
                     handleUserCreation();
@@ -100,7 +105,9 @@ export default function UserCreation({csrfToken}: UserCreationProps){
                 <div>
                     <label htmlFor="lastName">Nom</label>
                     <Field className="w-full">
-                        <Input type="text" name="lastName" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="text" name="lastName" 
+                                                className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
                             // value={employee.lastName}
                             onChange={handleInputChange}
                             >
@@ -113,7 +120,9 @@ export default function UserCreation({csrfToken}: UserCreationProps){
                 <div>
                     <label htmlFor="firstName">Prénom</label>
                     <Field className="w-full">
-                        <Input type="text" name="firstName" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="text" name="firstName" 
+                                                className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
                             // value={employee.firstName}
                             onChange={handleInputChange}
                         >
@@ -129,7 +138,8 @@ export default function UserCreation({csrfToken}: UserCreationProps){
                         name="role"
                         // value={employee.role}
                         onChange={handleInputChange}
-                        className="w-full rounded-md bg-gray-700 text-white pl-3"
+                                                className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
                     >
                          <option value="" disabled>Sélectionnez un rôle</option>
                         {Object.entries(roleChoices).map(([value, label]) => (
@@ -145,7 +155,9 @@ export default function UserCreation({csrfToken}: UserCreationProps){
                 <div>
                     <label htmlFor="email">Mail</label>
                     <Field className="w-full">
-                        <Input type="email" name="email" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="email" name="email" 
+                                                className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
                             // value={employee.email}
                             onChange={handleInputChange}
                             >
