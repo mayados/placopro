@@ -38,6 +38,7 @@ export default function Contact({ csrfToken }: ContactProps) {
     } catch (error) {
         toast.error("Erreur lors de la soumission du message");
         console.log(error)
+        console.log("test pr")
     }
 
   }
