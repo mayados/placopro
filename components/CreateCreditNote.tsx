@@ -8,15 +8,16 @@ import { fetchBill} from "@/services/api/billService";
 import { createCreditNote } from "@/services/api/creditNoteService";
 import { createCreditNoteSchema } from "@/validation/creditNoteValidation";
 import { toast } from 'react-hot-toast';
+import Breadcrumb from "./BreadCrumb";
 
 // import toast, { Toaster } from 'react-hot-toast';
 
 type CreateCreditNoteProps = {
     csrfToken: string;
-    billNumber: string;
+    billSlug: string;
   };
 
-export default function CreateCreditNote({csrfToken, billNumber}: CreateCreditNoteProps){
+export default function CreateCreditNote({csrfToken, billSlug}: CreateCreditNoteProps){
 
     const [bill, setBill] = useState<BillType>();
 
@@ -52,7 +53,7 @@ export default function CreateCreditNote({csrfToken, billNumber}: CreateCreditNo
         async function loadBill() {
 
                 try{
-                    const data = await fetchBill(billNumber)
+                    const data = await fetchBill(billSlug)
     
                     setCreateCreditNoteFormValues({
                         ...createCreditNoteFormValues,
@@ -68,7 +69,7 @@ export default function CreateCreditNote({csrfToken, billNumber}: CreateCreditNo
 
         loadBill();
 
-    },[billNumber, csrfToken]);
+    },[billSlug, csrfToken]);
 
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -148,87 +149,138 @@ export default function CreateCreditNote({csrfToken, billNumber}: CreateCreditNo
     if (!bill) return <div>Loading...</div>;
 
     return (
-        <div className="relative">
-            {/* <div><Toaster/></div> */}
-            <h1 className="text-3xl text-white ml-3 text-center">Création d&apos;avoir lié à la facture n°{bill.number}</h1>
-            <p>Client : {bill.clientBackup?.name} {bill.clientBackup?.firstName}</p>
-            <p>Téléphone : {bill.clientBackup?.phone}</p>
-            <p>Mail : {bill.clientBackup?.mail}</p>
-            <p>Adresse : {bill.clientBackup?.addressNumber} {bill.clientBackup?.road} {bill.clientBackup?.postalCode} {bill.clientBackup?.city}</p>
-            <p>Complément d&apos;adresse : {bill.clientBackup?.additionalAddress}</p>
-            {/* <div><Toaster /></div> */}
-            <form 
-                autoComplete="off"
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    handleCreditNoteCreation();
-                }}
-            >
-                    <div>
-                        <label htmlFor="amount">Montant de l&apos;avoir</label>
-                        <Field className="w-full">
-                            <Input type="number" name="amount" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
-                                value={createCreditNoteFormValues.amount || ""}
-                                onChange={handleInputChange}
-                            >
-                            </Input>
-                        </Field>
-                        {errors.amount && <p style={{ color: "red" }}>{errors.amount}</p>}
+       <>
+  {/* Fil d’Ariane */}
+  <Breadcrumb
+    items={[
+      { label: "Tableau de bord", href: "/director" },
+      { label: "Factures", href: "/director/bills" },
+      { label: `Avoir facture n°${bill.number}` },
+    ]}
+  />
 
-                    </div>
+  <article className="max-w-5xl mx-auto p-6 bg-custom-white rounded-2xl shadow-md space-y-8">
+    {/* Titre --------------------------------------------------------------- */}
+    <header className="text-center mb-6">
+      <h1 className="text-3xl font-bold text-primary">
+        Création d&apos;avoir lié à la facture n°{bill.number}
+      </h1>
+    </header>
 
-                    <Select
-                        name="reason"
-                        value={createCreditNoteFormValues.reason || ""}
-                        className="w-full rounded-md bg-gray-700 text-white pl-3"
-                        onChange={handleInputChange}
+    {/* Infos client -------------------------------------------------------- */}
+    <section className="space-y-1 text-gray-800">
+      <p><strong>Client :</strong> {bill.clientBackup?.name} {bill.clientBackup?.firstName}</p>
+      <p><strong>Téléphone :</strong> {bill.clientBackup?.phone}</p>
+      <p><strong>Mail :</strong> {bill.clientBackup?.mail}</p>
+      <p><strong>Adresse :</strong> {bill.clientBackup?.addressNumber} {bill.clientBackup?.road}, {bill.clientBackup?.postalCode} {bill.clientBackup?.city}</p>
+      {bill.clientBackup?.additionalAddress && (
+        <p><strong>Complément d&apos;adresse :</strong> {bill.clientBackup?.additionalAddress}</p>
+      )}
+    </section>
 
-                        >
-                        <option value="" >Raison de l&apos;avoir</option>
-                        {Object.entries(reasonChoices).map(([value, label]) => (
-                            <option key={value} value={value}>
-                            {label}
-                            </option>
-                        ))}
-                    </Select>
-                {errors.reason && <p style={{ color: "red" }}>{errors.reason}</p>}
-                <Input type="hidden" name="csrf_token" value={csrfToken} />
+    {/* Formulaire --------------------------------------------------------- */}
+    <form
+      autoComplete="off"
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleCreditNoteCreation();
+      }}
+      className="space-y-6"
+    >
+      {/* Montant ---------------------------------------------------------- */}
+      <div>
+        <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
+          Montant de l&apos;avoir
+        </label>
+        <Field>
+          <Input
+            id="amount"
+            type="number"
+            name="amount"
+            className="border-2 border-custom-gray w-full rounded-md text-custom-gray pl-3"
+            value={createCreditNoteFormValues.amount || ""}
+            onChange={handleInputChange}
+          />
+        </Field>
+        {errors.amount && <p className="text-red-600">{errors.amount}</p>}
+      </div>
 
-                    <button
-                        // type="button" avoid the form to be automatically submitted
-                        type="button"
-                        onClick={openChoiceDialog}
-                        className="bg-green-600 text-white px-4 py-2 rounded-md"
-                    >
-                        Finaliser l&apos;avoir 
-                    </button>
-            </form>
-            {/* Dialog to save as final version of CreditNote*/}
-            {/* className=" top-[50%] left-[25%]" */}
-            {/* {isOpen ?? ( */}
-                <Dialog open={isOpen} onClose={closeChoiceDialog}  className="fixed top-[50%] left-[25%]" >
-                    <DialogPanel className="bg-gray-300 p-5 rounded-md shadow-lg text-black">
-                    <DialogTitle>Etes-vous sûr de vouloir enregistrer l&apos;avoir en version finale ?</DialogTitle>
-                    <Description>Cette action est irréversible</Description>
-                    <p>L&apos;avoir ne pourra plus être modifié ultérieurement. </p>
-                        <div className="flex justify-between mt-4">
-                        <button
-                        // choice to to finalize quote
-                            onClick={() => {
-                                handleCreditNoteCreation(); 
-                                closeChoiceDialog(); 
-                            }}
-                            className="bg-green-600 text-white px-4 py-2 rounded-md"
-                        >
-                            Finaliser l&apos;avoir
-                        </button>
-                            <button onClick={closeChoiceDialog} className="bg-gray-300 text-black px-4 py-2 rounded-md">Annuler</button>
-                        </div>
-                    </DialogPanel>
-                </Dialog>
-            {/* )}  */}
+      {/* Raison ----------------------------------------------------------- */}
+      <div>
+        <Select
+          name="reason"
+          value={createCreditNoteFormValues.reason || ""}
+          onChange={handleInputChange}
+          className="border-2 border-custom-gray w-full rounded-md text-custom-gray pl-3"
+        >
+          <option value="">Raison de l&apos;avoir</option>
+          {Object.entries(reasonChoices).map(([value, label]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </Select>
+        {errors.reason && <p className="text-red-600">{errors.reason}</p>}
+      </div>
 
+      <Input type="hidden" name="csrf_token" value={csrfToken} />
+
+      <button
+        type="button"                /* on évite submit auto */
+        onClick={openChoiceDialog}
+        className="bg-secondary text-white px-4 py-2 rounded-md hover:bg-secondary/90 transition focus:outline-none focus:ring-2 focus:ring-[#FDA821]"
+      >
+        Finaliser l&apos;avoir
+      </button>
+    </form>
+  </article>
+
+  {/* Dialog de confirmation ---------------------------------------------- */}
+  {isOpen && (
+    <Dialog
+      open={isOpen}
+      onClose={closeChoiceDialog}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      aria-labelledby="credit-final-title"
+      aria-describedby="credit-final-desc"
+    >
+      <DialogPanel className="bg-white text-[#637074] p-6 rounded-lg shadow-lg w-full max-w-md">
+        <DialogTitle
+          id="credit-final-title"
+          className="text-xl font-semibold text-[#1873BF] mb-2"
+        >
+          Etes-vous sûr de vouloir enregistrer l&apos;avoir en version finale&nbsp;?
+        </DialogTitle>
+
+        <Description id="credit-final-desc" className="mb-2">
+          Cette action est irréversible
+        </Description>
+
+        <p className="text-sm mb-4">
+          L&apos;avoir ne pourra plus être modifié ultérieurement.
+        </p>
+
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={closeChoiceDialog}
+            className="bg-gray-200 hover:bg-gray-300 text-[#637074] px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FDA821]"
+          >
+            Annuler
+          </button>
+
+          <button
+            onClick={() => {
+              handleCreditNoteCreation();
+              closeChoiceDialog();
+            }}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FDA821]"
+          >
+            Finaliser l&apos;avoir
+          </button>
         </div>
+      </DialogPanel>
+    </Dialog>
+  )}
+</>
+
     );
 
 };

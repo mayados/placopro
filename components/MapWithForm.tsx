@@ -7,6 +7,7 @@ import L from 'leaflet';
 import 'leaflet-routing-machine';
 import 'leaflet/dist/leaflet.css';
 import debounce from 'lodash.debounce';
+import Breadcrumb from './BreadCrumb';
 
 // Fix icones path for nextjs
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -113,7 +114,14 @@ const MapWithForm = () => {
   };
 
   return (
+    
     <div className="space-y-4">
+          <Breadcrumb
+            items={[
+              { label: "Tableau de bord", href: "/director" },
+              { label: `Calculer un temps de trajet` },
+            ]}
+          />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         <div className="relative">
           <input

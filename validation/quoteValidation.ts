@@ -166,7 +166,7 @@ export const updateClassicQuoteSchema = z.object({
   signatureDate: createDateSchemaWithoutMessage(),
 })
 
-// When a user select to save the draft bill as DRAFT again
+// When a user select to save the draft quote as DRAFT again
 export const updateDraftQuoteSchema = z.object({
   dueDate: createDateSchemaWithoutMessage(),
   natureOfWork: z.string().min(5, "La nature du travail est requise"),
@@ -187,26 +187,64 @@ export const updateDraftQuoteSchema = z.object({
   discountReason: z.string().nullable().optional(),
 })
 
-// When a user select to save the draft bill as READY
+// When a user select to save the draft quote as READY
 export const updateDraftFinalQuoteSchema = z.object({
-  dueDate: createDateSchema("La date limite de paiement est requise"),
+ 
+  validityEndDate: createDateSchema("La date de fin de validité du devis est requise"),
   natureOfWork: z.string().min(5, "Le type de travail est requis"),
-  description: z.string().min(10, "La description est requise"),
-  discountAmount: z.number().min(0).nullable(),  // Can still be optional if not provided
-  workSiteId: z.string().min(1, "Le chantier est requis"),
-  clientId: z.string().min(1, "Le client est requis"),
-  services: z.array(serviceFormQuoteSchema).min(1, "Au moins un service est requis"),
-  servicesToUnlink: z.array(serviceFormQuoteSchema).optional(),
-  servicesAdded: z.array(serviceFormQuoteSchema).optional(),
-  paymentTerms: z.string().min(1, "Les conditions de paiement sont requises"),
-  travelCosts: z.number().min(0).optional(),
-  travelCostsType: z.string().min(1, "Le type de frais de déplacement est requis"),
+  description: z.string().min(5, "La description est requise - min 10 caractères"),
   workStartDate: createDateSchema("La date de commencement de chantier est requise"),
-  workEndDate: createDateSchema("La date de fin de chantier est requise"),
-  workDuration: z.number().min(1, "Le nombre de jours de travail est requis"),
-  discountReason: z.nativeEnum(QuoteDiscountReasonEnum).nullable(),
-  quoteId: z.string().nullable().optional(),
-  // paymentMethod: z.string().nullable().optional(),
+  estimatedWorkEndDate: createDateSchema("La date estimée de fin de chantier est requise"),
+  estimatedWorkDuration: z.preprocess(
+    (val) => Number(val),
+    z.number()
+      .int({ message: "La durée doit être un entier." })
+      .min(1, { message: "Le nombre de jours de travail estimé est requis" })
+  ),
+  hasRightOfWithdrawal: z.string().min(1, "Le choix de droit de rétractation est requis"),
+  travelCosts: z.preprocess(
+    (val) => Number(val),
+    z.number()
+      .nullable()
+  ),
+  travelCostsType: z.nativeEnum(QuoteTravelCostsTypeEnum),
+  depositAmount: z.preprocess(
+    (val) => Number(val),
+    z.number()
+      .min(0, { message: "Le montant d'accompte est requis" })
+  ),
+  discountAmount: z.preprocess(
+    (val) => Number(val),
+    z.number()
+      .nullable()
+  ),
+  discountReason: z.nativeEnum(QuoteDiscountReasonEnum).nullable().optional(),
+  paymentTerms: z.string().min(10, "Les conditions de paiement sont requises"),
+  paymentDelay: z.preprocess(
+    (val) => Number(val),
+    z.number()
+      .min(1, { message: "Le délais de paiement est requis" })
+  ),
+  latePaymentPenalities: z.preprocess(
+    (val) => Number(val),
+    z.number()
+      .min(1, { message: "Les pénalités de retard de paiement est requis" })
+  ),
+  recoveryFee: z.preprocess(
+    (val) => Number(val),
+    z.number()
+      .min(1, { message: "Les frais de recouvrement sont requis" })
+  ),
+  withdrawalPeriod: z.preprocess(
+    (val) => Number(val),
+    z.number()
+      .min(1, { message: "Le délais de réatraction est requis" })
+  ),
+  clientId: z.string().min(1, "Le client est requis"),
+  workSiteId: z.string().min(1, "Le chantier est requis"),
+  // services: z.array(serviceFormQuoteSchema).nullable(),
+  servicesToAdd:    z.array(serviceFormQuoteSchema).default([]),
+servicesToUnlink: z.array(z.object({ id: z.string() })).default([]),
 
 })
 

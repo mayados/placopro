@@ -38,24 +38,99 @@ export const fetchClients = async ({
   }
 };
 
-
-
-export const fetchPseudonymizedClients = async (): Promise<ClientTypeList> => {
-    try {
-      const response = await fetch(`/api/clients`, {
-            method: "GET",
-            credentials: "include", 
-        });
-      if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
-  
-      const data: ClientTypeList = await response.json();
-      console.log("Données reçues après le fetch :", data);
-      return data;
-    } catch (error) {
-      console.error("Erreur lors de la récupération des clients :", error);
-      throw error;
+export const fetchPseudonymizedClients = async ({
+  page,
+  limit,
+  search
+}: {
+  page: number,
+  limit: number,
+  search: string
+}): Promise<ClientsWithTotal> => {
+  try {
+    // Construit les paramètres de l’URL
+    const params = new URLSearchParams();
+    params.set("page", page.toString());
+    params.set("limit", limit.toString());
+    if (search) {
+      params.set("search", encodeURIComponent(search));
     }
-  };
+
+    const response = await fetch(`/api/clients?${params.toString()}`, {
+      method: "GET",
+      credentials: "include",
+        headers: {
+            "X-get-type": "pseudonymized-list",
+
+        },
+    });
+
+    if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
+
+    const data: ClientsWithTotal = await response.json();
+    console.log("Données reçues après le fetch :", data);
+    return data;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des clients :", error);
+    throw error;
+  }
+};
+
+export const fetchProspects = async ({
+  page,
+  limit,
+  search
+}: {
+  page: number,
+  limit: number,
+  search: string
+}): Promise<ClientsWithTotal> => {
+  try {
+    // Construit les paramètres de l’URL
+    const params = new URLSearchParams();
+    params.set("page", page.toString());
+    params.set("limit", limit.toString());
+    if (search) {
+      params.set("search", encodeURIComponent(search));
+    }
+
+    const response = await fetch(`/api/clients?${params.toString()}`, {
+      method: "GET",
+      credentials: "include",
+        headers: {
+            "X-get-type": "prospects-list",
+
+        },
+    });
+
+    if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
+
+    const data: ClientsWithTotal = await response.json();
+    console.log("Données reçues après le fetch :", data);
+    return data;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des clients :", error);
+    throw error;
+  }
+};
+
+
+// export const fetchPseudonymizedClients = async (): Promise<ClientTypeList> => {
+//     try {
+//       const response = await fetch(`/api/clients`, {
+//             method: "GET",
+//             credentials: "include", 
+//         });
+//       if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
+  
+//       const data: ClientTypeList = await response.json();
+//       console.log("Données reçues après le fetch :", data);
+//       return data;
+//     } catch (error) {
+//       console.error("Erreur lors de la récupération des clients :", error);
+//       throw error;
+//     }
+//   };
 
 
 // Retrieve a specific Client
@@ -102,6 +177,35 @@ export const createClient = async (client: ClientFormValueType, csrfToken: strin
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": csrfToken,
+
+            },
+            body: JSON.stringify(client),
+        });
+  
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+  
+        const data: ClientType = await response.json();
+        console.log("Created client :", data);
+  
+        return data; 
+    } catch (error) {
+        console.error("Erreur with client creation :", error);
+        throw error; 
+    }
+};
+
+// Create prospect
+export const createProspect = async (client: ClientFormValueType, csrfToken: string): Promise<ClientType> => {
+    try {
+        const response = await fetch(`/api/clients`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
+                "X-post-type": "create-prospect"
 
             },
             body: JSON.stringify(client),

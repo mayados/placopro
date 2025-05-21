@@ -5,6 +5,7 @@ import { faCircleInfo, faEnvelope, faLocationDot, faPenToSquare, faShieldHalved 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import Breadcrumb from "./BreadCrumb";
 // import toast, { Toaster } from 'react-hot-toast';
 // import { useRouter } from "next/navigation";
 
@@ -38,6 +39,12 @@ export default function Company({csrfToken }: CompanyProps) {
 
     return (
 <>
+    <Breadcrumb
+      items={[
+        { label: "Tableau de bord", href: "/director" },
+        { label: `Entreprise` },
+      ]}
+    />
   <article className="relative max-w-3xl mx-auto p-6 bg-custom-white rounded-2xl shadow-md">
     <header className="flex items-center justify-between mb-8">
       <h1 className="text-4xl font-bold text-primary">{company?.name}</h1>

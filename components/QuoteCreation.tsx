@@ -13,6 +13,7 @@ import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react
 import { createQuoteDraftSchema, createQuoteFinalSchema } from "@/validation/quoteValidation";
 import { toast } from 'react-hot-toast';
 import { faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
+import Breadcrumb from "./BreadCrumb";
 
 type QuoteCreationProps = {
     csrfToken: string;
@@ -148,10 +149,7 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
         console.log("évènement reçu : " + e)
         const { name, value } = e.target;
         console.log("select :" + name + " valeur : " + value)
-        // setQuote({
-        //     ...quote,
-        //     [name]: value,
-        // });
+
         const updatedQuote = { ...quote, [name]: value };
         updateQuoteAndStorage(updatedQuote);
 
@@ -440,8 +438,14 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
 
     return (
         <>
+            <Breadcrumb
+              items={[
+                { label: "Tableau de bord", href: "/director" },
+                { label: `Création de devis` },
+              ]}
+            />
   <header className="text-center my-4">
-    <h1 className="text-3xl text-custom-gray">Création de devis</h1>
+    <h1 className="text-3xl text-primary font-semibold mb-8 text-center">Création de devis</h1>
   </header>
             <form
             className="text-primary bg-custom-white mx-auto max-w-3xl  rounded p-5 border-2 border-primary"
@@ -456,7 +460,8 @@ export default function QuoteCreation({ csrfToken }: QuoteCreationProps) {
                 <h2 id="client-section" className="text-xl text-custom-gray">Client</h2>
                     <label className=""htmlFor="client">Client</label>
                     <Field className="w-full">
-                        <Input type="text" name="client" value={clientInput}  className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+                        <Input type="text" name="client" value={clientInput}  
+                        className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
                             onChange={handleInputChange}
                         >
                         </Input>

@@ -15,6 +15,7 @@ export default {
         secondary: '#FDA821', 
         "custom-white": "#F5F5F5",
         "custom-gray": "#637074",
+        'custom-gray-light':  '#dee0e0',
         background: "var(--background)",
         foreground: "var(--foreground)",
       },

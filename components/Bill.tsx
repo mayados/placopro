@@ -508,7 +508,8 @@ export default function Bill({ billSlug, csrfToken }: BillProps) {
                   name="status"
                   onChange={handleInputChange}
                   value={formValues.status ?? bill.status ?? ""}
-                  className="w-full rounded-md bg-gray-700 text-white pl-3"
+                                      className="border-2 border-custom-gray w-full rounded-md text-custom-gray pl-3"
+
                 >
                   <option value="">Statut de la facture</option>
                   {Object.entries(billStatusChoices).map(([value, label]) => (
@@ -525,7 +526,8 @@ export default function Bill({ billSlug, csrfToken }: BillProps) {
                   <Input
                     type="date"
                     name="paymentDate"
-                    className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
+                                        className="border-2 border-custom-gray w-full rounded-md text-custom-gray pl-3"
+
                     value={formValues.paymentDate
                       ? formatDateToInput(formValues.paymentDate)
                       : bill.paymentDate
@@ -543,7 +545,8 @@ export default function Bill({ billSlug, csrfToken }: BillProps) {
                   name="paymentMethod"
                   onChange={handleInputChange}
                   value={formValues.paymentMethod ?? bill.paymentMethod ?? ""}
-                  className="w-full rounded-md bg-gray-700 text-white pl-3"
+                                      className="border-2 border-custom-gray w-full rounded-md text-custom-gray pl-3"
+
                 >
                   <option value="" disabled>-- Sélectionner une méthode de paiement --</option>
                   {Object.entries(paymentMethodChoices).map(([value, label]) => (
@@ -560,7 +563,8 @@ export default function Bill({ billSlug, csrfToken }: BillProps) {
                   <Input
                     type="date"
                     name="canceledAt"
-                    className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
+                                        className="border-2 border-custom-gray w-full rounded-md text-custom-gray pl-3"
+
                     value={formValues.canceledAt
                       ? formatDateToInput(formValues.canceledAt)
                       : bill.canceledAt

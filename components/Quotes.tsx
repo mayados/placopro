@@ -12,6 +12,7 @@ import Button from "@/components/Button";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useSearchParams } from "next/navigation";
 import SearchBar from "./SearchBar";
+import Breadcrumb from "./BreadCrumb";
 
 
 const LIMIT = 2;
@@ -119,6 +120,12 @@ export default function Quotes() {
 
     return (
         <>
+            <Breadcrumb
+              items={[
+                { label: "Tableau de bord", href: "/director" },
+                { label: `Devis` },
+              ]}
+            />
           <section className="flex-[8] px-4 py-6 bg-[#F5F5F5] rounded-md shadow-sm">
             <header className="mb-6">
               <h1 className="text-3xl font-bold text-[#1873BF] text-center mb-2">Devis</h1>

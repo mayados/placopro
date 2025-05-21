@@ -176,13 +176,13 @@ export default function Quote({ csrfToken, quote: initialQuote, company: initial
                 {/* Boutons de création, téléchargement et envoi repositionnés */}
                 <div className="flex flex-wrap gap-3 justify-center mb-6">
                     <Link
-                        href={`/director/bills/create/${quote?.number}`}
+                        href={`/intranet/common-intranet/bills/create/${quote?.slug}`}
                         className="py-2 px-3 bg-secondary rounded text-custom-gray hover:bg-secondary/90 transition"
                     >
                         Créer une facture finale
                     </Link>
                     <Link
-                        href={`/director/bills/create-deposit/${quote?.number}`}
+                        href={`/intranet/common-intranet/bills/create-deposit/${quote?.slug}`}
                         className="py-2 px-3 bg-secondary rounded text-custom-gray hover:bg-secondary/90 transition"
                     >
                         Créer une facture d&apos;acompte
@@ -226,7 +226,7 @@ export default function Quote({ csrfToken, quote: initialQuote, company: initial
                                     name="status"
                                     onChange={handleInputChange}
                                     value={formValues.status || ""}
-                                    className="w-full rounded-md bg-gray-700 text-white pl-3"
+                        className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
                                 >
                                     <option value="" >Statut du devis</option>
                                     {Object.entries(quoteStatusChoices).map(([value, label]) => (
@@ -256,7 +256,9 @@ export default function Quote({ csrfToken, quote: initialQuote, company: initial
                             <div>
                                 <label htmlFor="signatureDate">Date de signature</label>
                                 <Field className="w-full">
-                                    <Input type="date" name="signatureDate" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3"
+                                    <Input type="date" name="signatureDate" 
+                                                            className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
                                         onChange={handleInputChange}
                                     >
                                     </Input>

@@ -10,6 +10,7 @@ import { fetchWorkSitesWithoutPagination } from "@/services/api/workSiteService"
 import { DateSelectArg, EventClickArg, EventDropArg } from '@fullcalendar/core';
 import { updatePlanningSchema, createPlanningSchema } from "@/validation/planningValidation";
 import { toast } from 'react-hot-toast';
+import Breadcrumb from "./BreadCrumb";
 
 
 
@@ -301,6 +302,12 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({ role, clerkUserId, 
 
   return (
     <>
+        <Breadcrumb
+          items={[
+            { label: "Tableau de bord", href: "/director" },
+            { label: `Planning` },
+          ]}
+        />
                 <header className="mb-6">
               <h1 className="text-3xl font-bold text-[#1873BF] text-center mb-2">Planning</h1>
             </header>

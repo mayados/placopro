@@ -31,7 +31,14 @@ export async function GET(req: NextRequest, {params}: {params: {billSlug: string
             },         
         })
 
-        console.log("Je récupère une certaine facture : "+bill)
+        console.log("Je récupère une certaine facture : "+JSON.stringify(bill))
+
+    if (!bill) {
+      return NextResponse.json(
+        { success: false, message: "Bill not found" },
+        { status: 404 }
+      );
+    }
 
         return NextResponse.json({ 
             success: true, 
