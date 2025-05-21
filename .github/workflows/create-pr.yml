@@ -13,7 +13,7 @@ jobs:
       - name: Checkout test branch
         uses: actions/checkout@v4
         with:
-          ref: test  # ⚠️ on force bien la branche test
+          ref: test  # ✅ On force bien le checkout de la branche test
 
       - name: 🔍 DEBUG - Affiche la branche actuelle
         run: git branch --show-current
@@ -35,5 +35,4 @@ jobs:
           title: "🔄 Merge `test` → `main` (Tests OK)"
           body: "Tests validés ✅ - PR prête à être revue."
           draft: false
-          push-to-fork: false
  
