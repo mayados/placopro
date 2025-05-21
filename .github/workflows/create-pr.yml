@@ -1,39 +1,32 @@
-name: Create Pull Request
+# ===========================
+# FICHIER : .github/workflows/create-pr.yml
+# ROLE : Crée automatiquement une Pull Request de "test" vers "main" après succès du workflow CircleCI
+# ===========================
+
+name: Create Pull Request # Nom du workflow GitHub
 
 on:
-  repository_dispatch:
-    types: [create-pr-from-test]
+  workflow_run: # Ce déclencheur attend que l’exécution d’un autre workflow se termine (ici : test CircleCI)
+    workflows: ["test-workflow"] # Nom exact du workflow défini dans CircleCI (important pour que GitHub le reconnaisse)
+    types:
+      - completed # Exécute ce workflow uniquement lorsque le workflow CircleCI est terminé (succès ou échec)
 
 jobs:
   create-pr:
-    if: github.event.client_payload.ref == 'refs/heads/test' || github.ref == 'refs/heads/test'
-    runs-on: ubuntu-latest
-
+    # Verify circleCI tests have passed with success
+    if: ${{ github.event.workflow_run.conclusion == 'success' }} # Ne crée une PR que si le workflow précédent a réussi (tests OK)
+    runs-on: ubuntu-latest # Exécute sur une machine Ubuntu
     steps:
-      - name: Checkout test branch
-        uses: actions/checkout@v4
+      - name: Checkout code # Clone le repo pour permettre à l'action suivante de créer une PR
+        uses: actions/checkout@v4 # Action officielle GitHub
+
+      - name: Create Pull Request to main # Étape pour créer automatiquement une PR de test → main
+        uses: peter-evans/create-pull-request@v5 # Utilise une action GitHub spécialisée et bien maintenue pour créer des PR automatiquement
         with:
-          ref: test
-
-      - name: 🔍 DEBUG - Affiche la branche actuelle
-        run: git branch --show-current
-
-      - name: Vérifier si test est en avance sur main
-        run: |
-          git fetch origin main
-          if git diff --quiet origin/main...HEAD; then
-            echo "✅ Rien à merger, PR inutile."
-            exit 0
-          fi
-
-      - name: Create Pull Request to main
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GH_PAT }}
-          base: main
-          branch: test
-          title: "🔄 Merge `test` → `main` (Tests OK)"
-          body: "Tests validés ✅ - PR prête à être revue."
-          draft: false
-          push-to-fork: false
- 
+          # Using secure PAT (Github Personnal Access Token)
+          token: ${{ secrets.GH_PAT }}  # Utilise un token personnel sécurisé stocké dans les secrets GitHub
+          base: main # Branche de destination de la PR (ici, "main")
+          branch: test # Branche source de la PR (ici, "test")
+          title: "🔄 Merge `test` -> `main` (Tests success)" # Titre automatique de la PR
+          body: "Tests CircleCI validés ✅. PR prête à être revue."  # Description de la PR pour les reviewers
+          draft: false # Crée une PR directement en mode "prête à merger" (pas un brouillon)
