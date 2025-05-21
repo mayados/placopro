@@ -8,6 +8,7 @@ import { fetchCreditNotes } from "@/services/api/creditNoteService";
 import { Pagination } from "@/components/Pagination";
 import { useSearchParams } from "next/navigation";
 import SearchBar from "./SearchBar";
+import Breadcrumb from "./BreadCrumb";
 
 
 const LIMIT = 15;
@@ -71,7 +72,12 @@ export default function CreditNotes() {
     return (
 
         <>
-
+    <Breadcrumb
+      items={[
+        { label: "Tableau de bord", href: "/director" },
+        { label: `Avoirs` },
+      ]}
+    />
             <section className="flex-[8] px-4 py-6 bg-[#F5F5F5] rounded-md shadow-sm">
                 <header className="mb-6">
                     <h1 className="text-3xl font-bold text-[#1873BF] text-center mb-2">Avoirs</h1>
@@ -119,7 +125,7 @@ export default function CreditNotes() {
                                                         <td>{creditNote.isSettled ? "Traité" : "Non traité"}</td>
                                                         <td>{formatDate(creditNote.issueDate)}</td>
                                                         <td>
-                                                            <Link href={`/director/creditNotes/${creditNote?.number}`}>
+                                                            <Link href={`/director/creditNotes/${creditNote?.number}/update`}>
                                                                 Consulter les détails
                                                             </Link>
                                                         </td>

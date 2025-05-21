@@ -1,4 +1,4 @@
-// // 👇 server file
+// 👇 server file
 export const metadata = {
   robots: {
     index: false,
@@ -7,14 +7,14 @@ export const metadata = {
 };
 
 import { headers } from 'next/headers';
-import CreationDepositBillFromQuote from '@/components/CreationDepositBillFromQuote';
+import CreationBillFromQuote from '@/components/CreationBillFromQuote';
 
-type Params = Promise<{ quoteNumber: string }>;
+type Params = Promise<{ quoteSlug: string }>;
 
 export default async function Page({ params }: { params: Params }) {
   // Attendre que les paramètres soient résolus (car 'params' peut être une promesse)
   const resolvedParams = await params;
-  const { quoteNumber } = resolvedParams;
+  const { quoteSlug } = resolvedParams;
 
   // Récupérer le CSRF token depuis les en-têtes
   const h = await headers();
@@ -22,8 +22,8 @@ export default async function Page({ params }: { params: Params }) {
 
   // Passer les paramètres à ton composant Bill
   return (
-    <CreationDepositBillFromQuote
-      quoteNumber={quoteNumber}
+    <CreationBillFromQuote
+      quoteSlug={quoteSlug}
       csrfToken={csrfToken}
     />
   );

@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 import { useSearchParams } from "next/navigation";
 import { Pagination } from "./Pagination";
 import SearchBar from "./SearchBar";
+import Breadcrumb from "./BreadCrumb";
 
 const LIMIT = 2;
 
@@ -80,7 +81,12 @@ export default function Clients() {
     return (
 
         <>
-
+    <Breadcrumb
+      items={[
+        { label: "Tableau de bord", href: "/director" },
+        { label: `Clients` },
+      ]}
+    />
             <section className="flex-[8] px-4 py-6 bg-[#F5F5F5] rounded-md shadow-sm">
                 <header className="mb-6">
                     <h1 className="text-3xl font-bold text-[#1873BF] text-center mb-2">Clients</h1>

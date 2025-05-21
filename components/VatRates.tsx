@@ -6,6 +6,7 @@ import { Dialog, DialogTitle, DialogPanel, Description } from '@headlessui/react
 import { Field, Input } from '@headlessui/react';
 import { createVatRate, deleteVatRate, fetchVatRates, updateVatRate } from "@/services/api/vatRateService";
 import { createVatRateSchema } from "@/validation/vatRateValidation";
+import Breadcrumb from "./BreadCrumb";
 
 
 type VatRateProps = {
@@ -185,6 +186,12 @@ export default function ToDos({ csrfToken }: VatRateProps) {
     return (
 
   <>
+    <Breadcrumb
+      items={[
+        { label: "Tableau de bord", href: "/director" },
+        { label: `Taux de TVA` },
+      ]}
+    />
   <section className="flex-[8] px-4 py-6 bg-[#F5F5F5] rounded-md shadow-sm">
     <header className="mb-6">
       <h1 className="text-3xl font-bold text-primary text-center mb-4">Taux de TVAs</h1>
@@ -209,7 +216,8 @@ export default function ToDos({ csrfToken }: VatRateProps) {
               id="vat-rate"
               type="text"
               name="rate"
-              className="w-full h-9 rounded-md bg-gray-700 text-white pl-3"
+                                      className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
               value={vatRateFormValues.rate ?? ""}
               onChange={handleInputChange}
               aria-invalid={errors.rate ? "true" : "false"}

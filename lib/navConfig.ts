@@ -29,10 +29,11 @@ import {
         label: 'Clients',
         icon: faUser,
         children: [
-          { label: 'Liste', href: '/intranet/common-intranet/clients' },
-          { label: 'Prospects', href: '/intranet/common-intranet/prospects' },
+          { label: 'Clients', href: '/intranet/common-intranet/clients' },
+          { label: 'Prospects', href: '/intranet/common-intranet/clients/prospects' },
           { label: 'Pseudonymisés', href: '/intranet/director/clients' },
           { label: 'Ajouter un client', href: '/intranet/common-intranet/clients/create' },
+          { label: 'Ajouter un prospect', href: '/intranet/common-intranet/clients/prospects/create' },
         ],
       },
       {

@@ -149,10 +149,12 @@ export default function WorkSiteCreation({csrfToken}: WorkSiteCreationProps){
 
     return (
         <>
-            {/* <div><Toaster/></div> */}
-            <h1 className="text-3xl text-white ml-3 text-center">Création de chantier</h1>
-            {/* <div><Toaster /></div> */}
+          <header className="text-center my-4">
+    <h1 className="text-3xl text-primary font-semibold mb-8 text-center">Création de chantier</h1>
+  </header>
             <form 
+                        className="text-primary bg-custom-white mx-auto max-w-3xl  rounded p-5 border-2 border-primary"
+
                 onSubmit={(e) => {
                     e.preventDefault();
                     handleWorkSiteCreation();
@@ -162,7 +164,8 @@ export default function WorkSiteCreation({csrfToken}: WorkSiteCreationProps){
                 <div>
                     <label htmlFor="title">Titre</label>
                     <Field className="w-full">
-                        <Input type="text" name="title" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="text" name="title" 
+                        className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -174,7 +177,8 @@ export default function WorkSiteCreation({csrfToken}: WorkSiteCreationProps){
                 <div>
                     <label htmlFor="description">Description</label>
                     <Field className="w-full">
-                        <Textarea name="description" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Textarea name="description" 
+                        className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
                             onChange={handleInputChange}
                         >
                         </Textarea>
@@ -186,7 +190,8 @@ export default function WorkSiteCreation({csrfToken}: WorkSiteCreationProps){
                 <div>
                     <label htmlFor="beginsThe">Date de début</label>
                     <Field className="w-full">
-                        <Input type="date" name="beginsThe" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="date" name="beginsThe"
+                        className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -215,7 +220,8 @@ export default function WorkSiteCreation({csrfToken}: WorkSiteCreationProps){
                 <div>
                     <label htmlFor="addressNumber">Numéro d&apos;adresse du chantier</label>
                     <Field className="w-full">
-                        <Input type="text" name="addressNumber" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="text" name="addressNumber" 
+                        className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -227,7 +233,8 @@ export default function WorkSiteCreation({csrfToken}: WorkSiteCreationProps){
                 <div>
                     <label htmlFor="road">Rue</label>
                     <Field className="w-full">
-                        <Input type="text" name="road" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="text" name="road" 
+                        className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -239,7 +246,8 @@ export default function WorkSiteCreation({csrfToken}: WorkSiteCreationProps){
                 <div>
                     <label htmlFor="additionnalAddress">Complément d&apos;adresse</label>
                     <Field className="w-full">
-                        <Input type="text" name="additionnalAddress" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="text" name="additionnalAddress" 
+                        className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -251,7 +259,8 @@ export default function WorkSiteCreation({csrfToken}: WorkSiteCreationProps){
                 <div>
                     <label htmlFor="postalCode">Code postal</label>
                     <Field className="w-full">
-                        <Input type="text" name="postalCode" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="text" name="postalCode" 
+                        className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -263,7 +272,8 @@ export default function WorkSiteCreation({csrfToken}: WorkSiteCreationProps){
                 <div>
                     <label htmlFor="city">Ville</label>
                     <Field className="w-full">
-                        <Input type="text" name="city" className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="text" name="city" 
+                        className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
                             onChange={handleInputChange}
                         >
                         </Input>
@@ -275,7 +285,8 @@ export default function WorkSiteCreation({csrfToken}: WorkSiteCreationProps){
                 <div>
                     <label htmlFor="client">Propriétaire du chantier</label>
                     <Field className="w-full">
-                        <Input type="text" name="client" value={clientInput} className="w-full h-[2rem] rounded-md bg-gray-700 text-white pl-3" 
+                        <Input type="text" name="client" value={clientInput} 
+                        className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
                             onChange={handleDisplaySuggestions}
                         >
                         </Input>

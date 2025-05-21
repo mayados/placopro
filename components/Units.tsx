@@ -6,6 +6,7 @@ import { Dialog, DialogTitle, DialogPanel, Description} from '@headlessui/react'
 import { Field, Input } from '@headlessui/react';
 import { createUnit, deleteUnit, fetchUnits, updateUnit } from "@/services/api/unitService";
 import { createUnitSchema } from "@/validation/unitValidation";
+import Breadcrumb from "./BreadCrumb";
 
 
 type UnitsProps = {
@@ -184,6 +185,12 @@ export default function ToDos({ csrfToken }: UnitsProps) {
     return (
 
    <>
+       <Breadcrumb
+         items={[
+           { label: "Tableau de bord", href: "/director" },
+           { label: `Unités` },
+         ]}
+       />
   <section className="flex-[8] px-4 py-6 bg-[#F5F5F5] rounded-md shadow-sm">
     <header className="mb-6">
       <h1 className="text-3xl font-bold text-primary text-center mb-4">Unités</h1>
@@ -208,7 +215,8 @@ export default function ToDos({ csrfToken }: UnitsProps) {
               id="unit-label"
               type="text"
               name="label"
-              className="w-full h-9 rounded-md bg-gray-700 text-white pl-3"
+                                                    className="border-2 border-custom-gray outline-secondary w-full h-[2rem] rounded-md bg-custom-white text-custom-gray pl-3"
+
               value={unitFormValues.label ?? ""}
               onChange={handleInputChange}
               aria-invalid={errors.label ? "true" : "false"}

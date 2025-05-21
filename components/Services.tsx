@@ -8,6 +8,7 @@ import { deleteService, fetchServices, updateService } from "@/services/api/serv
 import { useSearchParams } from "next/navigation";
 import { Pagination } from "@/components/Pagination";
 import SearchBar from "@/components/SearchBar";
+import Breadcrumb from "./BreadCrumb";
 
 type ServicesProps = {
     csrfToken: string;
@@ -176,6 +177,12 @@ export default function Services({ csrfToken }: ServicesProps) {
     return (
 
 <>
+    <Breadcrumb
+      items={[
+        { label: "Tableau de bord", href: "/director" },
+        { label: `Services` },
+      ]}
+    />
   <section className="flex-[8] px-4 py-6 bg-[#F5F5F5] rounded-md shadow-sm">
     <header className="mb-6">
       <h1 className="text-3xl font-bold text-primary text-center mb-4">Services</h1>
