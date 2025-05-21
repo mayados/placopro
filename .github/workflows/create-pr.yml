@@ -2,11 +2,14 @@ name: Create Pull Request
 
 on:
   repository_dispatch:
-    types: [create-pr-from-test]
+    types: [create-pr-from-test]  # Déclenché manuellement par le workflow de merge
 
 jobs:
   create-pr:
+    # Sécurité : ne s’exécute que si la branche test est bien à jour
+    if: github.event.client_payload.ref == 'refs/heads/test' || github.ref == 'refs/heads/test'
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -15,8 +18,8 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GH_PAT }}
-          base: main
-          branch: test
+          base: main       # Branche de destination de la PR
+          branch: test     # Branche source de la PR
           title: "🔄 Merge `test` → `main` (Tests OK)"
           body: "Tests validés ✅ - PR prête à être revue."
           draft: false
