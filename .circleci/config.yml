@@ -4,24 +4,43 @@ jobs:
   test:
     docker:
       - image: cimg/node:20.9
+
     steps:
       - add_ssh_keys:
           fingerprints:
             - "SHA256:ZZ5iIB1IIyOGTIoGlhGNhiP+QRd96//qxPmUwwucWNQ"
+
       - checkout
+
       - run:
           name: Install dependencies
           command: npm install
+
+      # - run:
+      #     name: Lint the code
+      #     command: npm run lint
+
       - run:
           name: Build the Next.js app
           command: npm run build
+
       - run:
           name: Run unit tests with Jest
           command: npm test
+
       - run:
           name: ✅ Trigger merge to test if tests passed
           command: |
             curl -X POST \
+              -H "Authorization: token $GH_PAT" \
+              -H "Accept: application/vnd.github.v3+json" \
+              https://api.github.com/repos/mayados/placopro/dispatches \
+              -d '{"event_type": "trigger-merge"}'
+
+      - run:
+          name: 🐛 Debug - afficher réponse GitHub
+          command: |
+            curl -i -X POST \
               -H "Authorization: token $GH_PAT" \
               -H "Accept: application/vnd.github.v3+json" \
               https://api.github.com/repos/mayados/placopro/dispatches \
