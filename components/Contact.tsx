@@ -42,6 +42,7 @@ export default function Contact({ csrfToken }: ContactProps) {
 
   }
 
+  
   return (
     <div className="bg-custom-white text-primary">
       {/* HERO */}
