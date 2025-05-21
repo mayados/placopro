@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
             const user = await currentUser()
     console.log("test pr apres ajout dans main")
     console.log("test pr apres ajout dansfifirjfirj main")
+    console.log("test pr apres ajout iij main")
 
     try {
 
