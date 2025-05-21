@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
     console.log("Données reçues dans l'API :", JSON.stringify(data));
     console.log("test pr again")
     console.log("again and again")
+    console.log("again and again and again")
 
             const user = await currentUser()
 
