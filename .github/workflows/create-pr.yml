@@ -1,31 +1,31 @@
 name: Create Pull Request
-
+ 
 on:
   repository_dispatch:
     types: [create-pr-from-test]
-
+ 
 jobs:
   create-pr:
     if: github.event.client_payload.ref == 'refs/heads/test' || github.ref == 'refs/heads/test'
     runs-on: ubuntu-latest
-
+ 
     steps:
       - name: Checkout test branch
         uses: actions/checkout@v4
         with:
-          ref: test  # ✅ On force bien le checkout de la branche test
-
+          ref: test
+ 
       - name: 🔍 DEBUG - Affiche la branche actuelle
         run: git branch --show-current
-
+ 
       - name: Vérifier si test est en avance sur main
         run: |
           git fetch origin main
           if git diff --quiet origin/main...HEAD; then
-            echo "✅ Rien à merger, PR inutile."
+            echo "✅ Aucun changement à merger, PR non créée."
             exit 0
           fi
-
+ 
       - name: Create Pull Request to main
         uses: peter-evans/create-pull-request@v5
         with:
@@ -34,5 +34,3 @@ jobs:
           branch: test
           title: "🔄 Merge `test` → `main` (Tests OK)"
           body: "Tests validés ✅ - PR prête à être revue."
-          draft: false
- 
