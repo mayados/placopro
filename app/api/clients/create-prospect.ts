@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     const data = await req.json();
 
     console.log("Données reçues dans l'API :", JSON.stringify(data));
-
+    console.log("test pr again")
 
             const user = await currentUser()
 
