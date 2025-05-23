@@ -38,7 +38,6 @@ jobs:
         run: |
           git checkout test
           git merge develop-latest --no-ff --allow-unrelated-histories -m "Auto-merge develop -> test"
-          git merge test-develop --no-ff -X ours -m "Auto-merge develop → test"
           git push --force-with-lease origin test
 
       - name: Debug — Vérifier le contenu de test
