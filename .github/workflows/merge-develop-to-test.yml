@@ -1,44 +1,39 @@
-name: Auto Merge develop -> test
- 
+# ===========================
+# FICHIER : .github/workflows/merge-develop-to-test.yml
+# ROLE : Merge automatique de la branche "develop" vers la branche "test"
+# ===========================
+
+name: Auto Merge develop -> test # Nom du workflow visible dans GitHub Actions
+
 on:
-  repository_dispatch:
-    types: [trigger-merge]
- 
+  push:
+    branches:
+      - develop # Déclenche ce workflow à chaque push sur la branche "develop"
+
 jobs:
   merge:
-    runs-on: ubuntu-latest
- 
+    runs-on: ubuntu-latest # Spécifie l'environnement d'exécution (ici, une VM Ubuntu maintenue par GitHub)
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - name: Checkout Repository # Étape pour récupérer le dépôt dans l’environnement GitHub Actions
+        uses: actions/checkout@v4 # Utilisation de l'action officielle GitHub pour cloner le repo
         with:
-          token: ${{ secrets.GH_PAT_MERGE }}
-          fetch-depth: 0
- 
-      - name: Configure Git identity
+          token: ${{ secrets.GH_PAT_MERGE }} # Utilisation d’un token personnel sécurisé pour autoriser le push après merge
+          fetch-depth: 0 # Récupère tout l’historique Git (nécessaire pour faire un merge complet entre branches)
+          
+      - name: Configure Git identity # Configure l'identité Git utilisée pour les commits générés par l’action
+        # Nom utilisé pour les commits générés automatiquement
+        # Email associé à ces commits
         run: |
-          git config --global user.name "github-actions"
+          git config --global user.name "github-actions"  
           git config --global user.email "actions@github.com"
- 
-      - name: Vérifier si develop est en avance sur test
+
+      - name: Merge develop into test # Étape de merge proprement dite
+        # Récupère les dernières modifications du dépôt
+        # Bascule sur la branche "test"
+        # Fusionne "develop" dans "test" avec un commit explicite (pas de fast-forward)
+        # Pousse la branche mise à jour vers GitHub
         run: |
           git fetch origin
-          git checkout origin/develop -b develop-latest
-          git checkout origin/test -b test-latest
-          if git diff --quiet test-latest...develop-latest; then
-            echo "✅ Aucun changement à merger. Opération annulée."
-            exit 0
-          fi
- 
-      - name: Fusionner develop dans test
-        run: |
           git checkout test
-          git merge develop-latest --no-ff --allow-unrelated-histories -m "Auto-merge develop -> test"
-          git push --force-with-lease origin test
- 
-      - name: Déclencher la création de PR test -> main
-        uses: peter-evans/repository-dispatch@v2
-        with:
-          token: ${{ secrets.GH_PAT }}
-          event-type: create-pr-from-test
-          client-payload: '{"ref": "refs/heads/test"}'
+          git merge origin/develop --no-ff --allow-unrelated-histories -m "Auto-merge develop -> test"
+          git push origin test
