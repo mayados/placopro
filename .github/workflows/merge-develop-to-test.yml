@@ -1,6 +1,5 @@
 name: Auto Merge develop -> test
-permissions:
-  contents: write
+
 on:
   repository_dispatch:
     types: [trigger-merge]
@@ -14,7 +13,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_PAT_MERGE }}
-          persist-credentials: true
           fetch-depth: 0
 
       - name: Debug — Vérifier les remotes
@@ -46,6 +44,19 @@ jobs:
           git fetch origin test
           git log origin/test -5 --oneline
           ls -R .
+
+      - name: Vérifier que le push a bien modifié la branche distante
+        run: |
+          git fetch origin test
+          echo " Dernier commit distant :"
+          git log origin/test -1 --oneline
+          echo "Dernier commit local :"
+          git log test -1 --oneline
+
+      - name: Push test branch
+        run: |
+          git push origin test
+          echo "Push envoyé vers origin/test"
 
       - name: Déclencher la création de PR test -> main
         uses: peter-evans/repository-dispatch@v2
