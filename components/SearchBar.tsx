@@ -54,7 +54,7 @@ export default function SearchBar({
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 focus:ring-2 focus:ring-offset-2 focus:ring-[#1873BF] rounded-full"
                         aria-label="Effacer la recherche"
                     >
-                        <FontAwesomeIcon icon={faCircleXmark} />
+                        <FontAwesomeIcon icon={faCircleXmark} aria-hidden="true"  />
                     </button>
                 )}
 
