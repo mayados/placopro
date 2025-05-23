@@ -58,6 +58,9 @@ jobs:
           git push origin test
           echo "Push envoyé vers origin/test"
 
+      - name:  Vérifier le tracking de la branche test
+        run: git branch -vv
+
       - name: Déclencher la création de PR test -> main
         uses: peter-evans/repository-dispatch@v2
         with:
