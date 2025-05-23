@@ -11,6 +11,7 @@ import { useState } from 'react'
 const schema = z.object({
   email: z.string().email("Adresse email invalide"),
 })
+console.log("test")
 
 type FormValues = z.infer<typeof schema>
 

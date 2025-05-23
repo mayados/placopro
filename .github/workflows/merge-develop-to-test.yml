@@ -14,6 +14,10 @@ jobs:
         with:
           token: ${{ secrets.GH_PAT_MERGE }}
           fetch-depth: 0
+
+      - name: Debug — Vérifier les remotes
+        run: git remote -v
+
  
       - name: Configure Git identity
         run: |
@@ -35,6 +39,12 @@ jobs:
           git checkout test
           git merge develop-latest --no-ff --allow-unrelated-histories -m "Auto-merge develop -> test"
           git push --force-with-lease origin test
+
+      - name: Debug — Vérifier le contenu de test
+        run: |
+          git fetch origin test
+          git log origin/test -5 --oneline
+          ls -R .
  
       - name: Déclencher la création de PR test -> main
         uses: peter-evans/repository-dispatch@v2
