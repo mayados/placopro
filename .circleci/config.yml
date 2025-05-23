@@ -25,8 +25,13 @@ jobs:
             curl -X POST \
               -H "Authorization: token $GH_PAT" \
               -H "Accept: application/vnd.github.everest-preview+json" \
+              -H "Content-Type: application/json" \
               https://api.github.com/repos/mayados/placopro/dispatches \
-              -d '{"event_type":"trigger-merge"}'
+              -d '{
+                "event_type": "trigger-merge",
+                "client_payload": { "ref": "refs/heads/develop" }
+              }' \
+              -i
 
 workflows:
   version: 2
