@@ -4,56 +4,51 @@ on:
   repository_dispatch:
     types: [trigger-merge]
 
+permissions:
+  contents: write  
+
 jobs:
   merge:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout test branch
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_PAT_MERGE }}
           fetch-depth: 0
+          ref: test
 
       - name: Configure Git identity
         run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
 
-      - name: 🔄 Préparer les branches locales
-        run: |
-          git fetch origin
-          git checkout -b develop-latest origin/develop
-          git checkout -b test origin/test
-          git branch --set-upstream-to=origin/test test
+      - name: Fetch latest branches
+        run: git fetch origin develop test
 
-      - name: 🔍 Vérifier si develop est en avance sur test
+      - name: Verify develop is ahead of test
         run: |
-          if git diff --quiet test...develop-latest; then
-            echo "✅ Aucun changement à merger. Opération annulée."
+          if git diff --quiet origin/test origin/develop; then
+            echo "✅ test is already up-to-date with develop. Nothing to merge."
             exit 0
           fi
 
-      - name: 🔁 Fusionner develop dans test avec stratégie 'ours'
+      - name: Merge develop into test
         run: |
           git checkout test
-          git merge -X ours develop-latest --no-edit -m "Auto-merge develop -> test"
+          git merge origin/develop --no-ff -m "Auto-merge develop -> test"
           git push origin test
 
-      - name: 🧪 Vérifier que le push a bien modifié la branche distante
+      - name: Debug push result
         run: |
-          git fetch origin test
-          echo "📦 Dernier commit distant :"
-          git log origin/test -1 --oneline
-          echo "🧠 Dernier commit local :"
-          git log test -1 --oneline
-          git branch -vv
-          git remote show origin
+          echo "Remote test head:" && git log origin/test -1 --oneline
+          echo "Local test head: " && git log test -1 --oneline
+          git rev-list --left-right --count origin/test...origin/develop
 
-      - name: 🚀 Déclencher la création de PR test -> main
+      - name: Dispatch create-pr-from-test
         uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.GH_PAT }}
           event-type: create-pr-from-test
-          client-payload: '{"ref": "refs/heads/test"}'
- 
+          client-payload: '{"ref":"refs/heads/test"}'
