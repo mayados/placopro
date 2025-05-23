@@ -2,25 +2,22 @@
 name: Create Pull Request
 
 on:
-  workflow_run:
-    workflows: ["Auto Merge develop -> test"]
-    types:
-      - completed
+  repository_dispatch:
+    types: [trigger-merge]
 
 permissions:
   contents: write
 
 jobs:
   create-pr:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      - name: Checkout test branch
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_PAT }}
           fetch-depth: 0
+          ref: test
 
       - name: Create Pull Request to main
         uses: peter-evans/create-pull-request@v5
@@ -28,6 +25,6 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           base: main
           branch: test
-          title: "🔄 Merge `test` → `main` (Tests success)"
-          body: "Tests CircleCI validés ✅. PR prête à être revue."
+          title: "🔄 Merge `test` → `main` (Tests passed)"
+          body: "CI tests passed ✅ — PR ready for review."
           draft: false
