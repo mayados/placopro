@@ -17,6 +17,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_PAT_MERGE }}
+          persist-credentials: true
           fetch-depth: 0
           ref: test
 
@@ -26,36 +27,41 @@ jobs:
           git config user.email "actions@github.com"
 
       - name: Fetch latest branches
-        run: |
-          git fetch origin develop test
+        run: git fetch origin develop test
 
       - name: Debug before merge
         run: |
           echo "→ origin/develop head :" 
           git log origin/develop -1 --oneline
-          echo "→ Contenu de again.md sur origin/develop :"
-          git show origin/develop:again.md || echo "⚠️ again.md introuvable"
+          echo "→ Content on develop :"
+          git show origin/develop:again.md
+
+          echo
+          echo "→ origin/test head :"
+          git log origin/test -1 --oneline
+          echo "→ Content on test :"
+          git show origin/test:again.md || echo "⚠️ again.md missing"
 
       - name: Verify develop is ahead of test
         run: |
           if git diff --quiet origin/test origin/develop; then
-            echo "✅ test is already up-to-date with develop. Nothing to merge."
+            echo "✅ test already up-to-date"
             exit 0
           fi
 
-      - name: Merge develop into test
+      - name: Merge develop into test (favor theirs)
         run: |
           git checkout test
-          git merge origin/develop --no-ff -m "Auto-merge develop -> test"
+          git merge origin/develop --no-ff -X theirs -m "Auto-merge develop -> test"
           git push origin test
 
       - name: Debug after merge
         run: |
           echo "→ origin/test head :" 
           git log origin/test -1 --oneline
-          echo "→ Contenu de again.md sur origin/test :"
-          git show origin/test:again.md || echo "⚠️ again.md introuvable"
-          echo "→ Sync status (test vs develop):"
+          echo "→ Content on test now :"
+          git show origin/test:again.md || echo "⚠️ again.md still missing"
+          echo
           git rev-list --left-right --count origin/test...origin/develop
 
       - name: Dispatch create-pr-from-test
