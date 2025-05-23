@@ -1,3 +1,4 @@
+# .github/workflows/merge-develop-to-test.yml
 name: Auto Merge develop -> test
 
 on:
@@ -5,7 +6,7 @@ on:
     types: [trigger-merge]
 
 permissions:
-  contents: write  
+  contents: write
 
 jobs:
   merge:
@@ -25,7 +26,15 @@ jobs:
           git config user.email "actions@github.com"
 
       - name: Fetch latest branches
-        run: git fetch origin develop test
+        run: |
+          git fetch origin develop test
+
+      - name: Debug before merge
+        run: |
+          echo "→ origin/develop head :" 
+          git log origin/develop -1 --oneline
+          echo "→ Contenu de again.md sur origin/develop :"
+          git show origin/develop:again.md || echo "⚠️ again.md introuvable"
 
       - name: Verify develop is ahead of test
         run: |
@@ -40,10 +49,13 @@ jobs:
           git merge origin/develop --no-ff -m "Auto-merge develop -> test"
           git push origin test
 
-      - name: Debug push result
+      - name: Debug after merge
         run: |
-          echo "Remote test head:" && git log origin/test -1 --oneline
-          echo "Local test head: " && git log test -1 --oneline
+          echo "→ origin/test head :" 
+          git log origin/test -1 --oneline
+          echo "→ Contenu de again.md sur origin/test :"
+          git show origin/test:again.md || echo "⚠️ again.md introuvable"
+          echo "→ Sync status (test vs develop):"
           git rev-list --left-right --count origin/test...origin/develop
 
       - name: Dispatch create-pr-from-test
