@@ -2,15 +2,20 @@
 name: Create Pull Request
 
 on:
-  repository_dispatch:
-    types: [trigger-merge]
+  workflow_run:
+    workflows: ["Auto Merge develop -> test"]  # nom exact du workflow de merge
+    types:
+      - completed
 
 permissions:
   contents: write
 
 jobs:
   create-pr:
+    # Ne se lance que si le workflow de merge s'est bien terminé
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout test branch
         uses: actions/checkout@v4
