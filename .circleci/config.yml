@@ -40,5 +40,4 @@ workflows:
             branches:
               only: 
               - develop # Exécute ce workflow uniquement si on pousse sur la branche "develop"
-              - test # Ou sur la branche "test" (la branche de pré-production/staging)
               # So CircleCI can take into account pushes
