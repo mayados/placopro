@@ -1,13 +1,13 @@
 name: Auto Merge develop -> test
- 
+
 on:
   repository_dispatch:
     types: [trigger-merge]
- 
+
 jobs:
   merge:
     runs-on: ubuntu-latest
- 
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -18,37 +18,37 @@ jobs:
       - name: Debug — Vérifier les remotes
         run: git remote -v
 
- 
       - name: Configure Git identity
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
- 
+
       - name: Vérifier si develop est en avance sur test
         run: |
           git fetch origin
-          git checkout origin/develop -b develop-latest
-          git checkout origin/test -b test-latest
+          git checkout -b develop-latest origin/develop
+          git checkout -b test-latest origin/test
           if git diff --quiet test-latest...develop-latest; then
             echo "✅ Aucun changement à merger. Opération annulée."
             exit 0
           fi
- 
+
       - name: Fusionner develop dans test
         run: |
-          git checkout test
+          git checkout -b test origin/test
           git merge develop-latest --no-ff --allow-unrelated-histories -m "Auto-merge develop -> test"
-          git push --force-with-lease origin test
+          git push origin test
 
       - name: Debug — Vérifier le contenu de test
         run: |
           git fetch origin test
           git log origin/test -5 --oneline
           ls -R .
- 
+
       - name: Déclencher la création de PR test -> main
         uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.GH_PAT }}
           event-type: create-pr-from-test
           client-payload: '{"ref": "refs/heads/test"}'
+ 
