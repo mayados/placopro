@@ -15,53 +15,42 @@ jobs:
           token: ${{ secrets.GH_PAT_MERGE }}
           fetch-depth: 0
 
-      - name: Debug — Vérifier les remotes
-        run: git remote -v
-
       - name: Configure Git identity
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
 
-      - name: Vérifier si develop est en avance sur test
+      - name: 🔄 Préparer les branches locales
         run: |
           git fetch origin
           git checkout -b develop-latest origin/develop
-          git checkout -b test-latest origin/test
-          if git diff --quiet test-latest...develop-latest; then
+          git checkout -b test origin/test
+          git branch --set-upstream-to=origin/test test
+
+      - name: 🔍 Vérifier si develop est en avance sur test
+        run: |
+          if git diff --quiet test...develop-latest; then
             echo "✅ Aucun changement à merger. Opération annulée."
             exit 0
           fi
 
-      - name: Fusionner develop dans test
+      - name: 🔁 Fusionner develop dans test avec stratégie 'ours'
         run: |
-          git checkout -b test origin/test
-          git merge develop-latest --no-ff --allow-unrelated-histories -m "Auto-merge develop -> test"
+          git checkout test
+          git merge -X ours develop-latest --no-edit -m "Auto-merge develop -> test"
           git push origin test
 
-      - name: Debug — Vérifier le contenu de test
+      - name: 🧪 Vérifier que le push a bien modifié la branche distante
         run: |
           git fetch origin test
-          git log origin/test -5 --oneline
-          ls -R .
-
-      - name: Vérifier que le push a bien modifié la branche distante
-        run: |
-          git fetch origin test
-          echo " Dernier commit distant :"
+          echo "📦 Dernier commit distant :"
           git log origin/test -1 --oneline
-          echo "Dernier commit local :"
+          echo "🧠 Dernier commit local :"
           git log test -1 --oneline
+          git branch -vv
+          git remote show origin
 
-      - name: Push test branch
-        run: |
-          git push origin test
-          echo "Push envoyé vers origin/test"
-
-      - name:  Vérifier le tracking de la branche test
-        run: git branch -vv
-
-      - name: Déclencher la création de PR test -> main
+      - name: 🚀 Déclencher la création de PR test -> main
         uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.GH_PAT }}
