@@ -1,39 +1,33 @@
-# ===========================
-# FICHIER : .github/workflows/merge-develop-to-test.yml
-# ROLE : Merge automatique de la branche "develop" vers la branche "test"
-# ===========================
-
-name: Auto Merge develop -> test # Nom du workflow visible dans GitHub Actions
+# .github/workflows/create-pr.yml
+name: Create Pull Request
 
 on:
-  push:
-    branches:
-      - develop # Déclenche ce workflow à chaque push sur la branche "develop"
+  workflow_run:
+    workflows: ["Auto Merge develop -> test"]
+    types:
+      - completed
+
+permissions:
+  contents: write
 
 jobs:
-  merge:
-    runs-on: ubuntu-latest # Spécifie l'environnement d'exécution (ici, une VM Ubuntu maintenue par GitHub)
-    steps:
-      - name: Checkout Repository # Étape pour récupérer le dépôt dans l’environnement GitHub Actions
-        uses: actions/checkout@v4 # Utilisation de l'action officielle GitHub pour cloner le repo
-        with:
-          token: ${{ secrets.GH_PAT_MERGE }} # Utilisation d’un token personnel sécurisé pour autoriser le push après merge
-          fetch-depth: 0 # Récupère tout l’historique Git (nécessaire pour faire un merge complet entre branches)
-          
-      - name: Configure Git identity # Configure l'identité Git utilisée pour les commits générés par l’action
-        # Nom utilisé pour les commits générés automatiquement
-        # Email associé à ces commits
-        run: |
-          git config --global user.name "github-actions"  
-          git config --global user.email "actions@github.com"
+  create-pr:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
 
-      - name: Merge develop into test # Étape de merge proprement dite
-        # Récupère les dernières modifications du dépôt
-        # Bascule sur la branche "test"
-        # Fusionne "develop" dans "test" avec un commit explicite (pas de fast-forward)
-        # Pousse la branche mise à jour vers GitHub
-        run: |
-          git fetch origin
-          git checkout test
-          git merge origin/develop --no-ff --allow-unrelated-histories -m "Auto-merge develop -> test"
-          git push origin test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+          fetch-depth: 0
+
+      - name: Create Pull Request to main
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GH_PAT }}
+          base: main
+          branch: test
+          title: "🔄 Merge `test` → `main` (Tests success)"
+          body: "Tests CircleCI validés ✅. PR prête à être revue."
+          draft: false
