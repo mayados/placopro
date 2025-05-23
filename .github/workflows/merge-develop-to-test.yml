@@ -20,6 +20,12 @@ jobs:
           fetch-depth: 0
           ref: test
 
+      - name: Dump incoming event payload
+        run: |
+          echo "=== EVENT PAYLOAD ==="
+          cat "$GITHUB_EVENT_PATH"
+          echo "====================="
+      
       - name: Configure Git identity
         run: |
           git config user.name "github-actions"
