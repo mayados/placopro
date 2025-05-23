@@ -23,8 +23,7 @@ export async function createQuoteUseCase({
   status
 }: CreateQuoteDTO) {
   const isDraft = status === QuoteStatusEnum.DRAFT;
-//   sanitizedData.status = status;
-  const rawServices = sanitizedData.services ?? []; // ← sécurisé pour draft sans services
+  const rawServices = sanitizedData.services ?? []; 
   const services: ServiceType[] = rawServices.map(mapToServiceType);
   const servicesForQuoteServicesAndBackup: ServiceAndQuoteServiceType[] = rawServices.map(mapToServiceAndQuoteServiceType);
   const quoteNumber = await generateQuoteNumber("quote", isDraft,tx);

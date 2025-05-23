@@ -10,8 +10,8 @@ import { Portfolio } from '@/components/Portfolio';
 import { Stats } from '@/components/Stats';
 
 export const metadata: Metadata = {
-    title: 'Placopro • Accueil',
-    description: 'Bienvenue sur Placopro, votre entreprise de plâtrerie, peinture et carrelage sur strasbourg et vallée de la Bruche.',
+    title: 'Plâtrerie, Peinture & Carrelage à Strasbourg - Devis Gratuit • Placopro',
+    description: "Plâtrerie, Peinture & Carrelage à Strasbourg & Vallée de la Bruche - Devis gratuit. Découvrez l'expertise Placopro !",
 };
 
 

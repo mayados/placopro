@@ -188,30 +188,38 @@ export default function WorkSites() {
                     aria-describedby="workSite-delete-desc"
                 >
                     <DialogPanel className="bg-white text-[#637074] p-6 rounded-lg shadow-lg w-full max-w-md">
-                        <DialogTitle id="workSite-delete-title" className="text-xl font-semibold text-[#1873BF] mb-2">
+                        <DialogTitle
+                            id="workSite-delete-title"
+                            className="text-xl font-semibold text-[#1873BF] mb-2"
+                        >
                             Supprimer le chantier
                         </DialogTitle>
+
                         <Description id="workSite-delete-desc" className="mb-2">
                             Cette action est irréversible
                         </Description>
+
                         <p className="text-sm mb-4">
-                            Êtes-vous sûr de vouloir supprimer ce chantier ? Toutes ses données seront supprimées de façon permanente.
+                            Êtes-vous sûr de vouloir supprimer ce chantier ? Toutes ses données seront
+                            supprimées de façon permanente.
                         </p>
-                        <div className="flex justify-end gap-3">
-                            <button
-                                onClick={() => handleWorkSiteDeletion(workSiteToDelete)}
-                                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FDA821]"
-                            >
-                                Supprimer
-                            </button>
+
+                        <div className="flex justify-between">
                             <button
                                 onClick={closeDeleteDialog}
                                 className="bg-gray-200 hover:bg-gray-300 text-[#637074] px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FDA821]"
                             >
                                 Annuler
                             </button>
+                            <button
+                                onClick={() => handleWorkSiteDeletion(workSiteToDelete)}
+                                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FDA821]"
+                            >
+                                Supprimer
+                            </button>
                         </div>
                     </DialogPanel>
+
                 </Dialog>
             )}
         </>

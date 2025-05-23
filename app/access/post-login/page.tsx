@@ -8,7 +8,7 @@ export default function PostLoginRedirect() {
   const { user, isLoaded } = useUser();
   const router = useRouter();
   const [loading, ] = useState(true);
-
+  console.log("test ci")
   useEffect(() => {
     if (!isLoaded || !user) return;
 
