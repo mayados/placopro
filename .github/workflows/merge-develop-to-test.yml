@@ -1,33 +1,35 @@
-# .github/workflows/create-pr.yml
-name: Create Pull Request
+# .github/workflows/merge-develop-to-test.yml
+name: Auto Merge develop -> test
 
 on:
-  workflow_run:
-    workflows: ["Auto Merge develop -> test"]
-    types:
-      - completed
+  repository_dispatch:
+    types: [trigger-merge]
 
 permissions:
   contents: write
 
 jobs:
-  create-pr:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+  merge:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      - name: Checkout test branch
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GH_PAT }}
+          token: ${{ secrets.GH_PAT_MERGE }}
+          persist-credentials: true
           fetch-depth: 0
+          ref: test
 
-      - name: Create Pull Request to main
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GH_PAT }}
-          base: main
-          branch: test
-          title: "🔄 Merge `test` → `main` (Tests success)"
-          body: "Tests CircleCI validés ✅. PR prête à être revue."
-          draft: false
+      - name: Configure Git identity
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+      - name: Fetch latest branches
+        run: git fetch origin develop test
+
+      - name: Merge develop into test (favor develop on conflicts)
+        run: |
+          git checkout test
+          git merge origin/develop --no-ff -X theirs -m "Auto-merge develop -> test"
+          git push origin test
