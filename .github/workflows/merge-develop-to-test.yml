@@ -30,6 +30,11 @@ jobs:
       - name: Fetch latest branches
         run: git fetch origin develop test
 
+      - name: 🔍 Afficher l’utilisateur lié au token
+        run: |
+          echo "→ Appel à l’API GitHub pour identifier le token..."
+          curl -s -H "Authorization: Bearer ${{ secrets.GH_PAT_MERGE }}" https://api.github.com/user
+
       - name: Debug before merge
         run: |
           git branch
