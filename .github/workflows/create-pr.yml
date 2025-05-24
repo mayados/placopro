@@ -21,7 +21,7 @@ jobs:
       - name: Vérifier si test est en avance sur main
         run: |
           git fetch origin main
-          if git diff --quiet origin/main...HEAD; then
+          if git diff --quiet origin/main HEAD; then
             echo "✅ Aucun changement à merger, PR non créée."
             exit 0
           fi
