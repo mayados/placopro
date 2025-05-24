@@ -1,0 +1,15 @@
+# .github/workflows/test-dispatch.yml
+name: Debug Dispatch
+
+on:
+  repository_dispatch:
+    types: [trigger-merge]
+
+jobs:
+  log:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "✅ repository_dispatch reçu !"
+          echo "Payload was:"
+          cat "$GITHUB_EVENT_PATH"
