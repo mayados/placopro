@@ -13,13 +13,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout test branch
+      - name: Checkout dev branch
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_PAT_MERGE }}
           persist-credentials: true
           fetch-depth: 0
-          ref: test
+          ref: develop
 
       - name: Configure Git identity
         run: |
