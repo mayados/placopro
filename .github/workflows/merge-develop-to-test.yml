@@ -13,17 +13,35 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.client_payload.ref == 'refs/heads/develop' }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout test branch
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: true
           fetch-depth: 0
           ref: test
 
-      - run: |
+      - name: Configure Git identity
+        run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git fetch origin develop test
+
+      - name: Fetch branches
+        run: git fetch origin develop test
+
+      - name: Merge develop into test
+        run: |
           git checkout test
-          git merge origin/develop --no-ff -X theirs -m "Auto-merge develop → test"
-          git push origin test
+          git merge origin/develop --no-ff -X theirs -m "Auto-merge develop -> test"
+
+      - name: Debug before push
+        run: |
+          echo "→ Local test HEAD: $(git rev-parse HEAD)"
+          echo "→ Remote test HEAD before push: $(git ls-remote origin test | cut -f1)"
+
+      - name: Push to test (force)
+        run: git push --force-with-lease origin HEAD:test
+
+      - name: Debug after push
+        run: |
+          echo "→ Remote test HEAD after push: $(git ls-remote origin test | cut -f1)"
