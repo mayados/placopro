@@ -5,90 +5,46 @@ on:
   repository_dispatch:
     types: [trigger-merge]
 
-permissions:
-  contents: write
-
 jobs:
   merge:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout dev branch
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_PAT_MERGE }}
-          persist-credentials: true
           fetch-depth: 0
-          ref: develop
 
       - name: Configure Git identity
         run: |
-          git branch
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
 
-      - name: Fetch latest branches
-        run: git fetch origin develop test
-
-      - name: 🔍 Afficher l’utilisateur lié au token
+      - name: 🔄 Préparer les branches locales
         run: |
-          echo "→ Appel à l’API GitHub pour identifier le token..."
-          curl -s -H "Authorization: Bearer ${{ secrets.GH_PAT_MERGE }}" https://api.github.com/user
+          git fetch origin
+          git checkout -b develop-latest origin/develop
+          git checkout -b test origin/test
+          git branch --set-upstream-to=origin/test test
 
-      - name: Debug before merge
+      - name: 🔍 Vérifier si develop est en avance sur test
         run: |
-          git branch
-          echo "→ origin/develop head :" 
-          git log origin/develop -1 --oneline
-          echo "→ Content on develop :"
-          git show origin/develop:again.md
-
-          echo
-          echo "→ origin/test head :"
-          git log origin/test -1 --oneline
-          echo "→ Content on test :"
-          git show origin/test:again.md || echo "⚠️ again.md missing"
-
-      - name: Verify develop is ahead of test
-        run: |
-          if git diff --quiet origin/test origin/develop; then
-            echo "✅ test already up-to-date"
+          if git diff --quiet test...develop-latest; then
+            echo "✅ Aucun changement à synchroniser."
             exit 0
           fi
 
-      - name: Verify GH_PAT_MERGE works in Actions
-        run: |
-          echo "→ Testing token validity…"
-          curl -s -o /dev/null -w "%{http_code}" \
-            -H "Authorization: token ${{ secrets.GH_PAT_MERGE }}" \
-            https://api.github.com/user \
-          && echo " Token is valid" || echo " Token failed"
-
-          echo "→ Testing raw file fetch…"
-          curl -s -o /dev/null -w "%{http_code}" \
-            -H "Authorization: token ${{ secrets.GH_PAT_MERGE }}" \
-            -H "Accept: application/vnd.github.v3.raw" \
-            "https://api.github.com/repos/mayados/placopro/contents/again.md?ref=test" \
-          && echo " Fetch OK" || echo " Fetch failed"
-
-      - name: Merge develop into test (favor theirs)
+      - name: 🔁 Forcer test à refléter develop
         run: |
           git checkout test
-          git merge origin/develop --no-ff -X theirs -m "Auto-merge develop -> test"
-          git push origin test
+          git reset --hard develop-latest
+          git push origin test --force-with-lease
 
-      - name: Debug after merge
+      - name: 🧪 Vérifier que le push a bien modifié la branche distante
         run: |
-          echo "→ origin/test head :" 
+          git fetch origin test
+          echo "📦 Dernier commit distant :"
           git log origin/test -1 --oneline
-          echo "→ Content on test now :"
-          git show origin/test:again.md || echo "⚠️ again.md still missing"
-          echo
-          git rev-list --left-right --count origin/test...origin/develop
-
-      - name: Dispatch create-pr-from-test
-        uses: peter-evans/repository-dispatch@v2
-        with:
-          token: ${{ secrets.GH_PAT }}
-          event-type: create-pr-from-test
-          client-payload: '{"ref":"refs/heads/test"}'
+          echo "🧠 Dernier commit local :"
+          git log test -1 --oneline
