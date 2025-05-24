@@ -31,6 +31,7 @@ jobs:
 
       - name: Debug before merge
         run: |
+          git branch
           echo "→ origin/develop head :" 
           git log origin/develop -1 --oneline
           echo "→ Content on develop :"
