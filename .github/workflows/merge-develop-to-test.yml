@@ -48,3 +48,10 @@ jobs:
           git log origin/test -1 --oneline
           echo "🧠 Dernier commit local :"
           git log test -1 --oneline
+
+      - name: 🚀 Déclencher la création de PR test -> main
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GH_PAT }}
+          event-type: create-pr-from-test
+          client-payload: '{"ref": "refs/heads/test"}'
