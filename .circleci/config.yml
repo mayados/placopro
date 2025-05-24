@@ -1,44 +1,50 @@
-# ===========================
-# FICHIER : .circleci/config.yml
-# ROLE : CI principale (lint, build, test) sur les branches develop et test
-# ===========================
-
-version: 2.1 # Version de configuration YAML de CircleCI utilisée (2.1 supporte les jobs, workflows, etc.)
+version: 2.1
 
 jobs:
-  test: # Définition d'un job nommé "test" qui contient les étapes de CI à exécuter
+  test:
     docker:
-      - image: cimg/node:20.9 # Utilisation d'une image Docker officielle CircleCI avec Node.js 20.9 préinstallé (compatible avec Next.js/TypeScript)
+      - image: cimg/node:20.9
+
     steps:
-      - add_ssh_keys: # Étape pour injecter une ou plusieurs clés SSH dans le conteneur (utile si besoin d'accéder à un repo ou une API privée)
+      - add_ssh_keys:
           fingerprints:
-            # Empreinte de la clé SSH à utiliser, ajoutée dans l'interface CircleCI
-            - "SHA256:ZZ5iIB1IIyOGTIoGlhGNhiP+QRd96//qxPmUwwucWNQ" 
-      - checkout # Clone le dépôt GitHub associé au workflow dans le conteneur Docker (nécessaire pour lancer lint/build/test)
+            - "SHA256:ZZ5iIB1IIyOGTIoGlhGNhiP+QRd96//qxPmUwwucWNQ"
+
+      - checkout
+
       - run:
-          name: Install dependencies # Étape nommée : installe toutes les dépendances Node.js du projet via le fichier package.json
-          command: npm install # Exécute la commande pour installer les packages déclarés
+          name: Install dependencies
+          command: npm install
+
       # - run:
-      #     name: Lint the code  # Étape nommée : vérifie la qualité du code (erreurs de syntaxe, conventions, etc.) avec ESLint
-      #     command: npm run lint  # Nécessite d’avoir une commande "lint" dans le package.json (ex: eslint . --ext .ts,.tsx)
+      #     name: Lint the code
+      #     command: npm run lint
 
       - run:
-          name: Build the Next.js app  # Étape nommée : construit l'application pour vérifier que le build fonctionne correctement
-          command: npm run build  # Exécute le script de build (ex: next build)
+          name: Build the Next.js app
+          command: npm run build
 
       - run:
-          name:  Run unit tests with Jest  # Étape nommée : exécute les tests unitaires du projet avec Jest pour valider le comportement du code
-          command: npm test # Appelle Jest via le script "test" du package.json
+          name: Run unit tests with Jest
+          command: npm test
+
+      - run:
+          name: ✅ Trigger merge to test if tests passed
+          command: |
+            curl -X POST \
+              -H "Authorization: token $GH_PAT" \
+              -H "Accept: application/vnd.github.v3+json" \
+              https://api.github.com/repos/mayados/placopro/dispatches \
+              -d '{"event_type": "trigger-merge"}'
+
 
 
 workflows:
-  version: 2 # Version du système de workflows
-  test-workflow:  # Nom du workflow, utilisé aussi dans GitHub Actions pour déclencher la PR auto
+  version: 2
+  test-workflow:
     jobs:
       - test:
           filters:
             branches:
-              only: 
-              - develop # Exécute ce workflow uniquement si on pousse sur la branche "develop"
-              - test # Ou sur la branche "test" (la branche de pré-production/staging)
-              # So CircleCI can take into account pushes
+              only:
+                - develop
