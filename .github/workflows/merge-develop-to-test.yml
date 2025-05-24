@@ -1,5 +1,5 @@
 # .github/workflows/merge-develop-to-test.yml
-name: Auto Merge develop -> test
+name: Auto Merge develop → test
 
 on:
   repository_dispatch:
@@ -11,31 +11,19 @@ permissions:
 jobs:
   merge:
     runs-on: ubuntu-latest
+    if: ${{ github.event.client_payload.ref == 'refs/heads/develop' }}
     steps:
-      - name: Checkout test branch
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GH_PAT_MERGE }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: true
           fetch-depth: 0
           ref: test
 
-      - name: Dump incoming event payload
-        run: |
-          echo "=== EVENT PAYLOAD ==="
-          cat "$GITHUB_EVENT_PATH"
-          echo "====================="
-      
-      - name: Configure Git identity
-        run: |
+      - run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-
-      - name: Fetch latest branches
-        run: git fetch origin develop test
-
-      - name: Merge develop into test (favor develop on conflicts)
-        run: |
+          git fetch origin develop test
           git checkout test
-          git merge origin/develop --no-ff -X theirs -m "Auto-merge develop -> test"
+          git merge origin/develop --no-ff -X theirs -m "Auto-merge develop → test"
           git push origin test
