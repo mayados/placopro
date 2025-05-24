@@ -3,7 +3,7 @@ name: Create Pull Request
 
 on:
   workflow_run:
-    workflows: ["Auto Merge develop -> test"]  # nom exact du workflow de merge
+    workflows: ["Auto Merge develop → test"]
     types:
       - completed
 
@@ -11,25 +11,21 @@ permissions:
   contents: write
 
 jobs:
-  create-pr:
-    # Ne se lance que si le workflow de merge s'est bien terminé
+  pr:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout test branch
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GH_PAT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
           ref: test
 
-      - name: Create Pull Request to main
-        uses: peter-evans/create-pull-request@v5
+      - uses: peter-evans/create-pull-request@v5
         with:
-          token: ${{ secrets.GH_PAT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           base: main
           branch: test
-          title: "🔄 Merge `test` → `main` (Tests passed)"
-          body: "CI tests passed ✅ — PR ready for review."
+          title: "🔄 Merge `test` → `main` (CI passed)"
+          body: "All tests passed ✅"
           draft: false
